@@ -22,7 +22,53 @@ You can install the latest **werpy** release with Python's pip package manager:
 pip install werpy
 ```
 
-<br /><br />
+## Main Functions
+The following table provides an overview of the functions that can be used in werpy.
+
+| Function  | Description | 
+| ------------- | ------------- |
+| normalize(text)  | Preprocess input text to remove punctuation, remove duplicated spaces, leading/trailing blanks and convert all words to lowercase. |
+| wer(reference, hypothesis)  | Calculate the overall Word Error Rate for the entire reference and hypothesis texts. |
+| wers(reference, hypothesis)  | Calculates a list of the Word Error Rates for each of the reference and hypothesis texts. |
+| werp(reference, hypothesis)  | Calculates a weighted Word Error Rate for the entire reference and hypothesis texts. |
+| werps(reference, hypothesis)  | Calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts. |
+| summary(reference, hypothesis)  | Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors. |
+
+
+## Usage
+**Import the werpy package**
+```python
+>>> import werpy
+```
+
+**Example 1 - Normalize a list of text**
+```python
+>>> input_data = ["It's very popular in Antarctica.","The Sugar Bear character"]
+>>> reference = werpy.normalize(input_data)
+>>> print(reference)
+['its very popular in antarctica', 'the sugar bear character']
+```
+
+**Example 2 - Calculate the overall Word Error Rate on a set of strings**
+```python
+>>> wer = werpy.wer('i love cold pizza', 'i love pizza')
+>>> print(wer)
+0.25
+```
+
+**Example 3 - Calculate the overall Word Error Rate on a set of lists**
+```python
+>>> ref = ['i love cold pizza','the sugar bear character was popular']
+>>> hyp = ['i love pizza','the sugar bare character was popular']
+>>> wer = werpy.wer(ref, hyp)
+>>> print(wer)
+0.2
+```
+
+## Dependencies
+ - <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
+ - <a href="https://pandas.pydata.org/">Pandas</a> - A fast, powerful, flexible and easy to use open source data analysis and manipulation tool
+
 ## Licensing
 
 ``werpy`` is released under the terms of the BSD 3-Clause License. Please refer to the LICENSE file for full details.
@@ -33,6 +79,6 @@ The full NumPy and Pandas licenses can be found in the <a href="https://github.c
 
 They can also be found directly in the following source codes:
 
- - Numpy - <a href="https://github.com/numpy/numpy/blob/main/LICENSE.txt">https://github.com/numpy/numpy/blob/main/LICENSE.txt</a>
+ - NumPy - <a href="https://github.com/numpy/numpy/blob/main/LICENSE.txt">https://github.com/numpy/numpy/blob/main/LICENSE.txt</a>
  - Pandas - <a href="https://github.com/pandas-dev/pandas/blob/main/LICENSE">https://github.com/pandas-dev/pandas/blob/main/LICENSE</a>
 
