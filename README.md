@@ -92,6 +92,16 @@ The following table provides an overview of the functions that can be used in we
 [0.21428571428571427, 0.2777777777777778]
 ```
 
+**Example 7 - Provide a complete breakdown of the Word Error Rate calculations for each of the reference and hypothesis texts**
+```python
+>>> ref = ['it is consumed domestically and exported to other countries', 'rufino street in makati right inside the makati central business district', 'its estuary is considered to have abnormally low rates of dissolved oxygen', 'he later cited his first wife anita as the inspiration for the song', 'no one else could claim that']
+>>> hyp = ['it is consumed domestically and exported to other countries', 'rofino street in mccauti right inside the macasi central business district', 'its estiary is considered to have a normally low rates of dissolved oxygen', 'he later sighted his first wife anita as the inspiration for the song', 'no one else could claim that']
+>>> summary = werpy.summary(ref, hyp)
+>>> print(summary)
+```
+
+
+
 ## Dependencies
  - <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
  - <a href="https://pandas.pydata.org/">Pandas</a> - A fast, powerful, flexible and easy to use open source data analysis and manipulation tool
