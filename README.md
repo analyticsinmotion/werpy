@@ -104,7 +104,7 @@ The following table provides an overview of the functions that can be used in we
 
 ## Dependencies
  - <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
- - <a href="https://pandas.pydata.org/">Pandas</a> - A fast, powerful, flexible and easy to use open source data analysis and manipulation tool
+ - <a href="https://pandas.pydata.org/">Pandas</a> - Powerful data structures for data analysis, time series, and statistics
 
 ## Licensing
 
