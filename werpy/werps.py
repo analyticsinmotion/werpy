@@ -1,5 +1,4 @@
 import numpy as np
-from metrics import metrics
 
 
 def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1):

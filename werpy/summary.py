@@ -1,5 +1,4 @@
 import pandas as pd
-from metrics import metrics
 
 
 def summary(reference, hypothesis):
