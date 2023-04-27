@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "werpy"
+version = "0.0.1"
+authors = [
+  { name="Ross Armstrong", email="ross.armstrong@analyticsinmotion.com" },
+]
+description = "A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER)."
+readme = "README.md"
+license = "BSD"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/analyticsinmotion/werpy"
+"Bug Tracker" = "https://github.com/analyticsinmotion/werpy/issues"
+
+keywords = [
+    "wer",
+    "word error rate",
+    "python",
+    "Python package",
+    "stt",
+    "speech to text",
+    "levenstein distance",
+    "nlp"
+]
+
+dependencies = [
+  "numpy>=1.22.0",
+  "pandas>=1.4.0"
+]
+
