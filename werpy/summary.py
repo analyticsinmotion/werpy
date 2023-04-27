@@ -4,7 +4,8 @@ from metrics import metrics
 
 def summary(reference, hypothesis):
     """
-    This function
+    This function provides a comprehensive breakdown of the calculated results including the WER, Levenshtein 
+    Distance and all the insertion, deletion and substitution errors.
 
     Parameters
     ----------
