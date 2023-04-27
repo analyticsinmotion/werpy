@@ -1,4 +1,5 @@
 import numpy as np
+import werpy
 
 
 def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1):
@@ -47,7 +48,7 @@ def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substi
     [0.21428571428571427, 0.2777777777777778]
     """
     try:
-        word_error_rate_breakdown = metrics(reference, hypothesis)
+        word_error_rate_breakdown = werpy.metrics(reference, hypothesis)
     except ValueError:
         print("ValueError: The Reference and Hypothesis input parameters must have the same number of elements.")
     except AttributeError:

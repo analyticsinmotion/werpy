@@ -1,4 +1,5 @@
 import pandas as pd
+import werpy
 
 
 def summary(reference, hypothesis):
@@ -36,7 +37,7 @@ def summary(reference, hypothesis):
             word and the hypothesis word. For example: [(cited, sighted), (abnormally, normally)]
     """
     try:
-        word_error_rate_breakdown = metrics(reference, hypothesis)
+        word_error_rate_breakdown = werpy.metrics(reference, hypothesis)
     except ValueError:
         print("ValueError: The Reference and Hypothesis input parameters must have the same number of elements.")
     except AttributeError:
