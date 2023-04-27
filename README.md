@@ -17,7 +17,7 @@ This project is licensed under the BSD 3-Clause license.
 
 This project also includes third-party packages distributed under the BSD-3-Clause license, including NumPy and Pandas.
 
-The full text of the NumPy and Pandas licenses can be found in the LICENSES_bundles.txt in this repository. 
+The full text of the NumPy and Pandas licenses can be found in the LICENSES directory in this repository. 
 
 They can also be found directly in the following source codes:
 
