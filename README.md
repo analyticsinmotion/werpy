@@ -99,7 +99,7 @@ The following table provides an overview of the functions that can be used in we
 >>> summary = werpy.summary(ref, hyp)
 >>> print(summary)
 ```
-
+<img src=".github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png" width=100% height=100%>
 
 
 ## Dependencies
