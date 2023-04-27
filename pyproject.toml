@@ -10,7 +10,7 @@ authors = [
 ]
 description = "A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER)."
 readme = "README.md"
-license = "BSD"
+license = "BSD-3-Clause"
 requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -18,10 +18,6 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: OS Independent",
 ]
-
-[project.urls]
-"Homepage" = "https://github.com/analyticsinmotion/werpy"
-"Bug Tracker" = "https://github.com/analyticsinmotion/werpy/issues"
 
 keywords = [
     "wer",
@@ -39,3 +35,7 @@ dependencies = [
   "pandas>=1.4.0"
 ]
 
+
+[project.urls]
+"Homepage" = "https://github.com/analyticsinmotion/werpy"
+"Bug Tracker" = "https://github.com/analyticsinmotion/werpy/issues"
