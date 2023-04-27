@@ -1,8 +1,12 @@
 # werPy - Word Error Rate for Python
+Rapidly calculate and analyze the Word Error Rate (WER) with this powerful yet lightweight Python package.
+<br /><br />
 
-
-Word Error Rate for Python
-
+<!-- badges: start -->
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg?logo=python&logoColor=ffdd54)](https://www.python.org/downloads/release/python-3111/)&nbsp;&nbsp;
+![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)&nbsp;&nbsp;
+[![werpy License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/analyticsinmotion/werpy/blob/main/LICENSE)&nbsp;&nbsp;
+<!-- badges: end -->
 
 
 
