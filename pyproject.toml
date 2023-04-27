@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "werpy"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Ross Armstrong", email="ross.armstrong@analyticsinmotion.com" },
 ]
@@ -26,12 +26,13 @@ keywords = [
     "python package",
     "stt",
     "speech to text",
-    "levenstein distance",
+    "levenshtein distance",
     "nlp"
 ]
 
 dependencies = [
-  "numpy>=1.20.0",
+  "numpy>=1.21.6; python_version<'3.11'",
+  "numpy>=1.23.2; python_version>='3.11'",
   "pandas>=1.3.0"
 ]
 
