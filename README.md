@@ -8,7 +8,7 @@
 
 ## What is it?
 **werpy** is a powerful yet lightweight Python package that rapidly calculates and analyzes the Word Error Rate (WER) between two sets of text. 
-It has been designed with the flexibility to handle multiple input data types such as strings, lists and numpy arrays.
+It has been designed with the flexibility to handle multiple input data types such as strings, lists and numpy arrays.<br />
 The package also includes a full set of features such as normalizing the input text to account for data collection variability and the capability to easily assign different weights/penalties to specific error classifications (insertions, deletions, and substitutions).
 Additionally, the summary function provides a comprehensive breakdown of the calculated results to assist in analyzing the specific errors quickly and in more detail.
 <br />
