@@ -100,7 +100,12 @@ The following table provides an overview of the functions that can be used in we
 >>> print(summary)
 ```
 <!-- <img src=".github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png" width=100% height=100%> -->
-<img src="https://github.com/analyticsinmotion/werpy/blob/main/.github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png" width=100% height=100%>
+<!-- <img src="https://github.com/analyticsinmotion/werpy/blob/main/.github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png" width=100% height=100%> -->
+<!-- ![werpy summary DataFrame](.github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png)-->
+
+![werpy-example-summary-results-word-error-rate-breakdown](https://user-images.githubusercontent.com/52817125/234950114-7efcce9b-7a76-4413-830f-7deda20cad75.png)
+
+
 
 ## Dependencies
  - <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
