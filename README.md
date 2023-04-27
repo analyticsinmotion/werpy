@@ -65,6 +65,33 @@ The following table provides an overview of the functions that can be used in we
 0.2
 ```
 
+**Example 4 - Calculate the Word Error Rates for each set of texts**
+```python
+>>> ref = ['no one else could claim that','she cited multiple reasons why']
+>>> hyp = ['no one else could claim that','she sighted multiple reasons why']
+>>> wers = werpy.wers(ref, hyp)
+>>> print(wers)
+[0.0, 0.2]
+```
+
+**Example 5 - Calculate the weighted Word Error Rates for the entire set of text**
+```python
+>>> ref = ['it was beautiful and sunny today']
+>>> hyp = ['it was a beautiful and sunny day']
+>>> werp = werpy.werp(ref, hyp, insertions_weight=0.5, deletions_weight=0.5, substitutions_weight=1)
+>>> print(werp)
+0.25
+```
+
+**Example 6 - Calculate a list of weighted Word Error Rates for each of the reference and hypothesis texts**
+```python
+>>> ref = ['it blocked sight lines of central park', 'her father was an alderman in the city government']
+>>> hyp = ['it blocked sightlines of central park', 'our father was an elder man in the city government']
+>>> werps = werpy.werps(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
+>>> print(werps)
+[0.21428571428571427, 0.2777777777777778]
+```
+
 ## Dependencies
  - <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
  - <a href="https://pandas.pydata.org/">Pandas</a> - A fast, powerful, flexible and easy to use open source data analysis and manipulation tool
