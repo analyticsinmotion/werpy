@@ -21,4 +21,5 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         #pylint $(git ls-files '*.py')
-        pylint --max-line-length=120 $(git ls-files '*.py')
+        #pylint --max-line-length=120 $(git ls-files '*.py')
+        pylint --max-line-length=120 --good-names=m,n,ld,df $(git ls-files '*.py')
