@@ -1,13 +1,15 @@
 
 ![werpy-logo-word-error-rate](https://user-images.githubusercontent.com/52817125/235063664-2f21629c-0fad-46b6-a487-c2b5ef6f80e9.png)
-# werpy - Word Error Rate for Python
+# werpy (Word Error Rate for Python)
 <!-- badges: start -->
 [![Python Version](https://img.shields.io/badge/python-3.8%7C3.9%7C3.10%7C3.11-blue?logo=python&logoColor=ffdd54)](https://www.python.org/downloads/)&nbsp;&nbsp;
 [![werpy License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/analyticsinmotion/werpy/blob/main/LICENSE)&nbsp;&nbsp;
 ![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)&nbsp;&nbsp;
+<!-- [![CodeQL](https://github.com/analyticsinmotion/werpy/actions/workflows/codeql.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/codeql.yml)&nbsp;&nbsp; -->
+<!-- [![Codacy Security Scan](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml)&nbsp;&nbsp; -->
 <!-- badges: end -->
 
-## What is it?
+## What is werpy?
 **werpy** is a powerful yet lightweight Python package that rapidly calculates and analyzes the Word Error Rate (WER) between two sets of text. 
 It has been designed with the flexibility to handle multiple input data types such as strings, lists and numpy arrays.<br />
 
@@ -19,7 +21,7 @@ Additionally, the summary function provides a comprehensive breakdown of the cal
 You can install the latest **werpy** release with Python's pip package manager:
 
 ```python
-# install werpy via PyPi
+# Install werpy from PyPi
 pip install werpy
 ```
 
@@ -38,74 +40,123 @@ The following table provides an overview of the functions that can be used in we
 
 ## Usage
 **Import the werpy package**
+
+*Python Code:*
 ```python
->>> import werpy
+import werpy
 ```
+<br />
 
 **Example 1 - Normalize a list of text**
+
+*Python Code:*
 ```python
->>> input_data = ["It's very popular in Antarctica.","The Sugar Bear character"]
->>> reference = werpy.normalize(input_data)
->>> print(reference)
+input_data = ["It's very popular in Antarctica.","The Sugar Bear character"]
+reference = werpy.normalize(input_data)
+print(reference)
+```
+
+*Results Output:*
+```
 ['its very popular in antarctica', 'the sugar bear character']
 ```
+<br />
 
 **Example 2 - Calculate the overall Word Error Rate on a set of strings**
+
+*Python Code:*
 ```python
->>> wer = werpy.wer('i love cold pizza', 'i love pizza')
->>> print(wer)
+wer = werpy.wer('i love cold pizza', 'i love pizza')
+print(wer)
+```
+
+*Results Output:*
+```
 0.25
 ```
+<br />
 
 **Example 3 - Calculate the overall Word Error Rate on a set of lists**
+
+*Python Code:*
 ```python
->>> ref = ['i love cold pizza','the sugar bear character was popular']
->>> hyp = ['i love pizza','the sugar bare character was popular']
->>> wer = werpy.wer(ref, hyp)
->>> print(wer)
+ref = ['i love cold pizza','the sugar bear character was popular']
+hyp = ['i love pizza','the sugar bare character was popular']
+wer = werpy.wer(ref, hyp)
+print(wer)
+```
+
+*Results Output:*
+```
 0.2
 ```
+<br />
 
 **Example 4 - Calculate the Word Error Rates for each set of texts**
+
+*Python Code:*
 ```python
->>> ref = ['no one else could claim that','she cited multiple reasons why']
->>> hyp = ['no one else could claim that','she sighted multiple reasons why']
->>> wers = werpy.wers(ref, hyp)
->>> print(wers)
+ref = ['no one else could claim that','she cited multiple reasons why']
+hyp = ['no one else could claim that','she sighted multiple reasons why']
+wers = werpy.wers(ref, hyp)
+print(wers)
+```
+
+*Results Output:*
+```
 [0.0, 0.2]
 ```
+<br />
 
 **Example 5 - Calculate the weighted Word Error Rates for the entire set of text**
+
+*Python Code:*
 ```python
->>> ref = ['it was beautiful and sunny today']
->>> hyp = ['it was a beautiful and sunny day']
->>> werp = werpy.werp(ref, hyp, insertions_weight=0.5, deletions_weight=0.5, substitutions_weight=1)
->>> print(werp)
+ref = ['it was beautiful and sunny today']
+hyp = ['it was a beautiful and sunny day']
+werp = werpy.werp(ref, hyp, insertions_weight=0.5, deletions_weight=0.5, substitutions_weight=1)
+print(werp)
+```
+
+*Results Output:*
+```
 0.25
 ```
+<br />
 
 **Example 6 - Calculate a list of weighted Word Error Rates for each of the reference and hypothesis texts**
+
+*Python Code:*
 ```python
->>> ref = ['it blocked sight lines of central park', 'her father was an alderman in the city government']
->>> hyp = ['it blocked sightlines of central park', 'our father was an elder man in the city government']
->>> werps = werpy.werps(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
->>> print(werps)
-[0.21428571428571427, 0.2777777777777778]
+ref = ['it blocked sight lines of central park', 'her father was an alderman in the city government']
+hyp = ['it blocked sightlines of central park', 'our father was an elder man in the city government']
+werps = werpy.werps(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
+print(werps)
 ```
 
-**Example 7 - Provide a complete breakdown of the Word Error Rate calculations for each of the reference and hypothesis texts**
-```python
->>> ref = ['it is consumed domestically and exported to other countries', 'rufino street in makati right inside the makati central business district', 'its estuary is considered to have abnormally low rates of dissolved oxygen', 'he later cited his first wife anita as the inspiration for the song', 'no one else could claim that']
->>> hyp = ['it is consumed domestically and exported to other countries', 'rofino street in mccauti right inside the macasi central business district', 'its estiary is considered to have a normally low rates of dissolved oxygen', 'he later sighted his first wife anita as the inspiration for the song', 'no one else could claim that']
->>> summary = werpy.summary(ref, hyp)
->>> print(summary)
+*Results Output:*
 ```
+[0.21428571428571427, 0.2777777777777778]
+```
+<br />
+
+**Example 7 - Provide a complete breakdown of the Word Error Rate calculations for each of the reference and hypothesis texts**
+
+*Python Code:*
+```python
+ref = ['it is consumed domestically and exported to other countries', 'rufino street in makati right inside the makati central business district', 'its estuary is considered to have abnormally low rates of dissolved oxygen', 'he later cited his first wife anita as the inspiration for the song', 'no one else could claim that']
+hyp = ['it is consumed domestically and exported to other countries', 'rofino street in mccauti right inside the macasi central business district', 'its estiary is considered to have a normally low rates of dissolved oxygen', 'he later sighted his first wife anita as the inspiration for the song', 'no one else could claim that']
+summary = werpy.summary(ref, hyp)
+print(summary)
+```
+
+*Results Output:*
 <!-- <img src=".github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png" width=100% height=100%> -->
 <!-- <img src="https://github.com/analyticsinmotion/werpy/blob/main/.github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png" width=100% height=100%> -->
 <!-- ![werpy summary DataFrame](.github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png)-->
 
 ![werpy-example-summary-results-word-error-rate-breakdown](https://user-images.githubusercontent.com/52817125/234950114-7efcce9b-7a76-4413-830f-7deda20cad75.png)
-
+<br />
 
 
 ## Dependencies
@@ -114,7 +165,7 @@ The following table provides an overview of the functions that can be used in we
 
 ## Licensing
 
-``werpy`` is released under the terms of the BSD 3-Clause License. Please refer to the LICENSE file for full details.
+``werpy`` is released under the terms of the BSD 3-Clause License. Please refer to the <a href="https://github.com/analyticsinmotion/werpy/blob/main/LICENSE">LICENSE</a> file for full details.
 
 This project also includes third-party packages distributed under the BSD-3-Clause license, including NumPy and Pandas.
 
