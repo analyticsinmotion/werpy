@@ -1,3 +1,7 @@
+"""
+The werpy package provides tools for calculating word error rates (WERs) and related metrics on text data.
+"""
+
 from .normalize import normalize
 from .metrics import metrics
 from .wer import wer

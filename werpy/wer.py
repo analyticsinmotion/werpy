@@ -1,3 +1,12 @@
+"""
+This module provides a function for calculating the Word Error Rate (WER) between a reference text and a hypothesis 
+text. The WER is calculated as the number of edits (insertions, deletions, and substitutions) needed to transform 
+the hypothesis text into the reference text, divided by the number of words in the reference text.
+
+This module defines the following function:
+    - wer(reference, hypothesis): Calculate the WER between a reference text and a hypothesis text.
+"""
+
 import numpy as np
 import werpy
 
@@ -46,7 +55,7 @@ def wer(reference, hypothesis) -> float:
         print("AttributeError: All text should be in a string format. Please check your input does not include any "
               "Numeric data types.")
     else:
-        if type(word_error_rate_breakdown[0]) == np.ndarray:
+        if isinstance(word_error_rate_breakdown[0], np.ndarray):
             transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
             wer_result = (np.sum(transform_word_error_rate_breakdown[1])) / (np.sum(transform_word_error_rate_breakdown[
                                                                                      2]))

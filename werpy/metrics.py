@@ -1,3 +1,17 @@
+"""
+This module contains two functions: calculations and metrics. The calculations function takes two input sequences (
+reference and hypothesis) and returns a ragged array containing the word error rate (WER), Levenshtein distance (LD), 
+number of words in the reference sequence, counts of insertions, deletions and substitutions, as well as lists of 
+inserted, deleted and substituted words. The metrics function applies vectorization to the calculations function, 
+enabling it to take in multiple values for reference and hypothesis in the form of lists or numpy arrays.
+
+Functions:
+- calculations(reference, hypothesis) -> np.ndarray: Calculates WER and related metrics for two input sequences and 
+returns a ragged array containing the metrics.
+- metrics(reference, hypothesis) -> np.ndarray: Applies vectorization to the calculations function to calculate WER 
+and related metrics for multiple pairs of input sequences.
+"""
+
 import numpy as np
 
 

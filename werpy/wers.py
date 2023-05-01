@@ -1,3 +1,12 @@
+"""
+This module provides a function for calculating a list of the Word Error Rates for each of the reference and
+hypothesis texts.
+
+This module defines the following function:
+    - wers(reference, hypothesis)
+"""
+
+
 import numpy as np
 import werpy
 
@@ -43,7 +52,7 @@ def wers(reference, hypothesis):
         print("AttributeError: All text should be in a string format. Please check your input does not include any "
               "Numeric data types.")
     else:
-        if type(word_error_rate_breakdown[0]) == np.ndarray:
+        if isinstance(word_error_rate_breakdown[0], np.ndarray):
             transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
             wers_result = transform_word_error_rate_breakdown[0].tolist()
         else:

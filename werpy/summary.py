@@ -1,3 +1,11 @@
+"""
+This module provides a summary function to display a complete breakdown of the calculated results, returned in a 
+DataFrame.
+
+This module defines the following function:
+    - summary(reference, hypothesis)
+"""
+
 import pandas as pd
 import werpy
 

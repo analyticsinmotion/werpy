@@ -1,3 +1,10 @@
+"""
+The Normalize module provides preprocessing methods for normalizing text input to be optimal for the Word Error Rate
+(WER) function. The class contains methods for removing punctuation, converting text to lowercase, replacing double
+spaces with a single space, and removing leading and trailing spaces. The apply_normalization method applies all the 
+normalization methods and returns the normalized input as a numpy array.
+"""
+
 import numpy as np
 
 

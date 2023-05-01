@@ -1,3 +1,11 @@
+"""
+This module provides a function to calculate a weighted Word Error Rate for the entire reference and hypothesis 
+texts. It allows varying weights to be assigned to the insertion, deletion and substitution errors.
+
+This module defines the following function:
+    - werp(reference, hypothesis)
+"""
+
 import numpy as np
 import werpy
 
@@ -62,7 +70,7 @@ def werp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substit
             "AttributeError: All text should be in a string format. Please check your input does not include any "
             "Numeric data types.")
     else:
-        if type(word_error_rate_breakdown[0]) == np.ndarray:
+        if isinstance(word_error_rate_breakdown[0], np.ndarray):
             transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
             weighted_insertions = transform_word_error_rate_breakdown[3] * insertions_weight
             weighted_deletions = transform_word_error_rate_breakdown[4] * deletions_weight

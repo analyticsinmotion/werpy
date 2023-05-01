@@ -1,0 +1,6 @@
+{
+    "pylint.args": [
+        "--max-line-length=120",
+        "--good-names=i,j,m,n,ld,df "
+    ]
+}
