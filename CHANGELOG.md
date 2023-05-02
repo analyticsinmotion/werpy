@@ -4,7 +4,17 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
-## Version 0.0.2 (Latest) 
+## Version 0.0.3 (Latest) 
+**Releasd:** May 2, 2023<br />
+**Tag:** v0.0.3
+
+### Bug Fix
+
+  - Fixed a bug contained within the modules that was causing a Cyclic Import issue (R0401). One of the import statements was missing a period at the start of the module name. The fix has been tested and deployed successfully.
+
+<br /><br />
+
+## Version 0.0.2 
 **Releasd:** May 1, 2023<br />
 **Tag:** v0.0.2
 
