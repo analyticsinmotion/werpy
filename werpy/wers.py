@@ -8,7 +8,7 @@ This module defines the following function:
 
 
 import numpy as np
-import werpy
+from .metrics import metrics
 
 
 def wers(reference, hypothesis):
@@ -45,7 +45,7 @@ def wers(reference, hypothesis):
     """
 
     try:
-        word_error_rate_breakdown = werpy.metrics(reference, hypothesis)
+        word_error_rate_breakdown = metrics(reference, hypothesis)
     except ValueError:
         print("ValueError: The Reference and Hypothesis input parameters must have the same number of elements.")
     except AttributeError:
