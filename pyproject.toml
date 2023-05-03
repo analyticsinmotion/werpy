@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "werpy"
-version = "0.0.3"
+version = "0.0.4"
 authors = [
   { name="Ross Armstrong", email="ross.armstrong@analyticsinmotion.com" },
 ]
@@ -17,6 +17,7 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Natural Language :: English",
     "Operating System :: OS Independent",
+    "Development Status :: 5 - Production/Stable"
 ]
 
 keywords = [
@@ -25,9 +26,10 @@ keywords = [
     "python",
     "python package",
     "stt",
-    "speech to text",
+    "speech-to-text",
     "levenshtein distance",
-    "nlp"
+    "nlp",
+    "metrics"
 ]
 
 dependencies = [
