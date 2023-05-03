@@ -7,7 +7,7 @@ This module defines the following function:
 """
 
 import numpy as np
-from .metrics import metrics
+from .errorhandler import error_handler
 
 
 def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1):
@@ -56,30 +56,26 @@ def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substi
     [0.21428571428571427, 0.2777777777777778]
     """
     try:
-        word_error_rate_breakdown = metrics(reference, hypothesis)
-    except ValueError:
-        print("ValueError: The Reference and Hypothesis input parameters must have the same number of elements.")
-    except AttributeError:
-        print(
-            "AttributeError: All text should be in a string format. Please check your input does not include any "
-            "Numeric data types.")
+        word_error_rate_breakdown = error_handler(reference, hypothesis)
+    except (ValueError, AttributeError) as err:
+        print(f"{type(err).__name__}: {str(err)}")
+        return None
+    if isinstance(word_error_rate_breakdown[0], np.ndarray):
+        transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
+        weighted_insertions = transform_word_error_rate_breakdown[3] * insertions_weight
+        weighted_deletions = transform_word_error_rate_breakdown[4] * deletions_weight
+        weighted_substitutions = transform_word_error_rate_breakdown[5] * substitutions_weight
+        m = transform_word_error_rate_breakdown[2]
     else:
-        if isinstance(word_error_rate_breakdown[0], np.ndarray):
-            transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
-            weighted_insertions = transform_word_error_rate_breakdown[3] * insertions_weight
-            weighted_deletions = transform_word_error_rate_breakdown[4] * deletions_weight
-            weighted_substitutions = transform_word_error_rate_breakdown[5] * substitutions_weight
-            m = transform_word_error_rate_breakdown[2]
-        else:
-            weighted_insertions = word_error_rate_breakdown[3] * insertions_weight
-            weighted_deletions = word_error_rate_breakdown[4] * deletions_weight
-            weighted_substitutions = word_error_rate_breakdown[5] * substitutions_weight
-            m = word_error_rate_breakdown[2]
+        weighted_insertions = word_error_rate_breakdown[3] * insertions_weight
+        weighted_deletions = word_error_rate_breakdown[4] * deletions_weight
+        weighted_substitutions = word_error_rate_breakdown[5] * substitutions_weight
+        m = word_error_rate_breakdown[2]
 
-        weighted_errors = sum((weighted_insertions, weighted_deletions, weighted_substitutions))
-        werps_result = weighted_errors / m
+    weighted_errors = sum((weighted_insertions, weighted_deletions, weighted_substitutions))
+    werps_result = weighted_errors / m
 
-        if word_error_rate_breakdown[0].size == 1:
-            return werps_result
-        else:
-            return werps_result.tolist()
+    if word_error_rate_breakdown[0].size == 1:
+        return werps_result
+
+    return werps_result.tolist()
