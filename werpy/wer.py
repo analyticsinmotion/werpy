@@ -52,12 +52,10 @@ def wer(reference, hypothesis) -> float:
     except (ValueError, AttributeError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
-    
     if isinstance(word_error_rate_breakdown[0], np.ndarray):
         transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
         wer_result = (np.sum(transform_word_error_rate_breakdown[1])) / (np.sum(transform_word_error_rate_breakdown[
                                                                                      2]))
     else:
-        wer_result = word_error_rate_breakdown[0]
-        
+        wer_result = word_error_rate_breakdown[0] 
     return wer_result
