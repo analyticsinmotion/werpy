@@ -57,5 +57,5 @@ def wer(reference, hypothesis) -> float:
         wer_result = (np.sum(transform_word_error_rate_breakdown[1])) / (np.sum(transform_word_error_rate_breakdown[
                                                                                      2]))
     else:
-        wer_result = word_error_rate_breakdown[0] 
+        wer_result = word_error_rate_breakdown[0]
     return wer_result
