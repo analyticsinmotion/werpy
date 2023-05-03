@@ -150,12 +150,14 @@ def normalize(text):
     """
     try:
         vectorize_instantiate_normalize_class = np.vectorize(instantiate_normalize_class)
-        return vectorize_instantiate_normalize_class(text).tolist()
     except TypeError as err:
         print("TypeError:", err,
               "\nAll text should be in a str(string) format. "
               "Please check your input does not include any Numeric Data Types such as int, float or complex.")
+        return None
     except AttributeError:
         print(
             "AttributeError: "
             "The normalization method cannot be executed if data input is not a String, List or Numpy Array")
+        return None
+    return vectorize_instantiate_normalize_class(text).tolist()
