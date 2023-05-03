@@ -7,7 +7,7 @@ This module defines the following function:
 """
 
 import pandas as pd
-from .metrics import metrics
+from .errorhandler import error_handler
 
 
 def summary(reference, hypothesis):
@@ -45,18 +45,15 @@ def summary(reference, hypothesis):
             word and the hypothesis word. For example: [(cited, sighted), (abnormally, normally)]
     """
     try:
-        word_error_rate_breakdown = metrics(reference, hypothesis)
-    except ValueError:
-        print("ValueError: The Reference and Hypothesis input parameters must have the same number of elements.")
-    except AttributeError:
-        print("AttributeError: All text should be in a string format. Please check your input does not include any "
-              "Numeric data types.")
+        word_error_rate_breakdown = error_handler(reference, hypothesis)
+    except (ValueError, AttributeError) as err:
+        print(f"{type(err).__name__}: {str(err)}")
+        return None
+    if word_error_rate_breakdown[0].size == 1:
+        word_error_rate_breakdown = [word_error_rate_breakdown.tolist()]
     else:
-        if word_error_rate_breakdown[0].size == 1:
-            word_error_rate_breakdown = [word_error_rate_breakdown.tolist()]
-        else:
-            word_error_rate_breakdown = word_error_rate_breakdown.tolist()
-        columns = ['wer', 'ld', 'm', 'insertions', 'deletions', 'substitutions', 'inserted_words', 'deleted_words',
+        word_error_rate_breakdown = word_error_rate_breakdown.tolist()
+    columns = ['wer', 'ld', 'm', 'insertions', 'deletions', 'substitutions', 'inserted_words', 'deleted_words',
                    'substituted_words']
-        df = pd.DataFrame(word_error_rate_breakdown, columns=columns)
-        return df
+    df = pd.DataFrame(word_error_rate_breakdown, columns=columns)
+    return df
