@@ -22,4 +22,4 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         #pylint $(git ls-files '*.py')
-        pylint --max-line-length=120 --good-names=i,j,m,n,ld,df --score=8.5 $(git ls-files '*.py')
+        pylint --max-line-length=120 --good-names=i,j,m,n,ld,df --fail-under=8.5 $(git ls-files '*.py')
