@@ -8,7 +8,7 @@ This module defines the following function:
 """
 
 import numpy as np
-from .metrics import metrics
+from .errorhandler import error_handler
 
 
 def wer(reference, hypothesis) -> float:
@@ -48,12 +48,9 @@ def wer(reference, hypothesis) -> float:
     0.2
     """
     try:
-        word_error_rate_breakdown = metrics(reference, hypothesis)
-    except ValueError:
-        print("ValueError: The Reference and Hypothesis input parameters must have the same number of elements.")
-    except AttributeError:
-        print("AttributeError: All text should be in a string format. Please check your input does not include any "
-              "Numeric data types.")
+        word_error_rate_breakdown = error_handler(reference, hypothesis)
+    except (ValueError, AttributeError) as err:
+        print(f"{type(err).__name__}: {str(err)}")
     else:
         if isinstance(word_error_rate_breakdown[0], np.ndarray):
             transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
