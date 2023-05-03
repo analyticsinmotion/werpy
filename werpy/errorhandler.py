@@ -38,5 +38,4 @@ def error_handler(reference, hypothesis):
     except AttributeError as exc:
         raise AttributeError("All text should be in a string format. Please check your input does not include any "
                              "Numeric data types.") from exc
-    else:
-        return word_error_rate_breakdown
+    return word_error_rate_breakdown
