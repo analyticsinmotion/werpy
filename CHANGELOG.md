@@ -4,7 +4,22 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
-## Version 0.0.3 (Latest) 
+## Version 0.0.4 (Latest) 
+**Releasd:** May 4, 2023<br />
+**Tag:** v0.0.4
+
+### Enhancements
+
+  - The code to handle exceptions and errors has been refactored to reduce code duplication across modules. In addition, the changes will make adding and testing errors or exceptions easier to maintain in the future.
+
+
+### Bug Fix
+
+  - Fixed a number of inconsistent return statements (R1710) within the package modules. This ensures that all functions will return a consistent expression when called.
+
+<br /><br />
+
+## Version 0.0.3
 **Releasd:** May 2, 2023<br />
 **Tag:** v0.0.3
 
