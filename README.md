@@ -8,6 +8,7 @@
 [![CodeQL](https://github.com/analyticsinmotion/werpy/actions/workflows/codeql.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/codeql.yml)&nbsp;&nbsp;
 [![Codacy Security Scan](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml)&nbsp;&nbsp;
 [![Pylint](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml)&nbsp;&nbsp;
+[![Bandit](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml)&nbsp;&nbsp;
 <!-- badges: end -->
 
 ## What is werpy?
@@ -18,15 +19,7 @@ The package also includes a full set of features such as normalizing the input t
 Additionally, the summary function provides a comprehensive breakdown of the calculated results to assist in analyzing the specific errors quickly and in more detail.
 <br />
 
-## Installation
-You can install the latest **werpy** release with Python's pip package manager:
-
-```python
-# Install werpy from PyPi
-pip install werpy
-```
-
-## Main Functions
+## Functions available in werpy
 The following table provides an overview of the functions that can be used in werpy.
 
 | Function  | Description | 
@@ -37,6 +30,15 @@ The following table provides an overview of the functions that can be used in we
 | werp(reference, hypothesis)  | Calculates a weighted Word Error Rate for the entire reference and hypothesis texts. |
 | werps(reference, hypothesis)  | Calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts. |
 | summary(reference, hypothesis)  | Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors. |
+
+
+## Installation
+You can install the latest **werpy** release with Python's pip package manager:
+
+```python
+# Install werpy from PyPi
+pip install werpy
+```
 
 
 ## Usage
