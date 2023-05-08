@@ -9,6 +9,8 @@
 [![Codacy Security Scan](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml)&nbsp;&nbsp;
 [![Pylint](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml)&nbsp;&nbsp;
 [![Bandit](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml)&nbsp;&nbsp;
+[![Pypi](https://img.shields.io/pypi/v/werpy)](https://pypi.org/project/werpy/)&nbsp;&nbsp;
+
 <!-- badges: end -->
 
 ## What is werpy?
