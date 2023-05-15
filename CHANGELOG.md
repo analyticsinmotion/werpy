@@ -10,12 +10,12 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ### Enhancements
 
-  - The code to handle exceptions and errors has been refactored to reduce code duplication across modules. In addition, the changes will make adding and testing errors or exceptions easier to maintain in the future.
+- The code to handle exceptions and errors has been refactored to reduce code duplication across modules. In addition, the changes will make adding and testing errors or exceptions easier to maintain in the future.
 
 
 ### Bug Fix
 
-  - Fixed a number of inconsistent return statements (R1710) within the package modules. This ensures that all functions will return a consistent expression when called.
+- Fixed a number of inconsistent return statements (R1710) within the package modules. This ensures that all functions will return a consistent expression when called.
 
 <br /><br />
 
@@ -25,7 +25,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ### Bug Fix
 
-  - Fixed a bug contained within the modules that was causing a Cyclic Import issue (R0401). One of the import statements was missing a period at the start of the module name. The fix has been tested and deployed successfully.
+- Fixed a bug contained within the modules that was causing a Cyclic Import issue (R0401). One of the import statements was missing a period at the start of the module name. The fix has been tested and deployed successfully.
 
 <br /><br />
 
@@ -35,12 +35,12 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ### General Changes
 
-  - Added Module Docstrings
+- Added Module Docstrings
 
 
 ### Bug Fix
 
-  - Fixed an unidiomatic-typecheck (C0123) from type() to isinstance(). The idiomatic way to perform an explicit typecheck in Python is to use isinstance(x, y) rather than type(x) == Y.
+- Fixed an unidiomatic-typecheck (C0123) from type() to isinstance(). The idiomatic way to perform an explicit typecheck in Python is to use isinstance(x, y) rather than type(x) == Y.
 
 <br /><br />
 ## Version 0.0.1 (Initial Release)
