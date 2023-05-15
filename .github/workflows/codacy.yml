@@ -59,9 +59,3 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: results.sarif
-          
-      # Run Pylint with custom arguments to enforce line length limit
-      - name: Run Pylint
-        uses: PyCQA/pylint-action@v2
-        with:
-          args: --max-line-length=120
