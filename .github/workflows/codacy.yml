@@ -37,11 +37,6 @@ jobs:
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout code
         uses: actions/checkout@v3
-        
-      # Modify PyLint configuration
-      - name: Configure PyLint
-        run: |
-          echo "max-line-length=120" >> ~/.pylintrc
 
       # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
       - name: Run Codacy Analysis CLI
