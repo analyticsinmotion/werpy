@@ -25,14 +25,6 @@ on:
 permissions:
   contents: read
 
-
-# Change pylint rule ID: PyLintPython3_C0301 to increase max line length from 100 to 120
-tools:
-  pylint:
-    config:
-      C0301_max_line_length: 120
-
-
 jobs:
   codacy-security-scan:
     permissions:
@@ -45,6 +37,11 @@ jobs:
       # Checkout the repository to the GitHub Actions runner
       - name: Checkout code
         uses: actions/checkout@v3
+        
+      # Modify PyLint configuration
+      - name: Configure PyLint
+        run: |
+          echo "max-line-length=120" >> ~/.pylintrc
 
       # Execute Codacy Analysis CLI and generate a SARIF output with the security issues identified during the analysis
       - name: Run Codacy Analysis CLI
