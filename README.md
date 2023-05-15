@@ -165,8 +165,8 @@ print(summary)
 
 
 ## Dependencies
- - <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
- - <a href="https://pandas.pydata.org/">Pandas</a> - Powerful data structures for data analysis, time series, and statistics
+- <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
+- <a href="https://pandas.pydata.org/">Pandas</a> - Powerful data structures for data analysis, time series, and statistics
 
 ## Licensing
 
@@ -178,6 +178,6 @@ The full NumPy and Pandas licenses can be found in the <a href="https://github.c
 
 They can also be found directly in the following source codes:
 
- - NumPy - <a href="https://github.com/numpy/numpy/blob/main/LICENSE.txt">https://github.com/numpy/numpy/blob/main/LICENSE.txt</a>
- - Pandas - <a href="https://github.com/pandas-dev/pandas/blob/main/LICENSE">https://github.com/pandas-dev/pandas/blob/main/LICENSE</a>
+- NumPy - <a href="https://github.com/numpy/numpy/blob/main/LICENSE.txt">https://github.com/numpy/numpy/blob/main/LICENSE.txt</a>
+- Pandas - <a href="https://github.com/pandas-dev/pandas/blob/main/LICENSE">https://github.com/pandas-dev/pandas/blob/main/LICENSE</a>
 
