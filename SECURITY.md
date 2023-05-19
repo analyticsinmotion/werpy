@@ -4,7 +4,7 @@ Analytics in Motion takes the security of this python package seriously. If you 
 
 ## Responsible Disclosure
 We are strongly committed to the responsible disclosure of security vulnerabilities. Please follow these guidelines when reporting security issues:
-- Please send an email to pi@analyticsinmotion.com and include the words \"SECURITY - werpy package\" in the subject line.
+- Please send an email to [pi@analyticsinmotion.com](mailto:pi@analyticsinmotion.com) and include the words \"SECURITY - werpy package\" in the subject line. 
 - Provide details of the potential vulnerability, including information such as:
   - a description of the vulnerability and how it can be exploited;
   - the affected version of the python package;
@@ -36,4 +36,4 @@ By following these best practices and working together with the development team
 Thank you! Your help in keeping our users secure is appreciated.
 
 ## Contact
-If you have any security questions, please contact pi@analyticsinmotion.com.
+If you have any security questions, please contact [pi@analyticsinmotion.com](mailto:pi@analyticsinmotion.com).
