@@ -1,7 +1,11 @@
 
 ![werpy-logo-word-error-rate](https://user-images.githubusercontent.com/52817125/235063664-2f21629c-0fad-46b6-a487-c2b5ef6f80e9.png)
-# werpy - Word Error Rate for Python
+
+<h1 align="center">werpy - Word Error Rate for Python</h1>
+
 <!-- badges: start -->
+<div align="center">
+  
 [![Python Version](https://img.shields.io/badge/python-3.8%7C3.9%7C3.10%7C3.11-blue?logo=python&logoColor=ffdd54)](https://www.python.org/downloads/)&nbsp;&nbsp;
 [![werpy License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/analyticsinmotion/werpy/blob/main/LICENSE)&nbsp;&nbsp;
 ![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)&nbsp;&nbsp;
@@ -12,6 +16,7 @@
 [![Pypi](https://img.shields.io/pypi/v/werpy)](https://pypi.org/project/werpy/)&nbsp;&nbsp;
 [![Analytics in Motion](https://raw.githubusercontent.com/analyticsinmotion/.github/main/assets/images/analytics-in-motion-github-badge-rounded.svg)](https://www.analyticsinmotion.com)
 
+  </div>
 <!-- badges: end -->
 
 ## What is werpy?
