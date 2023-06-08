@@ -10,6 +10,7 @@
 [![Pylint](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml)&nbsp;&nbsp;
 [![Bandit](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml)&nbsp;&nbsp;
 [![Pypi](https://img.shields.io/pypi/v/werpy)](https://pypi.org/project/werpy/)&nbsp;&nbsp;
+[![Analytics in Motion](https://raw.githubusercontent.com/analyticsinmotion/.github/main/assets/images/analytics-in-motion-github-badge-rounded.svg)](https://www.analyticsinmotion.com)
 
 <!-- badges: end -->
 
