@@ -1,9 +1,17 @@
 
 ![werpy-logo-word-error-rate](https://user-images.githubusercontent.com/52817125/235063664-2f21629c-0fad-46b6-a487-c2b5ef6f80e9.png)
 
-<h1 align="center">werpy - Word Error Rate for Python</h1>
 
-<!-- badges: start -->
+
+<!--<h1 align="center">werpy - Word Error Rate for Python</h1>-->
+<h1 align="left">werpy - Word Error Rate for Python
+<a href="https://twitter.com/intent/tweet?text=Introducing%20%23werpy%20-%20the%20Python%20package%20for%20fast%20and%20accurate%20Word%20Error%20Rate%20(WER)%20calculation.%20Easily%20analyze%20text%20accuracy%2C%20enhance%20%23NLP%20models%2C%20and%20improve%20%23SpeechRecognition%20systems.%20Try%20it%20now%3A%20https%3A%2F%2Fgithub.com%2Fanalyticsinmotion%2Fwerpy.
+&url=https://github.com/analyticsinmotion/julia-packages-data&via=analyticsmotion&hashtags=PythonPackage,WordErrorRate,WER,NLP">
+    <img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" alt="Tweet">
+  </a>
+</h1>
+
+<!-- badges: start --><!-- 
 <div align="center">
   
 [![Python Version](https://img.shields.io/badge/python-3.8%7C3.9%7C3.10%7C3.11-blue?logo=python&logoColor=ffdd54)](https://www.python.org/downloads/)&nbsp;&nbsp;
@@ -13,15 +21,32 @@
 [![Codacy Security Scan](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml)&nbsp;&nbsp;
 [![Pylint](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml)&nbsp;&nbsp;
 [![Bandit](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml)&nbsp;&nbsp;
-[![Pypi](https://img.shields.io/pypi/v/werpy)](https://pypi.org/project/werpy/)&nbsp;&nbsp;
-[![PyPI Downloads](https://img.shields.io/pypi/dm/werpy)](https://pypi.org/project/werpy/)&nbsp;&nbsp;
+[![Pypi](https://img.shields.io/pypi/v/werpy?label=PyPI)](https://pypi.org/project/werpy/)&nbsp;&nbsp;
+[![PyPI Downloads](https://img.shields.io/pypi/dm/werpy?label=PyPI%20downloads)](https://pypi.org/project/werpy/)&nbsp;&nbsp;
 [![Analytics in Motion](https://raw.githubusercontent.com/analyticsinmotion/.github/main/assets/images/analytics-in-motion-github-badge-rounded.svg)](https://www.analyticsinmotion.com)
 
 
 
 
 
+
+
+
+
   </div>
+-->
+
+| | |
+| --- | --- |
+| Meta | [![Python Version](https://img.shields.io/badge/python-3.8%7C3.9%7C3.10%7C3.11-blue?logo=python&logoColor=ffdd54)](https://www.python.org/downloads/)&nbsp;&nbsp; [![werpy License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://github.com/analyticsinmotion/werpy/blob/main/LICENSE)&nbsp;&nbsp; ![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)&nbsp;&nbsp; [![Analytics in Motion](https://raw.githubusercontent.com/analyticsinmotion/.github/main/assets/images/analytics-in-motion-github-badge-rounded.svg)](https://www.analyticsinmotion.com) |
+| Testing | [![CodeQL](https://github.com/analyticsinmotion/werpy/actions/workflows/codeql.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/codeql.yml)&nbsp;&nbsp; [![Codacy Security Scan](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/codacy.yml)&nbsp;&nbsp; [![Pylint](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/pylint.yml)&nbsp;&nbsp; [![Bandit](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml/badge.svg)](https://github.com/analyticsinmotion/werpy/actions/workflows/bandit.yml)&nbsp;&nbsp; |
+| Package | [![Pypi](https://img.shields.io/pypi/v/werpy?label=PyPI)](https://pypi.org/project/werpy/)&nbsp;&nbsp; [![PyPI Downloads](https://img.shields.io/pypi/dm/werpy?label=PyPI%20downloads)](https://pypi.org/project/werpy/)&nbsp;&nbsp; |
+
+
+
+
+
+  
 <!-- badges: end -->
 
 ## What is werpy?
