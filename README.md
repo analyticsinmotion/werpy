@@ -5,8 +5,7 @@
 
 <!--<h1 align="center">werpy - Word Error Rate for Python</h1>-->
 <h1 align="left">werpy - Word Error Rate for Python
-<a href="https://twitter.com/intent/tweet?text=Introducing%20%23werpy%20-%20the%20Python%20package%20for%20fast%20and%20accurate%20Word%20Error%20Rate%20(WER)%20calculation.%20Easily%20analyze%20text%20accuracy%2C%20enhance%20%23NLP%20models%2C%20and%20improve%20%23SpeechRecognition%20systems.%20Try%20it%20now%3A%20https%3A%2F%2Fgithub.com%2Fanalyticsinmotion%2Fwerpy.
-&url=https://github.com/analyticsinmotion/julia-packages-data&via=analyticsmotion&hashtags=PythonPackage,WordErrorRate,WER,NLP">
+<a href="https://twitter.com/intent/tweet?text=Introducing%20%23werpy%20-%20the%20Python%20package%20for%20fast%20and%20accurate%20Word%20Error%20Rate%20(WER)%20calculation.%20Easily%20analyze%20text%20accuracy%2C%20enhance%20%23NLP%20models%2C%20and%20improve%20%23SpeechRecognition%20systems.%20Try%20it%20now%3A%20https%3A%2F%2Fgithub.com%2Fanalyticsinmotion%2Fwerpy.&url=https://github.com/analyticsinmotion/werpy&via=analyticsmotion&hashtags=PythonPackage,WordErrorRate,WER,NLP">
     <img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" alt="Tweet">
   </a>
 </h1>
