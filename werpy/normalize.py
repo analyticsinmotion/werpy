@@ -1,8 +1,9 @@
 """
 The Normalize module provides preprocessing methods for normalizing text input to be optimal for the Word Error Rate
-(WER) function. The class contains methods for removing punctuation, converting text to lowercase, replacing double
-spaces with a single space, and removing leading and trailing spaces. The apply_normalization method applies all the 
-normalization methods and returns the normalized input as a numpy array.
+(WER) function. The class contains methods for removing punctuation, converting text to lowercase, and removing all
+whitespace such as leading/trailing spaces and multiple in-text spaces. The apply_normalization method applies all 
+the normalization methods and returns the normalized input as a numpy array. The normalize function then vectorizes 
+the apply_normalization output and produces the final normalized version of the input text as a list. 
 """
 
 import numpy as np
@@ -28,6 +29,8 @@ class Normalize:
         Changes any instances of a double space back to a standard single space
     remove_leading_trailing_spaces
         Removes any leading and/or trailing spaces in a text string
+    remove_whitespace
+        Removes all extra whitespace including leading/trailing spaces and multiple spaces within text
     apply_normalization
         Applies all the normalization methods in this class to the input text and outputs an array datatype
     """
@@ -75,6 +78,20 @@ class Normalize:
         """
         self.text = np.char.strip(self.text)
 
+    def remove_whitespace(self):
+        """
+        Method that removes leading/trailing spaces and multiple spaces within text
+        """   
+        if isinstance(self.text, np.ndarray):
+            if self.text.ndim == 0:
+                # For scalar arrays, convert to a string, split, and join
+                self.text = ' '.join(str(self.text).split())
+            elif self.text.ndim == 1:
+                # For 1-dimensional arrays, split and join
+                self.text = ' '.join(self.text.astype(str).tolist())
+        elif isinstance(self.text, str):
+            self.text = ' '.join(self.text.split())    
+
     def apply_normalization(self) -> np.ndarray:
         """
         Method that applies all the normalization methods in this class to the input text
@@ -86,8 +103,9 @@ class Normalize:
         """
         self.remove_punctuation()
         self.convert_to_lowercase()
-        self.replace_multiple_spaces()
-        self.remove_leading_trailing_spaces()
+        #self.replace_multiple_spaces()
+        #self.remove_leading_trailing_spaces()
+        self.remove_whitespace()
         return self.text
 
 
