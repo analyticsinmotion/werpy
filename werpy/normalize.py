@@ -81,7 +81,7 @@ class Normalize:
     def remove_whitespace(self):
         """
         Method that removes leading/trailing spaces and multiple spaces within text
-        """   
+        """
         if isinstance(self.text, np.ndarray):
             if self.text.ndim == 0:
                 # For scalar arrays, convert to a string, split, and join
@@ -90,7 +90,7 @@ class Normalize:
                 # For 1-dimensional arrays, split and join
                 self.text = ' '.join(self.text.astype(str).tolist())
         elif isinstance(self.text, str):
-            self.text = ' '.join(self.text.split())    
+            self.text = ' '.join(self.text.split())
 
     def apply_normalization(self) -> np.ndarray:
         """
