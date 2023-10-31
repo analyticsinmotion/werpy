@@ -4,6 +4,16 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
+## Version 0.0.6-dev1 (Pre Release) 
+**Released:** TBD<br />
+**Tag:** v0.0.6-dev1
+
+### Enhancements
+
+- Added new unit tests for the normalize module. These tests focus on improving test coverage, enhancing the reliability of the module, and ensuring the accuracy of the normalization process. By incorporating these tests, we aim to identify and address issues early in the development cycle, making the upcoming release more stable and reliable.
+
+<br /><br />
+
 ## Version 0.0.5 (Latest) 
 **Released:** October 26, 2023<br />
 **Tag:** v0.0.5
