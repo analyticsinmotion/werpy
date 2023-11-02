@@ -4,6 +4,16 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
+## Version 1.0.1-dev1 (Under Development)
+**Released:** TBD<br />
+**Tag:** v1.0.1
+
+### Enhancements
+
+- Added new unit tests for the wer module. Adding these new unit tests improves code coverage and validation for the wer function. The new tests cover additional use cases with longer input sequences and help ensure the wer calculation works properly in different scenarios.
+
+<br /><br />
+
 ## Version 1.0.0 (Latest)
 **Released:** November 2, 2023<br />
 **Tag:** v1.0.0
