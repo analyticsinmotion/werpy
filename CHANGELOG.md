@@ -4,17 +4,19 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
-## Version 0.0.6-dev1 (Pre Release) 
-**Released:** TBD<br />
-**Tag:** v0.0.6-dev1
+## Version 1.0.0 (Latest)
+**Released:** November 2, 2023<br />
+**Tag:** v1.0.0
 
 ### Enhancements
+
+- In this major version update, the normalize.py module has undergone a comprehensive refactor to enhance its performance and streamline its codebase. These changes represent a significant leap in the efficiency and readability of the code. It has been optimized to process data at a significantly faster pace, reducing processing time for various tasks, and with cleaner, more maintainable code. These enhancements mark a significant milestone in our development, paving the way for better performance, increased efficiency, and improved code quality.
 
 - Added new unit tests for the normalize module. These tests focus on improving test coverage, enhancing the reliability of the module, and ensuring the accuracy of the normalization process. By incorporating these tests, we aim to identify and address issues early in the development cycle, making the upcoming release more stable and reliable.
 
 <br /><br />
 
-## Version 0.0.5 (Latest) 
+## Version 0.0.5
 **Released:** October 26, 2023<br />
 **Tag:** v0.0.5
 
