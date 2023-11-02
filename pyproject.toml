@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "werpy"
-version = "0.0.5"
+version = "1.0.0"
 authors = [
   { name="Ross Armstrong", email="ross.armstrong@analyticsinmotion.com" },
 ]
@@ -41,4 +41,5 @@ dependencies = [
 
 [project.urls]
 "Homepage" = "https://github.com/analyticsinmotion/werpy"
+"Repository" = "https://github.com/analyticsinmotion/werpy"
 "Bug Tracker" = "https://github.com/analyticsinmotion/werpy/issues"
