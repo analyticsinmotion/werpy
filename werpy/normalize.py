@@ -1,149 +1,43 @@
 """
-The Normalize module provides preprocessing methods for normalizing text input to be optimal for the Word Error Rate
+The normalize module provides preprocessing methods for normalizing text input to be optimal for the Word Error Rate
 (WER) function. The class contains methods for removing punctuation, converting text to lowercase, and removing all
-whitespace such as leading/trailing spaces and multiple in-text spaces. The apply_normalization method applies all 
-the normalization methods and returns the normalized input as a numpy array. The normalize function then vectorizes 
-the apply_normalization output and produces the final normalized version of the input text as a list. 
+whitespace such as leading/trailing spaces and multiple in-text spaces. 
+
+This module defines the following function:
+    - normalize(text)
 """
 
-import numpy as np
-
-
-class Normalize:
-    """
-    A class that provides the preprocessing methods for normalizing a text input.
-    This class transforms text data into the optimal input format for the Word Error Rate (WER) function.
-
-    Attributes
-    ----------
-    text : str, list or numpy array
-        The input text to be normalized. It can be a single string, a list of strings, or a numpy array.
-
-    Methods
-    -------
-    remove_punctuation
-        Removes any non-alphanumeric characters
-    convert_to_lowercase
-        Converts the given text into lowercase
-    replace_multiple_spaces
-        Changes any instances of a double space back to a standard single space
-    remove_leading_trailing_spaces
-        Removes any leading and/or trailing spaces in a text string
-    remove_whitespace
-        Removes all extra whitespace including leading/trailing spaces and multiple spaces within text
-    apply_normalization
-        Applies all the normalization methods in this class to the input text and outputs an array datatype
-    """
-    __slots__ = ['text']
-
-    def __init__(self, text) -> None:
-        """
-        Class Constructor
-
-        Raises
-        ------
-        TypeError
-            if input text is not a str, list or np.ndarray data type.
-        """
-        try:
-            if isinstance(text, (str, list, np.ndarray)):
-                self.text = np.array(text)
-            else:
-                raise TypeError("Input must be a String, List or Numpy Array")
-        except TypeError as err:
-            print("TypeError:", err)
-
-    def remove_punctuation(self):
-        """
-        Method that removes punctuation from input text
-        """
-        punctuation = r"""!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"""
-        self.text = np.char.translate(self.text, str.maketrans('', '', punctuation))
-
-    def convert_to_lowercase(self):
-        """
-        Method that makes all input text lowercase
-        """
-        self.text = np.char.lower(self.text)
-
-    def replace_multiple_spaces(self):
-        """
-        Method that replaces double spaces with a single space in input text
-        """
-        self.text = np.char.replace(self.text, '  ', ' ')
-
-    def remove_leading_trailing_spaces(self):
-        """
-        Method that removes leading and trailing spaces
-        """
-        self.text = np.char.strip(self.text)
-
-    def remove_whitespace(self):
-        """
-        Method that removes leading/trailing spaces and multiple spaces within text
-        """
-        if isinstance(self.text, np.ndarray):
-            if self.text.ndim == 0:
-                # For scalar arrays, convert to a string, split, and join
-                self.text = ' '.join(str(self.text).split())
-            elif self.text.ndim == 1:
-                # For 1-dimensional arrays, split and join
-                self.text = ' '.join(self.text.astype(str).tolist())
-        elif isinstance(self.text, str):
-            self.text = ' '.join(self.text.split())
-
-    def apply_normalization(self) -> np.ndarray:
-        """
-        Method that applies all the normalization methods in this class to the input text
-
-        Returns
-        -------
-        self.text : np.ndarray
-            A normalized version of the input text
-        """
-        self.remove_punctuation()
-        self.convert_to_lowercase()
-        #self.replace_multiple_spaces()
-        #self.remove_leading_trailing_spaces()
-        self.remove_whitespace()
-        return self.text
-
-
-def instantiate_normalize_class(text):
-    """
-    This function creates an instance of the 'Normalize' object and applies the `apply_normalization` method to its
-    text input. As Python Classes cannot directly be vectorized this is a helper function that allows a similar
-    capability.
-
-    Parameters
-    ----------
-    text : str, list or numpy array
-        The input text to be normalized. It can be a single string, a list of strings, or a numpy array.
-
-    Returns
-    -------
-    np.ndarray
-        A normalized version of the input text
-    """
-    obj = Normalize(text)
-    return obj.apply_normalization()
+import string
 
 
 def normalize(text):
     """
-    The main function for this module. Through the helper function it vectorizes the apply_normalization method and
-    produces the final normalized version of the input text.
+    This function serves as a versatile text preprocessing tool, designed to transform 
+    text data into an optimal format for a variety of natural language processing tasks, 
+    such as calculating the Word Error Rate (WER).
+    
+    Its core functionalities encompass removing punctuation, converting text to 
+    lowercase, and eliminating unnecessary whitespace. 
 
     Parameters
     ----------
-    text : str, list or numpy array
-        The input text to be normalized. It can be a single string, a list of strings, or a numpy array.
+    text : str, list, tuple or numpy array
+        The input text to be normalized.
+    
+    Raises
+    ------
+    TypeError
+        If the input is not a valid data type such as (int, float, bool, range, dict,
+        bytes, bytearray, complex) or if the input contains nested data (e.g., a list of
+        lists), the function raises a TypeError.
 
     Returns
     -------
-    list
-        Applies vectorization to improve output performance.
-
+    str or list
+        If the input is a string, the function returns the normalized string. If the 
+        input is a list, tuple, or numpy array of strings, it returns a list of 
+        normalized strings.
+    
     Examples
     --------
     >>> reference = normalize(" it's Consumed Domestically  And exported to other countries.")
@@ -158,24 +52,31 @@ def normalize(text):
     ['its very popular in antarctica', 'the sugar bear character']
     >>> reference
     ['its very popular in antarctica', 'the sugar bear character']
-
-    Raises
-    ------
-    TypeError
-        if any input data is has an int, float or complex data type.
-    AttributeError
-        if input text is not a str, list or np.ndarray data type.
     """
-    try:
-        vectorize_instantiate_normalize_class = np.vectorize(instantiate_normalize_class)
-    except TypeError as err:
-        print("TypeError:", err,
-              "\nAll text should be in a str(string) format. "
-              "Please check your input does not include any Numeric Data Types such as int, float or complex.")
-        return None
-    except AttributeError:
-        print(
-            "AttributeError: "
-            "The normalization method cannot be executed if data input is not a String, List or Numpy Array")
-        return None
-    return vectorize_instantiate_normalize_class(text).tolist()
+    if isinstance(text, (int, float, bool, range, dict, bytes, bytearray, complex)):
+        raise TypeError("Input must be String, List, Tuple, or NumPy Array.")
+
+    if isinstance(text, str):
+        is_string_flag = True
+        text = [text]
+    else:
+        is_string_flag = False
+
+    normalized_text = []
+    translate_table = [0 if c in string.punctuation.encode() else c for c in range(256)]
+    translate_bytes = bytes(translate_table)
+
+    for sentence in text:
+        if not isinstance(sentence, str):
+            raise TypeError("Input must be String, List, Tuple, or NumPy Array. "
+                            "All data types should be flat, have a depth of 1 and "
+                            "contain no nested elements.")        
+        cleaned_sentence = sentence.encode().translate(translate_bytes).decode().lower()
+        cleaned_sentence = cleaned_sentence.rstrip('\x00').replace('\x00', '')
+        cleaned_sentence = ' '.join(cleaned_sentence.split())
+        normalized_text.append(cleaned_sentence)
+
+    if is_string_flag:
+        return normalized_text[0]
+
+    return normalized_text
