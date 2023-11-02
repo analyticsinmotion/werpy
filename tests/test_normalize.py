@@ -1,5 +1,5 @@
 """
-test_wer.py
+test_normalize.py
 
 This module contains unit tests for the 'normalize' function in the 'werpy.normalize' module. 
 The 'normalize' function is responsible for normalizing translations, 
@@ -23,7 +23,6 @@ an ImportError is raised to ensure that the required module is available for tes
 """
 
 import unittest
-#from werpy.normalize import normalize
 
 try:
     from werpy.normalize import normalize
@@ -41,6 +40,7 @@ class TestNormalize(unittest.TestCase):
     Test cases:
     - 'test_normalize_reference_translation': Test the normalization of reference translations.
     - 'test_normalize_hypothesis_translation': Test the normalization of hypothesis translations.
+    - 'test_normalize_string': Test the normalization of a single string.
 
     Each test case compares the output of the 'normalize' function with the expected normalized translations 
     and raises an AssertionError if the actual output does not match the expected values.
@@ -51,17 +51,18 @@ class TestNormalize(unittest.TestCase):
     Methods:
         - 'test_normalize_reference_translation': Test the normalization of reference translations.
         - 'test_normalize_hypothesis_translation': Test the normalization of hypothesis translations.
+        - 'test_normalize_string': Test the normalization of a single string.
 
     To run the tests, execute this class as part of the test suite in the main program.
 
     Note: If the 'normalize' module is not imported successfully, 
     an ImportError is raised to ensure that the required module is available for testing.
     """
-    def test_normalize_reference_translation(self):
+    def test_normalize_reference(self):
         """
         Test the normalization of reference translations.
         """
-        reference_translation = [
+        reference = [
             '     It is consumed domestically           and exported to other countries.     ',
             'The Sugar Bear character was popular enough to have occasional premium toys.',
             'It is one of the most watched television networks in the country.',
@@ -85,19 +86,18 @@ class TestNormalize(unittest.TestCase):
             'gadya is the nearest rural locality',
             'taxes are a tool in the adjustment of the economy'
         ]
-        #self.assertEqual(normalize(reference_translation), expected_normalized_reference)
 
         try:
-            self.assertEqual(normalize(reference_translation), expected_normalized_reference)
+            self.assertEqual(normalize(reference), expected_normalized_reference)
         except AssertionError as e:
-            self.fail(f"Assertion error in test_normalize_reference_translation: {e}")
+            self.fail(f"Assertion error in test_normalize_reference: {e}")
 
 
-    def test_normalize_hypothesis_translation(self):
+    def test_normalize_hypothesis(self):
         """
         Test the normalization of hypothesis translations.
         """
-        hypothesis_translation = [
+        hypothesis = [
             'it is consumed domestically and exported to other countries ',
             'the sugar bare character was popular enough to have occasional premium toys ',
             'it is one of the most watched television networks in the country ',
@@ -121,12 +121,25 @@ class TestNormalize(unittest.TestCase):
             'gadia is the nearest rural locality',
             'taxes are a tool in the adjustment of the economy'
         ]
-        #self.assertEqual(normalize(hypothesis_translation), expected_normalized_hypothesis)
 
         try:
-            self.assertEqual(normalize(hypothesis_translation), expected_normalized_hypothesis)
+            self.assertEqual(normalize(hypothesis), expected_normalized_hypothesis)
         except AssertionError as e:
-            self.fail(f"Assertion error in test_normalize_hypothesis_translation: {e}")
+            self.fail(f"Assertion error in test_normalize_hypothesis: {e}")
+
+
+    def test_normalize_string(self):
+        """
+        Test the normalization of a single string.
+        """
+        reference = normalize(" it's Consumed Domestically  And exported to other countries.")
+
+        expected_normalized_reference = 'its consumed domestically and exported to other countries'
+
+        try:
+            self.assertEqual(normalize(reference), expected_normalized_reference)
+        except AssertionError as e:
+            self.fail(f"Assertion error in test_normalize_string: {e}")
 
 if __name__ == '__main__':
     unittest.main()
