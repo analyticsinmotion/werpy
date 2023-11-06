@@ -103,7 +103,7 @@ class TestWer(unittest.TestCase):
         try:
             self.assertEqual(wer(ref, hyp), expected_result)
         except AssertionError as e:
-            self.fail(f"Assertion error in test_wer_example_2: {e}")
+            self.fail(f"Assertion error in test_wer_example_3: {e}")
 
 if __name__ == '__main__':
     unittest.main()
