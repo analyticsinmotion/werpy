@@ -10,7 +10,12 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ### Enhancements
 
-- Added new unit tests for the wer module. Adding these new unit tests improves code coverage and validation for the wer function. The new tests cover additional use cases with longer input sequences and help ensure the wer calculation works properly in different scenarios.
+- Added the following unit tests to improve code coverage and validation for the functions in the werpy module. The new tests cover additional use cases with longer input sequences and help ensure the wer calculation works properly in different scenarios.
+  - Added new unit tests for the wer module.
+  - Added new unit tests for the wers module. 
+  - Added new unit tests for the werp module. 
+  - Added new unit tests for the werps module. 
+  - Added new unit tests for the summary module.  
 
 <br /><br />
 
