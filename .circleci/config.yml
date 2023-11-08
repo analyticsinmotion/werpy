@@ -21,6 +21,10 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: pip
+          packages:
+            # Add numpy and pandas as dependencies
+            - numpy
+            - pandas
       - run:  
           name: Run unit tests
           command: python -m unittest discover tests
