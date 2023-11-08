@@ -19,19 +19,15 @@ jobs:
       - image: cimg/python:3.11.5
     steps:
       - checkout
-      - python/install-deps:
+      - python/install-packages:
           pkg-manager: pip
-          pip-extra-args: --no-input
-          requirements-file: pyproject.toml
-      - run:
-          command: pip install -e .
-          name: Install package
       - run:  
           name: Run unit tests
           command: python -m unittest discover tests
 
 # Invoke jobs via workflows
+# See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  main:
+  unit_tests:
     jobs:
       - werpy-unit-tests
