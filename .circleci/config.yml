@@ -20,10 +20,8 @@ jobs:
     steps:
       - checkout
       - python/install-packages:
-          args:
-            # Add numpy and pandas as dependencies
-            - numpy
-            - pandas
+          # Add numpy and pandas as dependencies
+          args: numpy
           pkg-manager: pip
           pip-dependency-file: ""
       - run:  
