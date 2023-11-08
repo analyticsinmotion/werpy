@@ -21,7 +21,7 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: pip
-          dependencies:
+          pkgs:
             # Add numpy and pandas as dependencies
             - numpy
             - pandas
@@ -32,6 +32,6 @@ jobs:
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  unit_tests:
+  unit-tests:
     jobs:
       - werpy-unit-tests
