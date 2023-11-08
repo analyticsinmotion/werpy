@@ -21,7 +21,7 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: pip
-          packages:
+          dependencies:
             # Add numpy and pandas as dependencies
             - numpy
             - pandas
