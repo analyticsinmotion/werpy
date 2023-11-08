@@ -19,12 +19,13 @@ jobs:
       - image: cimg/python:3.11.5
     steps:
       - checkout
-      - python/install-packages:
-          pkg-manager: pip
-          pip-dependency-file: pyproject.toml
+      - run:
+          name: Install Project Dependencies
+          command: |
+            poetry install
       - run:  
           name: Run unit tests
-          command: python -m unittest discover tests
+          command: poetry run python -m unittest discover tests
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
