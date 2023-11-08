@@ -21,6 +21,7 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: pip
+          pip-dependency-file: pyproject.toml
       - run:  
           name: Run unit tests
           command: python -m unittest discover tests
