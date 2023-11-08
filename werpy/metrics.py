@@ -46,24 +46,23 @@ def calculations(reference, hypothesis) -> np.ndarray:
     hypothesis_word = hypothesis.split()
 
     m, n = len(reference_word), len(hypothesis_word)
-    i, j = 0, 0
-    ldm = np.zeros((m + 1, n + 1), dtype=int)
+    ldm = [[0] * (n + 1) for _ in range(m + 1)]
+
     for i in range(m + 1):
-        ldm[i, 0] = i
-    for j in range(n + 1):
-        ldm[0, j] = j
-
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            if reference_word[i - 1] == hypothesis_word[j - 1]:
-                ldm[i, j] = ldm[i - 1, j - 1]
+        for j in range(n + 1):
+            if i == 0:
+                ldm[i][j] = j
+            elif j == 0:
+                ldm[i][j] = i
             else:
-                substitution = ldm[i - 1, j - 1] + 1
-                insertion = ldm[i, j - 1] + 1
-                deletion = ldm[i - 1, j] + 1
-                ldm[i, j] = min(substitution, insertion, deletion)
+                substitution_cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+                ldm[i][j] = min(
+                    ldm[i - 1][j] + 1,  # Deletion
+                    ldm[i][j - 1] + 1,  # Insertion
+                    ldm[i - 1][j - 1] + substitution_cost  # Substitution
+                )
 
-    ld = ldm[i, j]
+    ld = ldm[m][n]
     wer = ld / m
 
     insertions, deletions, substitutions = 0, 0, 0
@@ -74,16 +73,16 @@ def calculations(reference, hypothesis) -> np.ndarray:
             i -= 1
             j -= 1
         else:
-            if i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
+            if i > 0 and j > 0 and ldm[i][j] == ldm[i - 1][j - 1] + 1:
                 substitutions += 1
                 substituted_words.append((reference_word[i - 1], hypothesis_word[j - 1]))
                 i -= 1
                 j -= 1
-            elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
+            elif j > 0 and ldm[i][j] == ldm[i][j - 1] + 1:
                 insertions += 1
                 inserted_words.append(hypothesis_word[j - 1])
                 j -= 1
-            elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
+            elif i > 0 and ldm[i][j] == ldm[i - 1][j] + 1:
                 deletions += 1
                 deleted_words.append(reference_word[i - 1])
                 i -= 1
