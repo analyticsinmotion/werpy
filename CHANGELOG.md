@@ -3,6 +3,23 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
+## Version 1.1.1-Dev (Dev release)
+**Released:** TBD<br />
+**Tag:** v1.1.1-dev
+
+### Enhancements
+
+- Added the CircleCI badge to Readme.md file
+
+
+### Bug Fixes
+
+- Fixed an AttributeError in the wers.py module caused by an non-standard operation on a 'float' object. This only occurred when a single reference and hypothesis input string was entered and has now been rectified.
+
+- Resolved an AttributeError in the 'wers.py' module, which was triggered by a 'float' object having a size attribute. This issue specifically arose when a single reference and hypothesis input string was provided, and it has been successfully addressed.
+ 
+
+<br /><br />
 
 ## Version 1.1.0 (Latest)
 **Released:** November 8, 2023<br />
