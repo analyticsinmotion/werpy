@@ -51,5 +51,5 @@ def wers(reference, hypothesis):
         transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
         wers_result = transform_word_error_rate_breakdown[0].tolist()
     else:
-        wers_result = word_error_rate_breakdown[0].tolist()
+        wers_result = word_error_rate_breakdown[0]
     return wers_result
