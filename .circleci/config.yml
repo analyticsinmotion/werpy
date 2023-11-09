@@ -10,6 +10,8 @@ orbs:
   # so you dont have to copy and paste it everywhere.
   # See the orb documentation here: https://circleci.com/developer/orbs/orb/circleci/python
   python: circleci/python@2.1.1
+  #https://circleci.com/developer/orbs/orb/codecov/codecov
+  codecov: codecov/codecov@3.3.0
 
 jobs:
   werpy-unit-tests:
