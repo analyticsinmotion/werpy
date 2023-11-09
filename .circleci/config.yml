@@ -37,6 +37,3 @@ workflows:
   unit-tests:
     jobs:
       - werpy-unit-tests
-  upload-to-codecov:
-    jobs:
-      - codecov/upload
