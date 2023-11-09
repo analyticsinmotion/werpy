@@ -30,7 +30,6 @@ jobs:
       - run:  
           name: Run unit tests
           command: python -m unittest discover tests
-      - codecov/upload
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/configuration-reference/#workflows
