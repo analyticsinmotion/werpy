@@ -75,7 +75,7 @@ def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substi
     weighted_errors = sum((weighted_insertions, weighted_deletions, weighted_substitutions))
     werps_result = weighted_errors / m
 
-    if word_error_rate_breakdown[0].size == 1:
+    if isinstance(word_error_rate_breakdown[0], float):
         return werps_result
 
     return werps_result.tolist()
