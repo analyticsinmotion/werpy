@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: 'If you use this software, please cite it as below.'
+authors:
+- family-names: "Armstrong"
+  given-names: "Ross"
+title: 'werpy - Word Error Rate for Python'
+abstract: "A powerful Python package that rapidly calculates and analyzes the Word Error Rate (WER)."
+license: BSD-3-Clause
+license-url: "https://github.com/analyticsinmotion/werpy/blob/main/LICENSE"
+repository-code: "https://github.com/analyticsinmotion/werpy"
+keywords:
+  - word error rate
+  - wer
+  - levenshtein distance
+  - speech recognition
+  - speech-to-text
+  - stt
+  - metrics
+  - natural language processing
+  - data science
+  - python
+  - python package
+type: software
+url: "https://github.com/analyticsinmotion/werpy"
