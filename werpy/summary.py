@@ -6,6 +6,7 @@ This module defines the following function:
     - summary(reference, hypothesis)
 """
 
+import numpy as np
 import pandas as pd
 from .errorhandler import error_handler
 
@@ -48,12 +49,12 @@ def summary(reference, hypothesis):
         word_error_rate_breakdown = error_handler(reference, hypothesis)
     except (ValueError, AttributeError) as err:
         print(f"{type(err).__name__}: {str(err)}")
-        return None
-    if word_error_rate_breakdown[0].size == 1:
-        word_error_rate_breakdown = [word_error_rate_breakdown.tolist()]
-    else:
+        return None    
+    if isinstance(word_error_rate_breakdown[0], np.ndarray):
         word_error_rate_breakdown = word_error_rate_breakdown.tolist()
+    else:
+        word_error_rate_breakdown = [word_error_rate_breakdown.tolist()]
     columns = ['wer', 'ld', 'm', 'insertions', 'deletions', 'substitutions', 'inserted_words', 'deleted_words',
-                   'substituted_words']
+                   'substituted_words']    
     df = pd.DataFrame(word_error_rate_breakdown, columns=columns)
     return df
