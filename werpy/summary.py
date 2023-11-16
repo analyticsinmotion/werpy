@@ -49,7 +49,7 @@ def summary(reference, hypothesis):
         word_error_rate_breakdown = error_handler(reference, hypothesis)
     except (ValueError, AttributeError) as err:
         print(f"{type(err).__name__}: {str(err)}")
-        return None    
+        return None
     if isinstance(word_error_rate_breakdown[0], np.ndarray):
         word_error_rate_breakdown = word_error_rate_breakdown.tolist()
     else:
