@@ -10,3 +10,4 @@ from .wers import wers
 from .werp import werp
 from .werps import werps
 from .summary import summary
+from .summaryp import summaryp
