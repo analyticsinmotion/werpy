@@ -17,6 +17,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 ### Bug Fixes
 
 - Fixed an AttributeError in the 'summary.py' module that occurred when attempting to access the 'size' attribute of a 'float' object. This error happened when the module was provided a single reference and hypothesis string as input. The issue has been resolved.
+
+- Fixed an issue with the attributes of DataFrame column name "ld". Resolved the discrepancy in the "dtype" attribute from int32 to int64.
  
 
 <br /><br />
