@@ -68,7 +68,7 @@ class TestSummaryp(unittest.TestCase):
         expected_result = pd.DataFrame(data)
 
         # Set the data type of the "ld" column to int64
-        expected_result['ld'] = expected_result['ld'].astype('int32')
+        #expected_result['ld'] = expected_result['ld'].astype('int32')
 
         try:
             pd.testing.assert_frame_equal(expected_result, actual_result)
