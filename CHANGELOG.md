@@ -11,6 +11,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Implemented a new feature, summaryp, that furnishes a comprehensive analysis of outcomes. This includes detailed metrics such as Word Error Rate (WER), Levenshtein Distance, and a thorough report on insertion, deletion, and substitution errors. Most notably, the update includes the incorporation of weighted WER calculations for a more detailed assessment when adding penalties to the various error types.
 
+- Added corresponding new tests for the 'summaryp' function within the 'werpy' package, enhancing test coverage and ensuring robust functionality. The additional tests provide comprehensive validation of the 'summaryp' function, contributing to improved reliability and accuracy in the package's performance.
+
 
 ### Bug Fixes
 
