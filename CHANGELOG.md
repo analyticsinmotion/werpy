@@ -3,7 +3,23 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
-## Version 1.1.1 (Latest)
+## Version 1.1.2 (Latest)
+**Released:** November 17, 2023<br />
+**Tag:** v1.1.2
+
+### New Feature
+
+- Implemented a new feature, summaryp, that furnishes a comprehensive analysis of outcomes. This includes detailed metrics such as Word Error Rate (WER), Levenshtein Distance, and a thorough report on insertion, deletion, and substitution errors. Most notably, the update includes the incorporation of weighted WER calculations for a more detailed assessment when adding penalties to the various error types.
+
+
+### Bug Fixes
+
+- Fixed an AttributeError in the 'summary.py' module that occurred when attempting to access the 'size' attribute of a 'float' object. This error happened when the module was provided a single reference and hypothesis string as input. The issue has been resolved.
+ 
+
+<br /><br />
+
+## Version 1.1.1 
 **Released:** November 13, 2023<br />
 **Tag:** v1.1.1
 
@@ -23,7 +39,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 <br /><br />
 
-## Version 1.1.0 (Latest)
+## Version 1.1.0
 **Released:** November 8, 2023<br />
 **Tag:** v1.1.0
 
