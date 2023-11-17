@@ -50,7 +50,7 @@ class TestSummaryp(unittest.TestCase):
                'he was commonly referred to as the blacksmith of balen alley']
 
         # Generate the actual_result DataFrame
-        actual_result = summaryp(ref, hyp)
+        actual_result = summaryp(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
 
         data = {
             'wer': [0.15384615384615385, 0.1111111111111111, 0.2],
