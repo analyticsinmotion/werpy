@@ -38,6 +38,7 @@ The following table provides an overview of the functions that can be used in we
 | werp(reference, hypothesis)  | Calculates a weighted Word Error Rate for the entire reference and hypothesis texts. |
 | werps(reference, hypothesis)  | Calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts. |
 | summary(reference, hypothesis)  | Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors. |
+| summaryp(reference, hypothesis)  | Delivers an in-depth breakdown of the results, covering metrics like WER, Levenshtein Distance, and a detailed account of insertion, deletion, and substitution errors, inclusive of the weighted WER. |
 
 
 ## Installation
@@ -167,8 +168,25 @@ print(summary)
 <!-- ![werpy summary DataFrame](.github/assets/images/werpy-example-summary-results-word-error-rate-breakdown.png)-->
 
 ![werpy-example-summary-results-word-error-rate-breakdown](https://user-images.githubusercontent.com/52817125/234950114-7efcce9b-7a76-4413-830f-7deda20cad75.png)
+
 <br />
 
+**Example 8 - Provide a complete breakdown of the Weighted Word Error Rate for each of the input texts**
+
+*Python Code:*
+```python
+ref = ['the tower caused minor discontent because it blocked sight lines of central park', 'her father was an alderman in the city government', 'he was commonly referred to as the blacksmith of ballinalee']
+hyp = ['the tower caused minor discontent because it blocked sightlines of central park', 'our father was an alderman in the city government', 'he was commonly referred to as the blacksmith of balen alley']
+
+weighted_summary = werpy.summaryp(ref, hyp)
+print(weighted_summary)
+```
+
+*Results Output:*
+
+![werpy-example-summaryp-results-word-error-rate-breakdown](https://github.com/analyticsinmotion/werpy/assets/52817125/e6678997-d797-4767-bd8a-c141331b034b)
+
+<br />
 
 ## Dependencies
 - <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
