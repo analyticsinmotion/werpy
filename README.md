@@ -177,8 +177,7 @@ print(summary)
 ```python
 ref = ['the tower caused minor discontent because it blocked sight lines of central park', 'her father was an alderman in the city government', 'he was commonly referred to as the blacksmith of ballinalee']
 hyp = ['the tower caused minor discontent because it blocked sightlines of central park', 'our father was an alderman in the city government', 'he was commonly referred to as the blacksmith of balen alley']
-
-weighted_summary = werpy.summaryp(ref, hyp)
+weighted_summary = werpy.summaryp(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
 print(weighted_summary)
 ```
 
