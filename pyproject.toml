@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "werpy"
-version = "1.1.1"
+version = "1.1.2"
 authors = [
   { name="Ross Armstrong", email="ross.armstrong@analyticsinmotion.com" },
 ]
@@ -15,9 +15,15 @@ requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: BSD License",
-    "Natural Language :: English",
     "Operating System :: OS Independent",
-    "Development Status :: 5 - Production/Stable"
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development",
+    "Topic :: Text Processing",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Mathematics"
 ]
 
 keywords = [
