@@ -1,17 +1,18 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+build-backend = 'mesonpy'
+requires = ['meson-python', 'wheel', 'Cython']
+#requires = ['meson-python', 'wheel', 'Cython', 'numpy']
 
 [project]
-name = "werpy"
-version = "1.1.2"
+name = 'werpy_test_v4'
+version = '0.0.1'
+description = 'A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER).'
+readme = 'README.md'
+requires-python = '>=3.8'
+license = {file = 'LICENSE'}
 authors = [
-  { name="Ross Armstrong", email="ross.armstrong@analyticsinmotion.com" },
+  {name = 'Ross Armstrong', email = 'ross.armstrong@analyticsinmotion.com'},
 ]
-description = "A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER)."
-readme = "README.md"
-license = "BSD-3-Clause"
-requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: BSD License",
@@ -25,7 +26,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Mathematics"
 ]
-
 keywords = [
     "wer",
     "word error rate",
@@ -37,7 +37,6 @@ keywords = [
     "nlp",
     "metrics"
 ]
-
 dependencies = [
   "numpy>=1.21.6; python_version<'3.11'",
   "numpy>=1.23.2; python_version>='3.11'",
