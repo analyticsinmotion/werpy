@@ -1,21 +1,27 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+build-backend = 'mesonpy'
+requires = [
+    'meson-python', 
+    'wheel', 
+    'Cython', 
+    'numpy'
+]
 
 [project]
-name = "werpy"
-version = "1.1.2"
+name = 'werpy'
+version = '2.0.0'
+description = 'A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER).'
+readme = 'README.md'
+requires-python = '>=3.8'
+license = {file = 'LICENSE'}
 authors = [
-  { name="Ross Armstrong", email="ross.armstrong@analyticsinmotion.com" },
+  {name = 'Ross Armstrong', email = 'ross.armstrong@analyticsinmotion.com'},
 ]
-description = "A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER)."
-readme = "README.md"
-license = "BSD-3-Clause"
-requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Cython",
     "License :: OSI Approved :: BSD License",
-    "Operating System :: OS Independent",
+    "Operating System :: Microsoft :: Windows",
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
@@ -25,7 +31,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Mathematics"
 ]
-
 keywords = [
     "wer",
     "word error rate",
@@ -37,7 +42,6 @@ keywords = [
     "nlp",
     "metrics"
 ]
-
 dependencies = [
   "numpy>=1.21.6; python_version<'3.11'",
   "numpy>=1.23.2; python_version>='3.11'",
@@ -49,3 +53,13 @@ dependencies = [
 "Homepage" = "https://github.com/analyticsinmotion/werpy"
 "Repository" = "https://github.com/analyticsinmotion/werpy"
 "Bug Tracker" = "https://github.com/analyticsinmotion/werpy/issues"
+
+
+# For localized testing of the package on Windows OS
+#[tool.cibuildwheel]
+#build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
+#skip = "*-win32 *-manylinux_i686 *-manylinux2010_i686 *-manylinux2014_i686 *-manylinux_aarch64 *-manylinux_ppc64le *-manylinux_s390x *-musllinux_i686 *-musllinux_aarch64 *-musllinux_ppc64le *-musllinux_s390x"
+
+#[tool.cibuildwheel.windows]
+#build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
+#skip = "*-win32"
