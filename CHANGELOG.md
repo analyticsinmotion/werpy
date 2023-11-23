@@ -3,7 +3,18 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
-## Version 2.0.0 (Latest)
+## Version 2.1.0 (Latest)
+**Released:** November 23, 2023<br />
+**Tag:** v2.1.0
+
+### New Feature
+
+- Enhanced cross-platform support by integrating cibuildwheel, enabling compatibility with macOS and popular Linux distributions. With existing Windows compatibility, the package now spans all major configurations. Feel free to reach out if you have a specific OS configuration you'd like to discuss for potential inclusion.
+
+
+<br /><br />
+
+## Version 2.0.0 
 **Released:** November 23, 2023<br />
 **Tag:** v2.0.0
 
