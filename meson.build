@@ -1,7 +1,7 @@
 project(
     'werpy', 
     'c',
-    version : '2.0.0',
+    version : '2.1.0',
     default_options : ['warning_level=3'])
 
 # Find Python
