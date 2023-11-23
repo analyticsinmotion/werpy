@@ -3,7 +3,27 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
-## Version 1.1.2 (Latest)
+## Version 2.0.0 (Latest)
+**Released:** November 23, 2023<br />
+**Tag:** v2.0.0
+
+### New Feature
+
+- Refactored the 'metrics' module to run on C instead of Python to enhance performance significantly. The pure Python code in metrics.py had (arguably) reached its optimization limit, with the dynamic programming module serving as the primary component for calculations. By migrating this critical module to C, the metrics module now operates 5x faster, resulting in a substantial improvement in application speed. The metrics calculations are now performed at the C level while retaining the original Python interface. All other modules will remain as python.
+
+- During the transition to utilizing C optimizations, we opted to switch our Python package build system from Hatchling to Mesonpy. Mesonpy facilitates seamless compilation of C code as an integral part of the package build process. As a result of this transition, you can expect modifications to the pyproject.toml file and the introduction of a new meson.build file. This change under the hood enables us to integrate both Python and C code within the package natively for the performance optimizations.
+
+
+### Breaking Changes
+
+- In this significant application update, we are introducing phased support for different operating systems. Initially, this version will exclusively support Windows. However, swift additions for UNIX/Linux and macOS compatibility are already in the pipeline and will be incorporated promptly. This temporary change allows us to roll out the major version upgrade incrementally while ensuring reliability for our user base. 
+
+- Certain web applications relying exclusively on pure Python environments might encounter challenges running this package successfully. If your applications are affected, please don't hesitate to get in touch to discuss potential compatibility issues.
+ 
+
+<br /><br />
+
+## Version 1.1.2
 **Released:** November 17, 2023<br />
 **Tag:** v1.1.2
 
