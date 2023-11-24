@@ -22,7 +22,6 @@ sequences.
 import numpy as np
 cimport numpy as np
 
-# Add cimport cython here
 cimport cython
 
 @cython.boundscheck(False)
