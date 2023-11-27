@@ -1,26 +1,24 @@
 project(
     'werpy', 
-    'c',
-    version : '2.1.0',
-    default_options : ['warning_level=3'])
+    'c', 'cython',
+    version : '2.1.1',
+    license: 'BSD-3',
+    meson_version: '>= 1.1.0',
+    default_options : [
+        'buildtype=debugoptimized',
+        'warning_level=3',
+        'c_std=c11'
+        ]
+)
 
 # Find Python
 py = import('python').find_installation('python3')
 
-# Find Cython
-cython = find_program('cython')
-
 # Cython files
 pyx_files = files('werpy/metrics.pyx')
 
-# Compile Cython files
-c_files = custom_target('cythonize',
-                        output : 'metrics.c',
-                        input : pyx_files,
-                        command : [cython, '-3', '--fast-fail', '-o', '@OUTPUT@', '@INPUT@'])
-
-# Source files
-python_sources = files(
+# Python Source files
+py_files = files(
     'werpy/__init__.py',
     'werpy/errorhandler.py',
     'werpy/normalize.py',
@@ -34,20 +32,18 @@ python_sources = files(
 
 # Install Python sources
 py.install_sources(
-    python_sources,
+    py_files,
     subdir: 'werpy',
     pure: false,
 )
 
-
 # Find NumPy include directories
 numpy_includes = run_command(py, '-c', 'import numpy; print(numpy.get_include())').stdout().strip()
 
-
 # Cython module
-module1 = py.extension_module(
+py.extension_module(
     'metrics',
-    c_files,
+    pyx_files,
     include_directories : include_directories(numpy_includes),
     install : true,
     subdir : 'werpy'
