@@ -3,7 +3,21 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
-## Version 2.1.0 (Latest)
+## Version 2.1.1 (Latest)
+**Released:** November 27, 2023<br />
+**Tag:** v2.1.1
+
+### Enhancements
+
+- Updated the meson.build file to align with the recommended approach for integrating Cython into the build process:
+  - Added Cython to the list of languages utilized by the project.
+  - Passed the Cython source code directly to the py.extension_module() definition for improved integration.
+  - Specified the C standard configuration as C11, instructing Meson to use C11 as the designated C standard.
+
+
+<br /><br />
+
+## Version 2.1.0
 **Released:** November 23, 2023<br />
 **Tag:** v2.1.0
 
