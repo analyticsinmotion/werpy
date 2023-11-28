@@ -23,11 +23,7 @@ an ImportError is raised to ensure that the required module is available for tes
 """
 
 import unittest
-
-try:
-    from werpy.normalize import normalize
-except ImportError as exc:
-    raise ImportError("The 'normalize' module could not be imported. Make sure it is installed.") from exc
+from werpy.normalize import normalize
 
 class TestNormalize(unittest.TestCase):
     """
