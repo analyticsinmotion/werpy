@@ -34,10 +34,7 @@ class TestWers(unittest.TestCase):
         This test checks the WERS function with a basic example of reference and hypothesis strings 
         and ensures that the calculated WER matches the expected result.
         """
-        try:
-            self.assertEqual(wers('i love cold pizza', 'i love pizza'), 0.25)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_wers_example_1: {e}")
+        self.assertEqual(wers('i love cold pizza', 'i love pizza'), 0.25)
 
 
     def test_wers_example_2(self):
@@ -52,10 +49,7 @@ class TestWers(unittest.TestCase):
         hyp = ['i love pizza','the sugar bare character was popular']
         expected_result = [0.25, 0.16666666666666666]
 
-        try:
-            self.assertEqual(wers(ref, hyp), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_wers_example_2: {e}")
+        self.assertEqual(wers(ref, hyp), expected_result)
 
 
     def test_wers_example_3(self):
@@ -70,10 +64,7 @@ class TestWers(unittest.TestCase):
         hyp = ['no one else could claim that','she sighted multiple reasons why']
         expected_result = [0.0, 0.2]
 
-        try:
-            self.assertEqual(wers(ref, hyp), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_wers_example_3: {e}")
+        self.assertEqual(wers(ref, hyp), expected_result)
 
 
     def test_wers_example_4(self):
@@ -111,10 +102,8 @@ class TestWers(unittest.TestCase):
         expected_result = [0.0, 0.08333333333333333, 0.0, 0.0, 0.375, 0.2727272727272727,
                            0.25, 0.07692307692307693, 0.16666666666666666, 0.0]
 
-        try:
-            self.assertEqual(wers(ref, hyp), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_wers_example_4: {e}")
+        self.assertEqual(wers(ref, hyp), expected_result)
+
 
 if __name__ == '__main__': # pragma: no cover
     unittest.main()
