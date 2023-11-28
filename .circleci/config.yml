@@ -26,11 +26,7 @@ jobs:
           # If `pip-dependency-file` is set to an empty string, no dependency file is used in the `pip install` command. 
           pip-dependency-file: ""
           # Add numpy and pandas as dependencies
-          args: "numpy pandas cython"
-      - run:
-          name: Compile Cython files
-          command: |
-            cythonize -i werpy/metrics.pyx
+          args: "numpy pandas"
       - run:  
           name: Run unit tests
           command: python -m unittest discover tests
