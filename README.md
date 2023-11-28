@@ -16,7 +16,6 @@
 | Package | [![Pypi](https://img.shields.io/pypi/v/werpy?label=PyPI&color=blue)](https://pypi.org/project/werpy/)&nbsp;&nbsp; [![PyPI Downloads](https://img.shields.io/pypi/dm/werpy?label=PyPI%20downloads)](https://pypi.org/project/werpy/)&nbsp;&nbsp; [![Downloads](https://static.pepy.tech/badge/werpy)](https://pepy.tech/project/werpy)&nbsp;&nbsp; [![sourcerank](https://img.shields.io/librariesio/sourcerank/pypi/werpy)](https://libraries.io/pypi/werpy)&nbsp;&nbsp; |
 
 
-
 <!-- badges: end -->
 
 ## What is werpy?
