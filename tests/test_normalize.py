@@ -141,5 +141,5 @@ class TestNormalize(unittest.TestCase):
         except AssertionError as e:
             self.fail(f"Assertion error in test_normalize_string: {e}")
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     unittest.main()
