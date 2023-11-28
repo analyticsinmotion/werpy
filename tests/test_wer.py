@@ -38,10 +38,7 @@ class TestWer(unittest.TestCase):
         This test checks the WER function with a basic example of reference and hypothesis strings 
         and ensures that the calculated WER matches the expected result.
         """
-        try:
-            self.assertEqual(wer('i love cold pizza', 'i love pizza'), 0.25)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_wer_example_1: {e}")
+        self.assertEqual(wer('i love cold pizza', 'i love pizza'), 0.25)
 
 
     def test_wer_example_2(self):
@@ -56,10 +53,7 @@ class TestWer(unittest.TestCase):
         hyp = ['i love pizza','the sugar bare character was popular']
         expected_result = 0.2
 
-        try:
-            self.assertEqual(wer(ref, hyp), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_wer_example_2: {e}")
+        self.assertEqual(wer(ref, hyp), expected_result)
 
 
     def test_wer_example_3(self):
@@ -96,10 +90,8 @@ class TestWer(unittest.TestCase):
             ]
         expected_result = 0.11650485436893204
 
-        try:
-            self.assertEqual(wer(ref, hyp), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_wer_example_3: {e}")
+        self.assertEqual(wer(ref, hyp), expected_result)
+
 
 if __name__ == '__main__': # pragma: no cover
     unittest.main()
