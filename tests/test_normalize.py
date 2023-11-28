@@ -83,10 +83,7 @@ class TestNormalize(unittest.TestCase):
             'taxes are a tool in the adjustment of the economy'
         ]
 
-        try:
-            self.assertEqual(normalize(reference), expected_normalized_reference)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_normalize_reference: {e}")
+        self.assertEqual(normalize(reference), expected_normalized_reference)
 
 
     def test_normalize_hypothesis(self):
@@ -118,10 +115,7 @@ class TestNormalize(unittest.TestCase):
             'taxes are a tool in the adjustment of the economy'
         ]
 
-        try:
-            self.assertEqual(normalize(hypothesis), expected_normalized_hypothesis)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_normalize_hypothesis: {e}")
+        self.assertEqual(normalize(hypothesis), expected_normalized_hypothesis)
 
 
     def test_normalize_string(self):
@@ -132,10 +126,8 @@ class TestNormalize(unittest.TestCase):
 
         expected_normalized_reference = 'its consumed domestically and exported to other countries'
 
-        try:
-            self.assertEqual(normalize(reference), expected_normalized_reference)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_normalize_string: {e}")
+        self.assertEqual(normalize(reference), expected_normalized_reference)
+
 
 if __name__ == '__main__': # pragma: no cover
     unittest.main()
