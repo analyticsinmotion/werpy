@@ -26,7 +26,51 @@ jobs:
           # If `pip-dependency-file` is set to an empty string, no dependency file is used in the `pip install` command. 
           pip-dependency-file: ""
           # Add numpy and pandas as dependencies
-          args: "numpy pandas"
+          args: "numpy pandas cython meson ninja"
+      
+      # Required - using Meson configure the build system and prepare for compilation
+      # The builddir it creates is only temporary and will be auto deleted after the job is finished
+      - run:  
+          name: Setup Meson
+          command: meson setup builddir
+
+      # Required - runs Ninja to actually compile the source code and generate the outputs to the builddir directory
+      - run:  
+          name: Compile with Ninja
+          command: ninja -C builddir
+      
+      # Optional - used for debugging
+      - run:  
+          name: Print contents of werpy
+          command: ls -l /home/circleci/project/werpy/
+      
+      # Optional - used for debugging
+      - run:  
+          name: Print contents of builddir
+          command: ls -l builddir
+
+      # Required - moves compiled modules from builddir to werpy directory
+      - run:  
+          name: Move compiled modules
+          #command: mv builddir/metrics.cpython-311-x86_64-linux-gnu.so werpy/
+          command: mv builddir/*.so werpy/
+
+      # Optional - used for debugging
+      - run:  
+          name: Print Python interpreter path
+          command: which python
+      
+      # Optional - used for debugging
+      - run:  
+          name: Print Python module search path
+          command: python -c "import sys; print(sys.path)"
+      
+      # Optional - used for debugging
+      - run:  
+          name: Print installed Python packages
+          command: pip list
+
+      # Required - runs unit tests
       - run:  
           name: Run unit tests
           command: python -m unittest discover tests
