@@ -26,7 +26,7 @@ jobs:
           # If `pip-dependency-file` is set to an empty string, no dependency file is used in the `pip install` command. 
           pip-dependency-file: ""
           # Add numpy and pandas as dependencies
-          args: "numpy pandas cython meson ninja"
+          args: "numpy pandas cython meson ninja coverage"
       
       # Required - using Meson configure the build system and prepare for compilation
       # The builddir it creates is only temporary and will be auto deleted after the job is finished
