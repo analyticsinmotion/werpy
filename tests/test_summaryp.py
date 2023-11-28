@@ -23,11 +23,7 @@ to ensure that the required module is available for testing.
 
 import unittest
 import pandas as pd
-
-try:
-    from werpy.summaryp import summaryp
-except ImportError as exc:
-    raise ImportError("The 'summaryp' module could not be imported. Make sure it is installed.") from exc
+from werpy.summaryp import summaryp
 
 class TestSummaryp(unittest.TestCase):
     """

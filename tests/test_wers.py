@@ -20,11 +20,7 @@ to ensure that the required module is available for testing.
 """
 
 import unittest
-
-try:
-    from werpy.wers import wers
-except ImportError as exc:
-    raise ImportError("The 'wers' module could not be imported. Make sure it is installed.") from exc
+from werpy.wers import wers
 
 class TestWers(unittest.TestCase):
     """

@@ -20,11 +20,7 @@ to ensure that the required module is available for testing.
 """
 
 import unittest
-
-try:
-    from werpy.werp import werp
-except ImportError as exc:
-    raise ImportError("The 'werp' module could not be imported. Make sure it is installed.") from exc
+from werpy.werp import werp
 
 class TestWerp(unittest.TestCase):
     """
