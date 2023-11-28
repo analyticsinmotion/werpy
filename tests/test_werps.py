@@ -35,10 +35,7 @@ class TestWerps(unittest.TestCase):
         This test checks the WERPS function with a basic example of reference and hypothesis strings 
         and ensures that the calculated WERPS matches the expected result.
         """
-        try:
-            self.assertEqual(werps('i love cold pizza', 'i love pizza', 0.5, 0.5, 1), 0.125)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werps_example_1: {e}")
+        self.assertEqual(werps('i love cold pizza', 'i love pizza', 0.5, 0.5, 1), 0.125)
 
 
     def test_werps_example_2(self):
@@ -53,12 +50,9 @@ class TestWerps(unittest.TestCase):
         hyp = ['i love pizza','the sugar bare character was popular']
         expected_result = [0.125, 0.16666666666666666]
 
-        try:
-            self.assertEqual(werps(
-                ref, hyp, insertions_weight=0.5, deletions_weight=0.5, substitutions_weight=1
-                ), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werps_example_2: {e}")
+        self.assertEqual(werps(
+            ref, hyp, insertions_weight=0.5, deletions_weight=0.5, substitutions_weight=1
+            ), expected_result)
 
 
     def test_werps_example_3(self):
@@ -73,10 +67,7 @@ class TestWerps(unittest.TestCase):
         hyp = ['no one else could claim that','she sighted multiple reasons why']
         expected_result = [0.0, 0.2]
 
-        try:
-            self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werps_example_3: {e}")
+        self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
 
 
     def test_werps_example_4(self):
@@ -91,10 +82,7 @@ class TestWerps(unittest.TestCase):
         hyp = ['it was a beautiful and sunny day']
         expected_result = [0.25]
 
-        try:
-            self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werps_example_4: {e}")
+        self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
 
 
     def test_werps_example_5(self):
@@ -109,10 +97,8 @@ class TestWerps(unittest.TestCase):
         hyp = ['it blocked sightlines of central park', 'our father was an elder man in the city government']
         expected_result = [0.21428571428571427, 0.2777777777777778]
 
-        try:
-            self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werps_example_5: {e}")
+        self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
+
 
 
     def test_werps_example_6(self):
@@ -150,11 +136,8 @@ class TestWerps(unittest.TestCase):
         expected_result = [0.0, 0.08333333333333333, 0.0, 0.0, 0.3125, 0.2727272727272727,
                            0.20833333333333334, 0.07692307692307693, 0.16666666666666666, 0.0]
 
+        self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
 
-        try:
-            self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werps_example_6: {e}")
 
 if __name__ == '__main__': # pragma: no cover
     unittest.main()
