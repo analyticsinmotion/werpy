@@ -73,5 +73,42 @@ class TestSummaryp(unittest.TestCase):
             print("DataFrames are not equal. Differences:\n", e)
 
 
+    def test_summaryp_example_2(self):
+        """
+        Test the summaryp function with multiple reference and hypothesis strings.
+
+        This test evaluates the SUMMARYP function with multiple reference and hypothesis text sequences. 
+        It verifies that the calculated SUMMARYP dataframe aligns with the expected output dataframe.
+
+        """
+        ref = 'the tower caused minor discontent because it blocked sight lines of central park'
+        hyp = 'the tower caused minor discontent because it blocked sightlines of central park'
+
+        # Generate the actual_result DataFrame
+        actual_result = summaryp(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
+
+        data = {
+            'wer': [0.15384615384615385],
+            'werp': [0.11538461538461539],
+            'ld': [2],
+            'm': [13],
+            'insertions': [0],
+            'deletions': [1],
+            'substitutions': [1],
+            'inserted_words': [[]],
+            'deleted_words': [['sight']],
+            'substituted_words': [[('lines', 'sightlines')]]
+            }
+
+        expected_result = pd.DataFrame(data)
+
+        try:
+            pd.testing.assert_frame_equal(expected_result, actual_result)
+            print("DataFrames are equal.")
+        except AssertionError as e:  # pragma: no cover
+            print("DataFrames are not equal. Differences:\n", e)
+
+
+
 if __name__ == '__main__': # pragma: no cover
     unittest.main()
