@@ -79,5 +79,5 @@ class TestSummary(unittest.TestCase):
             print("DataFrames are not equal. Differences:\n", e)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     unittest.main()

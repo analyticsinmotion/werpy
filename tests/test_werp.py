@@ -139,5 +139,5 @@ class TestWerp(unittest.TestCase):
         except AssertionError as e:
             self.fail(f"Assertion error in test_werp_example_4: {e}")
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     unittest.main()
