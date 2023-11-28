@@ -34,10 +34,7 @@ class TestWerp(unittest.TestCase):
         This test checks the WERP function with a basic example of reference and hypothesis strings 
         and ensures that the calculated WERP matches the expected result.
         """
-        try:
-            self.assertEqual(werp('i love cold pizza', 'i love pizza', 0.5, 0.5, 1), 0.125)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werp_example_1: {e}")
+        self.assertEqual(werp('i love cold pizza', 'i love pizza', 0.5, 0.5, 1), 0.125)
 
 
     def test_werp_example_2(self):
@@ -52,12 +49,9 @@ class TestWerp(unittest.TestCase):
         hyp = ['i love pizza','the sugar bare character was popular']
         expected_result = 0.15
 
-        try:
-            self.assertEqual(werp(
-                ref, hyp, insertions_weight=0.5, deletions_weight=0.5, substitutions_weight=1
-                ), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werp_example_2: {e}")
+        self.assertEqual(werp(
+            ref, hyp, insertions_weight=0.5, deletions_weight=0.5, substitutions_weight=1
+            ), expected_result)
 
 
     def test_werp_example_3(self):
@@ -72,10 +66,7 @@ class TestWerp(unittest.TestCase):
         hyp = ['no one else could claim that','she sighted multiple reasons why']
         expected_result = 0.09090909090909091
 
-        try:
-            self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werp_example_3: {e}")
+        self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
 
 
     def test_werp_example_4(self):
@@ -90,10 +81,7 @@ class TestWerp(unittest.TestCase):
         hyp = ['it was a beautiful and sunny day']
         expected_result = 0.25
 
-        try:
-            self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werp_example_4: {e}")
+        self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
 
 
     def test_werp_example_5(self):
@@ -130,10 +118,8 @@ class TestWerp(unittest.TestCase):
             ]
         expected_result = 0.10679611650485436
 
-        try:
-            self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
-        except AssertionError as e:
-            self.fail(f"Assertion error in test_werp_example_4: {e}")
+        self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
+
 
 if __name__ == '__main__': # pragma: no cover
     unittest.main()
