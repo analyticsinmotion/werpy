@@ -48,7 +48,9 @@ def wers(reference, hypothesis):
         print(f"{type(err).__name__}: {str(err)}")
         return None
     if isinstance(word_error_rate_breakdown[0], np.ndarray):
-        transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
+        transform_word_error_rate_breakdown = np.transpose(
+            word_error_rate_breakdown.tolist()
+        )
         wers_result = transform_word_error_rate_breakdown[0].tolist()
     else:
         wers_result = word_error_rate_breakdown[0]

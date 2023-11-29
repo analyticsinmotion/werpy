@@ -13,7 +13,7 @@ from .errorhandler import error_handler
 
 def summary(reference, hypothesis):
     """
-    This function provides a comprehensive breakdown of the calculated results including the WER, Levenshtein 
+    This function provides a comprehensive breakdown of the calculated results including the WER, Levenshtein
     Distance and all the insertion, deletion and substitution errors.
 
     Parameters
@@ -54,7 +54,16 @@ def summary(reference, hypothesis):
         word_error_rate_breakdown = word_error_rate_breakdown.tolist()
     else:
         word_error_rate_breakdown = [word_error_rate_breakdown.tolist()]
-    columns = ['wer', 'ld', 'm', 'insertions', 'deletions', 'substitutions', 'inserted_words', 'deleted_words',
-                   'substituted_words']    
+    columns = [
+        "wer",
+        "ld",
+        "m",
+        "insertions",
+        "deletions",
+        "substitutions",
+        "inserted_words",
+        "deleted_words",
+        "substituted_words",
+    ]
     df = pd.DataFrame(word_error_rate_breakdown, columns=columns)
     return df

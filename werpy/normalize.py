@@ -12,18 +12,18 @@ import string
 
 def normalize(text):
     """
-    This function serves as a versatile text preprocessing tool, designed to transform 
-    text data into an optimal format for a variety of natural language processing tasks, 
+    This function serves as a versatile text preprocessing tool, designed to transform
+    text data into an optimal format for a variety of natural language processing tasks,
     such as calculating the Word Error Rate (WER).
-    
-    Its core functionalities encompass removing punctuation, converting text to 
-    lowercase, and eliminating unnecessary whitespace. 
+
+    Its core functionalities encompass removing punctuation, converting text to
+    lowercase, and eliminating unnecessary whitespace.
 
     Parameters
     ----------
     text : str, list, tuple or numpy array
         The input text to be normalized.
-    
+
     Raises
     ------
     TypeError
@@ -34,10 +34,10 @@ def normalize(text):
     Returns
     -------
     str or list
-        If the input is a string, the function returns the normalized string. If the 
-        input is a list, tuple, or numpy array of strings, it returns a list of 
+        If the input is a string, the function returns the normalized string. If the
+        input is a list, tuple, or numpy array of strings, it returns a list of
         normalized strings.
-    
+
     Examples
     --------
     >>> reference = normalize(" it's Consumed Domestically  And exported to other countries.")
@@ -68,12 +68,14 @@ def normalize(text):
 
     for sentence in text:
         if not isinstance(sentence, str):
-            raise TypeError("Input must be String, List, Tuple, or NumPy Array. "
-                            "All data types should be flat, have a depth of 1 and "
-                            "contain no nested elements.")        
+            raise TypeError(
+                "Input must be String, List, Tuple, or NumPy Array. "
+                "All data types should be flat, have a depth of 1 and "
+                "contain no nested elements."
+            )
         cleaned_sentence = sentence.encode().translate(translate_bytes).decode().lower()
-        cleaned_sentence = cleaned_sentence.rstrip('\x00').replace('\x00', '')
-        cleaned_sentence = ' '.join(cleaned_sentence.split())
+        cleaned_sentence = cleaned_sentence.rstrip("\x00").replace("\x00", "")
+        cleaned_sentence = " ".join(cleaned_sentence.split())
         normalized_text.append(cleaned_sentence)
 
     if is_string_flag:

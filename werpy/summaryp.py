@@ -12,7 +12,13 @@ import pandas as pd
 from .errorhandler import error_handler
 
 
-def summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1):
+def summaryp(
+    reference,
+    hypothesis,
+    insertions_weight=1,
+    deletions_weight=1,
+    substitutions_weight=1,
+):
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, weighted
     WER, Levenshtein Distance and all the insertion, deletion and substitution errors.
@@ -63,9 +69,13 @@ def summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, sub
         transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown)
         weighted_insertions = transform_word_error_rate_breakdown[3] * insertions_weight
         weighted_deletions = transform_word_error_rate_breakdown[4] * deletions_weight
-        weighted_substitutions = transform_word_error_rate_breakdown[5] * substitutions_weight
+        weighted_substitutions = (
+            transform_word_error_rate_breakdown[5] * substitutions_weight
+        )
         m = transform_word_error_rate_breakdown[2]
-        weighted_errors = sum((weighted_insertions, weighted_deletions, weighted_substitutions))
+        weighted_errors = sum(
+            (weighted_insertions, weighted_deletions, weighted_substitutions)
+        )
         werps_result = (weighted_errors / m).tolist()
     else:
         word_error_rate_breakdown = [word_error_rate_breakdown.tolist()]
@@ -73,13 +83,36 @@ def summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, sub
         weighted_deletions = word_error_rate_breakdown[0][4] * deletions_weight
         weighted_substitutions = word_error_rate_breakdown[0][5] * substitutions_weight
         m = word_error_rate_breakdown[0][2]
-        weighted_errors = sum((weighted_insertions, weighted_deletions, weighted_substitutions))
+        weighted_errors = sum(
+            (weighted_insertions, weighted_deletions, weighted_substitutions)
+        )
         werps_result = weighted_errors / m
 
-    columns = ['wer', 'ld', 'm', 'insertions', 'deletions', 'substitutions', 'inserted_words', 'deleted_words',
-                   'substituted_words']    
+    columns = [
+        "wer",
+        "ld",
+        "m",
+        "insertions",
+        "deletions",
+        "substitutions",
+        "inserted_words",
+        "deleted_words",
+        "substituted_words",
+    ]
     df = pd.DataFrame(word_error_rate_breakdown, columns=columns)
-    df['werp'] = werps_result
-    df = df[['wer', 'werp', 'ld', 'm', 'insertions', 'deletions', 'substitutions', 'inserted_words'
-             , 'deleted_words', 'substituted_words']]
+    df["werp"] = werps_result
+    df = df[
+        [
+            "wer",
+            "werp",
+            "ld",
+            "m",
+            "insertions",
+            "deletions",
+            "substitutions",
+            "inserted_words",
+            "deleted_words",
+            "substituted_words",
+        ]
+    ]
     return df

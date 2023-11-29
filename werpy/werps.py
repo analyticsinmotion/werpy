@@ -10,7 +10,13 @@ import numpy as np
 from .errorhandler import error_handler
 
 
-def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1):
+def werps(
+    reference,
+    hypothesis,
+    insertions_weight=1,
+    deletions_weight=1,
+    substitutions_weight=1,
+):
     """
     This function calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts. It
     allows the insertion, deletion and substitution errors to be penalized or weighted at different rates.
@@ -61,10 +67,14 @@ def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substi
         print(f"{type(err).__name__}: {str(err)}")
         return None
     if isinstance(word_error_rate_breakdown[0], np.ndarray):
-        transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown.tolist())
+        transform_word_error_rate_breakdown = np.transpose(
+            word_error_rate_breakdown.tolist()
+        )
         weighted_insertions = transform_word_error_rate_breakdown[3] * insertions_weight
         weighted_deletions = transform_word_error_rate_breakdown[4] * deletions_weight
-        weighted_substitutions = transform_word_error_rate_breakdown[5] * substitutions_weight
+        weighted_substitutions = (
+            transform_word_error_rate_breakdown[5] * substitutions_weight
+        )
         m = transform_word_error_rate_breakdown[2]
     else:
         weighted_insertions = word_error_rate_breakdown[3] * insertions_weight
@@ -72,7 +82,9 @@ def werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substi
         weighted_substitutions = word_error_rate_breakdown[5] * substitutions_weight
         m = word_error_rate_breakdown[2]
 
-    weighted_errors = sum((weighted_insertions, weighted_deletions, weighted_substitutions))
+    weighted_errors = sum(
+        (weighted_insertions, weighted_deletions, weighted_substitutions)
+    )
     werps_result = weighted_errors / m
 
     if isinstance(word_error_rate_breakdown[0], float):
