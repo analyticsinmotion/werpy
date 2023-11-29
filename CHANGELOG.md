@@ -3,6 +3,23 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
+## Version 2.1.2-dev (Dev)
+**Released:** TBD<br />
+**Tag:** v2.1.2
+
+### Enhancements
+
+- Updated the circleci config.yml file to support the compilation of Cython .pyx files.
+
+- Integrated codecov into the circleci config.yml file to generate comprehensive coverage reports.
+
+- Enhanced testing procedures to increase code coverage percentage.
+
+- Ensured closer compliance with the Black code formatting by modifying relevant files.
+
+
+<br /><br />
+
 ## Version 2.1.1 (Latest)
 **Released:** November 27, 2023<br />
 **Tag:** v2.1.1
