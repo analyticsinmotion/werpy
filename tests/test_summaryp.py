@@ -25,80 +25,101 @@ import unittest
 import pandas as pd
 from werpy.summaryp import summaryp
 
+
 class TestSummaryp(unittest.TestCase):
     """
-    This class contains unit tests for the 'summaryp' function, which calculates the Word Error Rate (WER) 
+    This class contains unit tests for the 'summaryp' function, which calculates the Word Error Rate (WER)
     between reference and hypothesis text sequences, displaying the summary results as a dataframe.
     """
+
     def test_summaryp_example_1(self):
         """
         Test the summaryp function with multiple reference and hypothesis strings.
 
-        This test evaluates the SUMMARYP function with multiple reference and hypothesis text sequences. 
+        This test evaluates the SUMMARYP function with multiple reference and hypothesis text sequences.
         It verifies that the calculated SUMMARYP dataframe aligns with the expected output dataframe.
 
         """
-        ref = ['the tower caused minor discontent because it blocked sight lines of central park',
-               'her father was an alderman in the city government', 
-               'he was commonly referred to as the blacksmith of ballinalee']
-        hyp = ['the tower caused minor discontent because it blocked sightlines of central park',
-               'our father was an alderman in the city government', 
-               'he was commonly referred to as the blacksmith of balen alley']
+        ref = [
+            "the tower caused minor discontent because it blocked sight lines of central park",
+            "her father was an alderman in the city government",
+            "he was commonly referred to as the blacksmith of ballinalee",
+        ]
+        hyp = [
+            "the tower caused minor discontent because it blocked sightlines of central park",
+            "our father was an alderman in the city government",
+            "he was commonly referred to as the blacksmith of balen alley",
+        ]
 
         # Generate the actual_result DataFrame
-        actual_result = summaryp(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
+        actual_result = summaryp(
+            ref,
+            hyp,
+            insertions_weight=0.5,
+            deletions_weight=0.5,
+            substitutions_weight=1,
+        )
 
         data = {
-            'wer': [0.15384615384615385, 0.1111111111111111, 0.2],
-            'werp': [0.11538461538461539, 0.1111111111111111, 0.15],
-            'ld': [2, 1, 2],
-            'm': [13, 9, 10],
-            'insertions': [0, 0, 1],
-            'deletions': [1, 0, 0],
-            'substitutions': [1, 1, 1],
-            'inserted_words': [[], [], ['balen']],
-            'deleted_words': [['sight'], [], []],
-            'substituted_words': [[('lines', 'sightlines')], [('her', 'our')], [('ballinalee', 'alley')]]
-            }
+            "wer": [0.15384615384615385, 0.1111111111111111, 0.2],
+            "werp": [0.11538461538461539, 0.1111111111111111, 0.15],
+            "ld": [2, 1, 2],
+            "m": [13, 9, 10],
+            "insertions": [0, 0, 1],
+            "deletions": [1, 0, 0],
+            "substitutions": [1, 1, 1],
+            "inserted_words": [[], [], ["balen"]],
+            "deleted_words": [["sight"], [], []],
+            "substituted_words": [
+                [("lines", "sightlines")],
+                [("her", "our")],
+                [("ballinalee", "alley")],
+            ],
+        }
 
         expected_result = pd.DataFrame(data)
 
         # Set the data type of the "ld" column to int64
-        #expected_result['ld'] = expected_result['ld'].astype('int32')
+        # expected_result['ld'] = expected_result['ld'].astype('int32')
 
         try:
             pd.testing.assert_frame_equal(expected_result, actual_result)
             print("DataFrames are equal.")
         except AssertionError as e:  # pragma: no cover
             print("DataFrames are not equal. Differences:\n", e)
-
 
     def test_summaryp_example_2(self):
         """
         Test the summaryp function with multiple reference and hypothesis strings.
 
-        This test evaluates the SUMMARYP function with multiple reference and hypothesis text sequences. 
+        This test evaluates the SUMMARYP function with multiple reference and hypothesis text sequences.
         It verifies that the calculated SUMMARYP dataframe aligns with the expected output dataframe.
 
         """
-        ref = 'the tower caused minor discontent because it blocked sight lines of central park'
-        hyp = 'the tower caused minor discontent because it blocked sightlines of central park'
+        ref = "the tower caused minor discontent because it blocked sight lines of central park"
+        hyp = "the tower caused minor discontent because it blocked sightlines of central park"
 
         # Generate the actual_result DataFrame
-        actual_result = summaryp(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
+        actual_result = summaryp(
+            ref,
+            hyp,
+            insertions_weight=0.5,
+            deletions_weight=0.5,
+            substitutions_weight=1,
+        )
 
         data = {
-            'wer': [0.15384615384615385],
-            'werp': [0.11538461538461539],
-            'ld': [2],
-            'm': [13],
-            'insertions': [0],
-            'deletions': [1],
-            'substitutions': [1],
-            'inserted_words': [[]],
-            'deleted_words': [['sight']],
-            'substituted_words': [[('lines', 'sightlines')]]
-            }
+            "wer": [0.15384615384615385],
+            "werp": [0.11538461538461539],
+            "ld": [2],
+            "m": [13],
+            "insertions": [0],
+            "deletions": [1],
+            "substitutions": [1],
+            "inserted_words": [[]],
+            "deleted_words": [["sight"]],
+            "substituted_words": [[("lines", "sightlines")]],
+        }
 
         expected_result = pd.DataFrame(data)
 
@@ -109,6 +130,5 @@ class TestSummaryp(unittest.TestCase):
             print("DataFrames are not equal. Differences:\n", e)
 
 
-
-if __name__ == '__main__': # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     unittest.main()
