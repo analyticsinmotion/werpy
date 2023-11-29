@@ -115,15 +115,15 @@ class TestWers(unittest.TestCase):
 
     def test_wers_example_5(self):
         """
-        Test the wer function with numerical reference and hypothesis inputs.
+        Test the wers function with numerical reference and hypothesis inputs.
 
-        This test evaluates the WER function with numerical reference and hypothesis inputs.
+        This test evaluates the WERS function with numerical reference and hypothesis inputs.
         It verifies that the numerical input will raise an AttributeError.
 
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in wer module
+        # The actual return value is None from the try/except block in wers module
         expected_result = None
 
         self.assertEqual(wers(ref, hyp), expected_result)
