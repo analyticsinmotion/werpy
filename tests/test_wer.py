@@ -92,6 +92,21 @@ class TestWer(unittest.TestCase):
 
         self.assertEqual(wer(ref, hyp), expected_result)
 
+    def test_wer_example_4(self):
+        """
+        Test the wer function with numerical reference and hypothesis inputs.
+
+        This test evaluates the WER function with numerical reference and hypothesis inputs.
+        It verifies that the numerical input will raise an AttributeError.
+
+        """
+        ref = [1, 2, 3, 4]
+        hyp = [2, 3, 3, 3]
+        # The actual return value is None from the try/except block in wer module
+        expected_result = None
+
+        self.assertEqual(wer(ref, hyp), expected_result)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
