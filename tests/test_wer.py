@@ -26,72 +26,72 @@ to ensure that the required module is available for testing.
 import unittest
 from werpy.wer import wer
 
+
 class TestWer(unittest.TestCase):
     """
-    This class contains unit tests for the 'wer' function, which calculates the Word Error Rate (WER) 
+    This class contains unit tests for the 'wer' function, which calculates the Word Error Rate (WER)
     between reference and hypothesis text sequences.
     """
+
     def test_wer_example_1(self):
         """
         Test the wer function with a simple example.
 
-        This test checks the WER function with a basic example of reference and hypothesis strings 
+        This test checks the WER function with a basic example of reference and hypothesis strings
         and ensures that the calculated WER matches the expected result.
         """
-        self.assertEqual(wer('i love cold pizza', 'i love pizza'), 0.25)
-
+        self.assertEqual(wer("i love cold pizza", "i love pizza"), 0.25)
 
     def test_wer_example_2(self):
         """
         Test the wer function with multiple reference and hypothesis strings.
 
-        This test evaluates the WER function with multiple reference and hypothesis text sequences. 
+        This test evaluates the WER function with multiple reference and hypothesis text sequences.
         It verifies that the calculated WER aligns with the expected result.
 
         """
-        ref = ['i love cold pizza','the sugar bear character was popular']
-        hyp = ['i love pizza','the sugar bare character was popular']
+        ref = ["i love cold pizza", "the sugar bear character was popular"]
+        hyp = ["i love pizza", "the sugar bare character was popular"]
         expected_result = 0.2
 
         self.assertEqual(wer(ref, hyp), expected_result)
-
 
     def test_wer_example_3(self):
         """
         Test the wer function with longer text sequences.
 
-        This test assesses the WER function's performance with longer reference and hypothesis text sequences. 
+        This test assesses the WER function's performance with longer reference and hypothesis text sequences.
         It verifies that the calculated WER closely matches the expected result.
 
         """
         ref = [
-            'it is consumed domestically and exported to other countries',
-            'the sugar bear character was popular enough to have occasional premium toys',
-            'it is one of the most watched television networks in the country',
-            'it could be carried and prepared by the individual soldier',
-            'he was executed in a lubyanka prison cellar',
-            'rufino street in makati right inside the makati central business district',
-            'its estuary is considered to have abnormally low rates of dissolved oxygen',
-            'he later cited his first wife anita as the inspiration for the song',
-            'gadya is the nearest rural locality',
-            'taxes are a tool in the adjustment of the economy'
-            ]
+            "it is consumed domestically and exported to other countries",
+            "the sugar bear character was popular enough to have occasional premium toys",
+            "it is one of the most watched television networks in the country",
+            "it could be carried and prepared by the individual soldier",
+            "he was executed in a lubyanka prison cellar",
+            "rufino street in makati right inside the makati central business district",
+            "its estuary is considered to have abnormally low rates of dissolved oxygen",
+            "he later cited his first wife anita as the inspiration for the song",
+            "gadya is the nearest rural locality",
+            "taxes are a tool in the adjustment of the economy",
+        ]
         hyp = [
-            'it is consumed domestically and exported to other countries',
-            'the sugar bare character was popular enough to have occasional premium toys',
-            'it is one of the most watched television networks in the country',
-            'it could be carried and prepared by the individual soldier',
-            'he was executed in alabianca prison seller',
-            'rofino street in mccauti right inside the macasi central business district',
-            'its estiary is considered to have a normally low rates of dissolved oxygen',
-            'he later sighted his first wife anita as the inspiration for the song',
-            'gadia is the nearest rural locality',
-            'taxes are a tool in the adjustment of the economy'
-            ]
+            "it is consumed domestically and exported to other countries",
+            "the sugar bare character was popular enough to have occasional premium toys",
+            "it is one of the most watched television networks in the country",
+            "it could be carried and prepared by the individual soldier",
+            "he was executed in alabianca prison seller",
+            "rofino street in mccauti right inside the macasi central business district",
+            "its estiary is considered to have a normally low rates of dissolved oxygen",
+            "he later sighted his first wife anita as the inspiration for the song",
+            "gadia is the nearest rural locality",
+            "taxes are a tool in the adjustment of the economy",
+        ]
         expected_result = 0.11650485436893204
 
         self.assertEqual(wer(ref, hyp), expected_result)
 
 
-if __name__ == '__main__': # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     unittest.main()
