@@ -1,7 +1,7 @@
 
 ![werpy-logo-word-error-rate](https://user-images.githubusercontent.com/52817125/235063664-2f21629c-0fad-46b6-a487-c2b5ef6f80e9.png)
 
-<h1 align="left">werpy - Word Error Rate for Python
+<h1 align="center">Word Error Rate for Python
 <a href="https://twitter.com/intent/tweet?text=Introducing%20%23werpy%20-%20the%20Python%20package%20for%20fast%20and%20accurate%20Word%20Error%20Rate%20(WER)%20calculation.%20Analyze%20text%20accuracy%2C%20enhance%20%23NLP%20models%2C%20and%20improve%20%23SpeechRecognition%20systems.%20Try%20it%20now%3A%20&url=https://github.com/analyticsinmotion/werpy&via=analyticsmotion&hashtags=PythonPackage,WordErrorRate,WER,NLP">
     <img src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" alt="Tweet">
   </a>
