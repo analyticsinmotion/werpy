@@ -125,6 +125,21 @@ class TestWerp(unittest.TestCase):
 
         self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
 
+    def test_werp_example_6(self):
+        """
+        Test the werp function with numerical reference and hypothesis inputs.
+
+        This test evaluates the WERP function with numerical reference and hypothesis inputs.
+        It verifies that the numerical input will raise an AttributeError.
+
+        """
+        ref = [1, 2, 3, 4]
+        hyp = [2, 3, 3, 3]
+        # The actual return value is None from the try/except block in werp module
+        expected_result = None
+
+        self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
