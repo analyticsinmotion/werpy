@@ -23,50 +23,60 @@ import unittest
 import pandas as pd
 from werpy.summary import summary
 
+
 class TestSummary(unittest.TestCase):
     """
-    This class contains unit tests for the 'summary' function, which calculates the Word Error Rate (WER) 
+    This class contains unit tests for the 'summary' function, which calculates the Word Error Rate (WER)
     between reference and hypothesis text sequences, displaying the summary results as a dataframe.
     """
+
     def test_summary_example_1(self):
         """
         Test the summary function with multiple reference and hypothesis strings.
 
-        This test evaluates the SUMMARY function with multiple reference and hypothesis text sequences. 
+        This test evaluates the SUMMARY function with multiple reference and hypothesis text sequences.
         It verifies that the calculated SUMMARY dataframe aligns with the expected output dataframe.
 
         """
-        ref = ['it is consumed domestically and exported to other countries',
-               'rufino street in makati right inside the makati central business district',
-               'its estuary is considered to have abnormally low rates of dissolved oxygen',
-               'he later cited his first wife anita as the inspiration for the song',
-               'no one else could claim that']
-        hyp = ['it is consumed domestically and exported to other countries',
-               'rofino street in mccauti right inside the macasi central business district',
-               'its estiary is considered to have a normally low rates of dissolved oxygen',
-               'he later sighted his first wife anita as the inspiration for the song',
-               'no one else could claim that']
+        ref = [
+            "it is consumed domestically and exported to other countries",
+            "rufino street in makati right inside the makati central business district",
+            "its estuary is considered to have abnormally low rates of dissolved oxygen",
+            "he later cited his first wife anita as the inspiration for the song",
+            "no one else could claim that",
+        ]
+        hyp = [
+            "it is consumed domestically and exported to other countries",
+            "rofino street in mccauti right inside the macasi central business district",
+            "its estiary is considered to have a normally low rates of dissolved oxygen",
+            "he later sighted his first wife anita as the inspiration for the song",
+            "no one else could claim that",
+        ]
 
         # Generate the actual_result DataFrame
         actual_result = summary(ref, hyp)
 
-        expected_result = pd.DataFrame({
-            'wer': [0.000000, 0.272727, 0.250000, 0.076923, 0.000000],
-            'ld': [0, 3, 3, 1, 0],
-            'm': [9, 11, 12, 13, 6],
-            'insertions': [0, 0, 1, 0, 0],
-            'deletions': [0, 0, 0, 0, 0],
-            'substitutions': [0, 3, 2, 1, 0],
-            'inserted_words': [[], [], ['a'], [], []],
-            'deleted_words': [[], [], [], [], []],
-            'substituted_words': [[],
-                                  [('rufino', 'rofino'), ('makati', 'mccauti'), ('makati', 'macasi')],
-                                  [('estuary', 'estiary'), ('abnormally', 'normally')],
-                                  [('cited', 'sighted')],
-                                  []]
-            })
+        expected_result = pd.DataFrame(
+            {
+                "wer": [0.000000, 0.272727, 0.250000, 0.076923, 0.000000],
+                "ld": [0, 3, 3, 1, 0],
+                "m": [9, 11, 12, 13, 6],
+                "insertions": [0, 0, 1, 0, 0],
+                "deletions": [0, 0, 0, 0, 0],
+                "substitutions": [0, 3, 2, 1, 0],
+                "inserted_words": [[], [], ["a"], [], []],
+                "deleted_words": [[], [], [], [], []],
+                "substituted_words": [
+                    [],
+                    [("rufino", "rofino"), ("makati", "mccauti"), ("makati", "macasi")],
+                    [("estuary", "estiary"), ("abnormally", "normally")],
+                    [("cited", "sighted")],
+                    [],
+                ],
+            }
+        )
         # Set the data type of the "ld" column to int64
-        #expected_result['ld'] = expected_result['ld'].astype('int32')
+        # expected_result['ld'] = expected_result['ld'].astype('int32')
 
         try:
             pd.testing.assert_frame_equal(expected_result, actual_result)
@@ -75,5 +85,5 @@ class TestSummary(unittest.TestCase):
             print("DataFrames are not equal. Differences:\n", e)
 
 
-if __name__ == '__main__': # pragma: no cover
+if __name__ == "__main__":  # pragma: no cover
     unittest.main()
