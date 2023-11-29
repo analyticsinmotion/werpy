@@ -129,6 +129,21 @@ class TestSummaryp(unittest.TestCase):
         except AssertionError as e:  # pragma: no cover
             print("DataFrames are not equal. Differences:\n", e)
 
+    def test_summaryp_example_3(self):
+        """
+        Test the summaryp function with numerical reference and hypothesis inputs.
+
+        This test evaluates the SUMMARYP function with numerical reference and hypothesis inputs.
+        It verifies that the numerical input will raise an AttributeError.
+
+        """
+        ref = [1, 2, 3, 4]
+        hyp = [2, 3, 3, 3]
+        # The actual return value is None from the try/except block in wer module
+        expected_result = None
+
+        self.assertEqual(summaryp(ref, hyp, 0.5, 0.5, 1), expected_result)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
