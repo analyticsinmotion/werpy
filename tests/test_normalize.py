@@ -141,7 +141,7 @@ class TestNormalize(unittest.TestCase):
 
         """
         ref = [1, 2, 3, 4]
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeError):
             normalize(ref)
 
 
