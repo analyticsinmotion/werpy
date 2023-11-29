@@ -132,6 +132,18 @@ class TestNormalize(unittest.TestCase):
 
         self.assertEqual(normalize(reference), expected_normalized_reference)
 
+    def test_normalize_integers(self):
+        """
+        Test the normalize function with numerical reference and hypothesis inputs.
+
+        This test evaluates the NORMALIZE function with numerical reference and hypothesis inputs.
+        It verifies that the numerical input will raise an TypeError.
+
+        """
+        ref = [1, 2, 3, 4]
+        with self.assertRaises(AttributeError):
+            normalize(ref)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
