@@ -9,6 +9,10 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ### Enhancements
 
+- Full compatibility with Python v3.12:
+  - The package has been thoroughly tested and verified to work seamlessly with Python v3.12.
+  - All dependencies have been updated and are also compliant with Python v3.12.
+
 - Updated the circleci config.yml file to support the compilation of Cython .pyx files.
 
 - Integrated codecov into the circleci config.yml file to generate comprehensive coverage reports.
