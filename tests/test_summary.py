@@ -81,8 +81,8 @@ class TestSummary(unittest.TestCase):
         try:
             pd.testing.assert_frame_equal(expected_result, actual_result)
             print("DataFrames are equal.")
-        except AssertionError as e:  # pragma: no cover
-            print("DataFrames are not equal. Differences:\n", e)
+        except AssertionError as error:  # pragma: no cover
+            print("DataFrames are not equal. Differences:\n", error)
 
     def test_summary_example_2(self):
         """
