@@ -64,6 +64,13 @@ dependencies = [
 "Bug Tracker" = "https://github.com/analyticsinmotion/werpy/issues"
 
 
+[project.optional-dependencies]
+docs = [
+    "sphinx~=7.2.6",
+    "sphinx-nefertiti~= 0.2.1 ",
+]
+
+
 # For localized testing of the package on Windows OS
 #[tool.cibuildwheel]
 #build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
