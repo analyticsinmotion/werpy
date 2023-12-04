@@ -13,13 +13,15 @@ It is organized by version and release date followed by a list of Enhancements, 
   - The package has been thoroughly tested and verified to work seamlessly with Python v3.12.
   - All dependencies have been updated and are also compliant with Python v3.12.
 
+- Added comprehensive package documentation using Sphinx and hosted on Read the Docs. The documentation covers installation instructions, usage guides, and worked examples of all feature functionality. Access the documentation at [https://werpy.readthedocs.io/](https://werpy.readthedocs.io/).
+
 - Updated the circleci config.yml file to support the compilation of Cython .pyx files.
 
 - Integrated codecov into the circleci config.yml file to generate comprehensive coverage reports.
 
 - Enhanced testing procedures to increase code coverage percentage.
 
-- Ensured closer compliance with the Black code formatting by modifying relevant files.
+- Ensured compliance with the Black code formatting by modifying relevant files.
 
 
 <br /><br />
