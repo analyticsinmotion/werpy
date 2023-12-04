@@ -31,7 +31,7 @@ html_theme_options = {
     "repository_url": "https://github.com/analyticsinmotion/werpy",
     "footer_links": ",".join(
         [
-            "Documentation|https://werpy.readthedocs.com",
+            "Documentation|https://werpy.readthedocs.io",
             "Package|https://pypi.org/project/werpy/",
             "Repository|https://github.com/analyticsinmotion/werpy",
             "Issues|https://github.com/analyticsinmotion/werpy/issues",
