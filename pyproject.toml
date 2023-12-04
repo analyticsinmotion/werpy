@@ -59,8 +59,8 @@ dependencies = [
 
 
 [project.urls]
-"Homepage" = "https://github.com/analyticsinmotion/werpy"
 "Repository" = "https://github.com/analyticsinmotion/werpy"
+"Documentation" = "https://werpy.readthedocs.io/"
 "Bug Tracker" = "https://github.com/analyticsinmotion/werpy/issues"
 
 
