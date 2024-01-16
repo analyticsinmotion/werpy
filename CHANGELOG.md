@@ -24,6 +24,12 @@ It is organized by version and release date followed by a list of Enhancements, 
 - Ensured compliance with the Black code formatting by modifying relevant files.
 
 
+### Changed
+
+- Bump jinja2 from 3.1.2 to 3.1.3 in /docs. ([#1](https://github.com/analyticsinmotion/werpy/pull/1))
+  - For more information please see the Jinja release documentation [https://github.com/pallets/jinja/releases](https://github.com/pallets/jinja/releases).
+
+
 <br /><br />
 
 ## Version 2.1.1 (Latest)
