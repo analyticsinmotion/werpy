@@ -31,6 +31,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Bump sphinx-nefertiti from 0.2.1 to 0.2.3 ([#2](https://github.com/analyticsinmotion/werpy/pull/2))
 
+- Bump sphinx-nefertiti from 0.2.3 to 0.3.1 ([#3](https://github.com/analyticsinmotion/werpy/pull/3))
+
 
 <br /><br />
 
