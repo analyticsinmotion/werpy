@@ -3,7 +3,7 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
-## Version 2.1.2-dev (Latest)
+## Version 2.1.2 (Latest)
 **Released:** April 5, 2024<br />
 **Tag:** v2.1.2
 
