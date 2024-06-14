@@ -3,6 +3,21 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
+## Version 2.1.3-beta
+**Released:** TBD<br />
+**Tag:** v2.1.3-beta
+
+### Enhancements
+
+- Bump idna from 3.6 to 3.7 in /docs ([#5](https://github.com/analyticsinmotion/werpy/pull/5))
+- Bump sphinx from 7.2.6 to 7.3.7 ([#6](https://github.com/analyticsinmotion/werpy/pull/6))
+- Bump jinja2 from 3.1.3 to 3.1.4 in /docs ([#7](https://github.com/analyticsinmotion/werpy/pull/7))
+<!-- - Bump sphinx-nefertiti from 0.3.2 to 0.3.3 ([#8](https://github.com/analyticsinmotion/werpy/pull/8))  -->
+- Bump requests from 2.31.0 to 2.32.2 in /docs ([#10](https://github.com/analyticsinmotion/werpy/pull/10))
+
+<br />
+
+
 ## Version 2.1.2 (Latest)
 **Released:** April 5, 2024<br />
 **Tag:** v2.1.2
