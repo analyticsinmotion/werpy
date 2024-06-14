@@ -4,7 +4,7 @@
 #
 #    pip-compile requirements.in
 #
-alabaster==0.7.13
+alabaster==0.7.16
     # via sphinx
 babel==2.13.1
     # via sphinx
@@ -26,11 +26,11 @@ packaging==23.2
     # via sphinx
 pygments==2.17.2
     # via sphinx
-requests==2.31.0
+requests==2.32.2
     # via sphinx
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.2.6
+sphinx==7.3.7
     # via
     #   -r requirements.in
     #   sphinx-nefertiti
