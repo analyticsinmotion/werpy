@@ -15,6 +15,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 <!-- - Bump sphinx-nefertiti from 0.3.2 to 0.3.3 ([#8](https://github.com/analyticsinmotion/werpy/pull/8))  -->
 - Bump requests from 2.31.0 to 2.32.2 in /docs ([#10](https://github.com/analyticsinmotion/werpy/pull/10))
 - Bump urllib3 from 2.1.0 to 2.2.2 in /docs ([#11](https://github.com/analyticsinmotion/werpy/pull/11))
+- Bump certifi from 2023.11.17 to 2024.7.4 in /docs ([#13](https://github.com/analyticsinmotion/werpy/pull/13))
 
 <br />
 
