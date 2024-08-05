@@ -67,7 +67,7 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "sphinx==7.3.7",
-    "sphinx-nefertiti== 0.3.4",
+    "sphinx-nefertiti== 0.4.0",
 ]
 
 
