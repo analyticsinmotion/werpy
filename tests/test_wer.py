@@ -107,6 +107,19 @@ class TestWer(unittest.TestCase):
 
         self.assertEqual(wer(ref, hyp), expected_result)
 
+    def test_wer_empty_strings(self):
+        """
+        Test the wer function with empty reference and hypothesis strings.
+
+        This test evaluates the WER function with empty strings as input.
+        It verifies that the calculated WER is 0 for identical empty strings.
+        """
+        ref = [""]
+        hyp = [""]
+        expected_result = 0.0
+
+        self.assertEqual(wer(ref, hyp), expected_result)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
