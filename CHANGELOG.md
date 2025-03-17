@@ -3,6 +3,21 @@ This changelog file outlines a chronologically ordered list of the changes made 
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 <br /><br />
 
+
+## Version 3.0.0-beta
+**Released:** TBD<br />
+**Tag:** v3.0.0-beta
+
+### Enhancements
+
+- Bump sphinx from 7.3.7 to 8.0.2 ([#19](https://github.com/analyticsinmotion/werpy/pull/19))
+
+
+<br />
+
+
+
+
 ## Version 2.1.3-beta
 **Released:** TBD<br />
 **Tag:** v2.1.3-beta
