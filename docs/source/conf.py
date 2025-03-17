@@ -29,14 +29,24 @@ html_theme_options = {
     # ... other options ...
     "repository_name": "analyticsinmotion/werpy",
     "repository_url": "https://github.com/analyticsinmotion/werpy",
-    "footer_links": ",".join(
-        [
-            "Documentation|https://werpy.readthedocs.io",
-            "Package|https://pypi.org/project/werpy/",
-            "Repository|https://github.com/analyticsinmotion/werpy",
-            "Issues|https://github.com/analyticsinmotion/werpy/issues",
-        ]
-    ),
+    "footer_links": [
+        {
+            "text": "Documentation", 
+            "link": "https://werpy.readthedocs.io"
+        },
+        {
+            "text": "Package", 
+            "link": "https://pypi.org/project/werpy/"
+        },
+        {
+            "text": "Repository", 
+            "link": "https://github.com/analyticsinmotion/werpy"
+        },
+        {
+            "text": "Issues", 
+            "link": "https://github.com/analyticsinmotion/werpy/issues"
+        },
+    ],
     # "show_powered_by": False,
 }
 
