@@ -10,7 +10,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ### Enhancements
 
-- Bump sphinx from 7.3.7 to 8.0.2 ([#19](https://github.com/analyticsinmotion/werpy/pull/19))
+- Bump sphinx from 7.3.7 to 8.1.3
+- Bump sphinx-nefertiti from 0.3.4 to 0.7.4
 
 
 <br />
