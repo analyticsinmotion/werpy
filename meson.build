@@ -1,13 +1,13 @@
 project(
     'werpy', 
     'c', 'cython',
-    version : '2.1.2',
+    version : '3.0.0',
     license: 'BSD-3',
     meson_version: '>= 1.1.0',
     default_options : [
         'buildtype=debugoptimized',
         'warning_level=3',
-        'c_std=c11'
+        'c_std=c17'
         ]
 )
 

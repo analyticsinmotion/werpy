@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "werpy"
-copyright = "Copyright 2023-2024, Analytics in Motion"
+copyright = "Copyright 2023-2025, Analytics in Motion"
 author = "Ross Armstrong"
-release = "2.1.2"
+release = "3.0.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
