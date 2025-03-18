@@ -12,6 +12,11 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Bump sphinx from 7.3.7 to 8.1.3
 - Bump sphinx-nefertiti from 0.3.4 to 0.7.4
+  - The latest version ('0.7.4') is now fully compatible with Sphinx 8.1.
+- Updated C standard from C11 ('c_std=c11') to C17 ('c_std=c17') in the Meson build system.
+  - Improves compatibility with modern compilers.
+  - Aligns with the latest stable C standard while maintaining backward compatibility.
+  - No breaking changes expected, as C17 is a bug-fix refinement of C11.
 
 
 <br />
