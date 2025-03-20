@@ -4,19 +4,56 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
-## Version 3.0.0-beta
-**Released:** TBD<br />
-**Tag:** v3.0.0-beta
+## Version 3.0.0 (Latest)
+**Released:** March 20, 2025<br />
+**Tag:** v3.0.0
+
+### Breaking Changes
+
+- Dropped support for Python 3.8.x and 3.9.x
+  - These versions have reached or are nearing their end of life
+  - Users are strongly encouraged to upgrade to Python 3.10 or later
+  - This change allows us to utilize newer Python features, improve overall package maintenance and security
+  - Minimum supported Python version is now 3.10
+
+- Dropped support for Pandas 1.x (pandas>=2.0.0 is now required)
+
+- NumPy versions below 1.26.0 are no longer supported for Python 3.10+
+
+- NumPy 2.x is required for Python 3.12+, which may introduce API changes
+
 
 ### Enhancements
 
+- Official support for Python 3.13:
+  - This release ensures full compatibility with Python 3.13, with thorough testing to verify seamless functionality.
+  - All dependencies have been reviewed and confirmed to be compatible with Python 3.13.
+
+- Updated minimum required versions for NumPy dependencies:
+  - For Python < 3.12: Increased from 1.21.6 to 1.26.0
+  - For Python >= 3.12: Increased to 2.2.0 (previously 1.23.2 for Python >= 3.11)
+
+- Updated minimum required versions for Pandas dependencies:
+  - Increased from 1.3.0 to 2.0.0, ensuring compatibility with the latest NumPy versions.
+
 - Bump sphinx from 7.3.7 to 8.1.3
+
 - Bump sphinx-nefertiti from 0.3.4 to 0.7.4
   - The latest version ('0.7.4') is now fully compatible with Sphinx 8.1.
+
 - Updated C standard from C11 ('c_std=c11') to C17 ('c_std=c17') in the Meson build system.
   - Improves compatibility with modern compilers.
   - Aligns with the latest stable C standard while maintaining backward compatibility.
   - No breaking changes expected, as C17 is a bug-fix refinement of C11.
+
+- Updated Cython NumPy Import Convention
+  - Changed cimport numpy as np to cimport numpy as cnp to align with Cython best practices, improving clarity between Python and Cython NumPy APIs.
+
+- Explicit NumPy C API Initialization
+  - Added cnp.import_array() to ensure proper initialization of NumPy’s C API, resolving the numpy.core.multiarray failed to import error in NumPy 2.x+.
+
+- Updated Cython Function Type Annotation
+  - Changed cpdef np.ndarray calculations(...) to cpdef cnp.ndarray calculations(...) to properly reference the Cython-level NumPy API, ensuring type safety and compatibility with compiled C extensions.
 
 
 <br />
@@ -25,10 +62,12 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 
 ## Version 2.1.3-beta
-**Released:** TBD<br />
+**Released:** Not released<br />
 **Tag:** v2.1.3-beta
 
 ### Enhancements
+
+All the following changes were incorporated into the major v3.0.0 rollout
 
 - Bump idna from 3.6 to 3.7 in /docs ([#5](https://github.com/analyticsinmotion/werpy/pull/5))
 - Bump sphinx from 7.2.6 to 7.3.7 ([#6](https://github.com/analyticsinmotion/werpy/pull/6))
@@ -41,7 +80,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br />
 
 
-## Version 2.1.2 (Latest)
+## Version 2.1.2
 **Released:** April 5, 2024<br />
 **Tag:** v2.1.2
 
