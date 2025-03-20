@@ -20,13 +20,15 @@ sequences.
 """
 
 import numpy as np
-cimport numpy as np
+cimport numpy as cnp
+
+cnp.import_array()
 
 cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef np.ndarray calculations(object reference, object hypothesis):
+cpdef cnp.ndarray calculations(object reference, object hypothesis):
     cdef list reference_word = reference.split()
     cdef list hypothesis_word = hypothesis.split()
 

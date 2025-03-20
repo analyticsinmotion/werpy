@@ -9,10 +9,10 @@ requires = [
 
 [project]
 name = 'werpy'
-version = '2.1.2'
+version = '3.0.0'
 description = 'A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER).'
 readme = 'README.md'
-requires-python = '>=3.8'
+requires-python = '>=3.10'
 license = {file = 'LICENSE'}
 authors = [
   {name = 'Ross Armstrong', email = 'ross.armstrong@analyticsinmotion.com'},
@@ -20,11 +20,10 @@ authors = [
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Cython",
     "Programming Language :: Python :: Implementation :: CPython",
     "License :: OSI Approved :: BSD License",
@@ -52,11 +51,10 @@ keywords = [
     "metrics"
 ]
 dependencies = [
-  "numpy>=1.21.6; python_version<'3.11'",
-  "numpy>=1.23.2; python_version>='3.11'",
-  "pandas>=1.3.0"
+  "numpy>=1.26.0; python_version<'3.12'",
+  "numpy>=2.2.0; python_version>='3.12'",
+  "pandas>=2.0.0"
 ]
-
 
 [project.urls]
 "Repository" = "https://github.com/analyticsinmotion/werpy"
@@ -69,13 +67,3 @@ docs = [
     "sphinx==8.1.3",
     "sphinx-nefertiti== 0.7.4",
 ]
-
-
-# For localized testing of the package on Windows OS
-#[tool.cibuildwheel]
-#build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
-#skip = "*-win32 *-manylinux_i686 *-manylinux2010_i686 *-manylinux2014_i686 *-manylinux_aarch64 *-manylinux_ppc64le *-manylinux_s390x *-musllinux_i686 *-musllinux_aarch64 *-musllinux_ppc64le *-musllinux_s390x"
-
-#[tool.cibuildwheel.windows]
-#build = "cp38-* cp39-* cp310-* cp311-* cp312-*"
-#skip = "*-win32"
