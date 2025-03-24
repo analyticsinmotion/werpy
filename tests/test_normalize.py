@@ -49,6 +49,7 @@ class TestNormalize(unittest.TestCase):
         - 'test_normalize_reference_translation': Test the normalization of reference translations.
         - 'test_normalize_hypothesis_translation': Test the normalization of hypothesis translations.
         - 'test_normalize_string': Test the normalization of a single string.
+        - 'test_normalize_invalid_types': Test the normalize function with various invalid input types.
 
     To run the tests, execute this class as part of the test suite in the main program.
 
@@ -143,6 +144,28 @@ class TestNormalize(unittest.TestCase):
         ref = [1, 2, 3, 4]
         with self.assertRaises(TypeError):
             normalize(ref)
+
+    def test_normalize_invalid_types(self):
+        """
+        Test the normalize function with various invalid input types.
+
+        This test evaluates the NORMALIZE function with inputs of types int, float, bool, range, dict, bytes, bytearray, and complex.
+        It verifies that the function raises a TypeError for these inputs.
+        """
+        invalid_inputs = [
+            42,  # int
+            3.14,  # float
+            True,  # bool
+            range(10),  # range
+            {"key": "value"},  # dict
+            b"bytes",  # bytes
+            bytearray(b"bytearray"),  # bytearray
+            complex(1, 1)  # complex
+        ]
+
+        for invalid_input in invalid_inputs:
+            with self.assertRaises(TypeError):
+                normalize(invalid_input)
 
 
 if __name__ == "__main__":  # pragma: no cover
