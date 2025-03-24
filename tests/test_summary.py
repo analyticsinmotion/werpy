@@ -99,6 +99,31 @@ class TestSummary(unittest.TestCase):
 
         self.assertEqual(summary(ref, hyp), expected_result)
 
+    def test_summary_single_sequence(self):
+        """
+        Test the summary function with a single reference and hypothesis sequence.
+        """
+        ref = "this is a test"
+        hyp = "this is the test"
+
+        actual_result = summary(ref, hyp)
+
+        expected_result = pd.DataFrame(
+            {
+                "wer": 0.25,
+                "ld": 1,
+                "m": 4,
+                "insertions": 0,
+                "deletions": 0,
+                "substitutions": 1,
+                "inserted_words": [],
+                "deleted_words": [],
+                "substituted_words": [('a', 'the')],
+            }
+        )
+
+        pd.testing.assert_frame_equal(expected_result, actual_result)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
