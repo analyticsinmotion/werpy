@@ -110,15 +110,15 @@ class TestSummary(unittest.TestCase):
 
         expected_result = pd.DataFrame(
             {
-                "wer": 0.25,
-                "ld": 1,
-                "m": 4,
-                "insertions": 0,
-                "deletions": 0,
-                "substitutions": 1,
-                "inserted_words": [],
-                "deleted_words": [],
-                "substituted_words": [('a', 'the')],
+                "wer": [0.25],
+                "ld": [1],
+                "m": [4],
+                "insertions": [0],
+                "deletions": [0],
+                "substitutions": [1],
+                "inserted_words": [[]],
+                "deleted_words": [[]],
+                "substituted_words": [[('a', 'the')]],
             }
         )
 
