@@ -17,8 +17,8 @@ jobs:
   werpy-unit-tests:
     docker:
     # A list of available CircleCI Docker convenience images are available here: https://circleci.com/developer/images/image/cimg/python
-    # The executor is the environment in which the steps below will be executed - below will use a python 3.11.5 container
-      - image: cimg/python:3.11.5
+    # The executor is the environment in which the steps below will be executed - below will use a python 3.13.2 container
+      - image: cimg/python:3.13.2
     steps:
       - checkout
       - python/install-packages:
@@ -78,7 +78,6 @@ jobs:
             coverage run -m unittest discover tests
             coverage xml
       - codecov/upload:
-          file: ./coverage.xml
           flags: unittests
           when: always
 
