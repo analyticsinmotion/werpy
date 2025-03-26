@@ -56,8 +56,9 @@ def wer(reference, hypothesis) -> float:
         transform_word_error_rate_breakdown = np.transpose(
             word_error_rate_breakdown.tolist()
         )
-        wer_result = (np.sum(transform_word_error_rate_breakdown[1])) / (
-            np.sum(transform_word_error_rate_breakdown[2])
+        total_words = np.sum(transform_word_error_rate_breakdown[2])
+        wer_result = np.sum(transform_word_error_rate_breakdown[1]) / max(
+            total_words, 1
         )
     else:
         wer_result = word_error_rate_breakdown[0]

@@ -52,7 +52,7 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
                 )
 
     ld = ldm[m][n]
-    wer = ld / m
+    wer = ld / max(m, 1) # Avoid division by 0
 
     insertions, deletions, substitutions = 0, 0, 0
     inserted_words, deleted_words, substituted_words = [], [], []
