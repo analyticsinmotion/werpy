@@ -1,7 +1,7 @@
 project(
     'werpy', 
     'c', 'cython',
-    version : '3.0.0',
+    version : '3.0.1',
     license: 'BSD-3',
     meson_version: '>= 1.1.0',
     default_options : [

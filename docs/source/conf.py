@@ -9,7 +9,7 @@
 project = "werpy"
 copyright = "Copyright 2023-2025, Analytics in Motion"
 author = "Ross Armstrong"
-release = "3.0.0"
+release = "3.0.1"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
