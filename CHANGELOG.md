@@ -4,7 +4,25 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
-## Version 3.0.0 (Latest)
+## Version 3.0.1 (Latest)
+**Released:** March 26, 2025<br />
+**Tag:** v3.0.1
+
+### Enhancements
+
+- Custom exception handling for ZeroDivisionError to catch cases where the reference is blank or both reference and hypothesis are empty. When either of these events occur a clear, descriptive error message is Raised:
+"Invalid input: reference must not be blank, and reference and hypothesis cannot both be empty."
+
+- Unit test added to verify that blank reference and hypothesis inputs raise a ZeroDivisionError.
+
+- Publishing process is now automated using GitHub Actions and PyPI Trusted Publishing
+
+
+
+<br />
+
+
+## Version 3.0.0 
 **Released:** March 20, 2025<br />
 **Tag:** v3.0.0
 
@@ -57,8 +75,6 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 
 <br />
-
-
 
 
 ## Version 2.1.3-beta
