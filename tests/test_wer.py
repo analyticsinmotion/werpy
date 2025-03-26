@@ -107,6 +107,19 @@ class TestWer(unittest.TestCase):
 
         self.assertEqual(wer(ref, hyp), expected_result)
 
+    def test_wer_blank_input(self):
+        """
+        Test the wer function with empty reference and hypothesis sequences.
+
+        This test evaluates the WER function with empty reference and hypothesis text sequences.
+        It verifies that blank input will raise a ZeroDivisionError.
+        """
+        ref = [""]
+        hyp = [""]
+
+        with self.assertRaises(ZeroDivisionError):
+            wer(ref, hyp)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
