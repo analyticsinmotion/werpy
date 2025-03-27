@@ -6,9 +6,9 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "werpy"
-project_copyright = "2023-2025, Analytics in Motion"
-author = "Ross Armstrong"
+PROJECT = "werpy"
+PROJECT_COPYRIGHT = "2023-2025, Analytics in Motion"
+AUTHOR = "Ross Armstrong"
 RELEASE = "3.0.1"
 
 # -- General configuration ---------------------------------------------------
@@ -24,7 +24,7 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 # html_theme = 'alabaster'
-html_theme = "sphinx_nefertiti"
+HTML_THEME = "sphinx_nefertiti"
 html_theme_options = {
     # ... other options ...
     "repository_name": "analyticsinmotion/werpy",
