@@ -69,7 +69,7 @@ def werp(
     """
     try:
         word_error_rate_breakdown = error_handler(reference, hypothesis)
-    except (ValueError, AttributeError) as err:
+    except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
     if isinstance(word_error_rate_breakdown[0], np.ndarray):
