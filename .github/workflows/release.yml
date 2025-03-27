@@ -83,5 +83,5 @@ jobs:
         ls -lh dist/
 
     # Upload to PyPI
-    #- uses: pypa/gh-action-pypi-publish@release/v1
+    - uses: pypa/gh-action-pypi-publish@release/v1
           
