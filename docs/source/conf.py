@@ -1,3 +1,8 @@
+"""
+This is the configuration file for the Sphinx documentation builder.
+
+It contains project information and various settings for building the docs.
+"""
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
