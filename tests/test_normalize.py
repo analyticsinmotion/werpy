@@ -149,7 +149,16 @@ class TestNormalize(unittest.TestCase):
         """
         Test the normalize function with various invalid input types.
 
-        This test evaluates the NORMALIZE function with inputs of types int, float, bool, range, dict, bytes, bytearray, and complex.
+        This test evaluates the normalize function with inputs from the following types:
+           - int
+           - float
+           - bool
+           - range
+           - dict
+           - bytes
+           - bytearray
+           - complex
+
         It verifies that the function raises a TypeError for these inputs.
         """
         invalid_inputs = [
