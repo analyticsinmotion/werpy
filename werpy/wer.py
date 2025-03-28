@@ -31,6 +31,8 @@ def wer(reference, hypothesis) -> float:
         if the two input parameters do not contain the same amount of elements.
     AttributeError
         if input text is not a string, list or np.ndarray data type.
+    ZeroDivisionError
+        if input in reference is blank or both reference and hypothesis are empty.
 
     Returns
     -------
