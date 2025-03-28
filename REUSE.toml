@@ -12,11 +12,11 @@ precedence = "override"
 SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"
 
-# Apply BSD-3-Clause license to all YAML files across CI and configuration folders,
-# including root, .github/, .github/workflows/, and .circleci/,
+# Apply BSD-3-Clause license to all YAML files used for configuration and CI/CD,
+# including .yaml files in the root and .yml files in .github/, .github/workflows/, and .circleci/,
 # overriding any other annotations.
 [[annotations]]
-path = ["*.yml", ".github/*.yml", ".github/workflows/*.yml", ".circleci/*.yml"]
+path = ["*.yaml", ".github/*.yml", ".github/workflows/*.yml", ".circleci/*.yml"]
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"
@@ -41,6 +41,14 @@ SPDX-License-Identifier = "BSD-3-Clause"
 # overriding any other annotations.
 [[annotations]]
 path = ["docs/source/usage/images/*.png", ".github/assets/images/*.png"]
+precedence = "override"
+SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
+SPDX-License-Identifier = "BSD-3-Clause"
+
+# Apply BSD-3-Clause license to project-level configuration and metadata files in the root directory,
+# overriding any other annotations.
+[[annotations]]
+path = [".gitignore", ".pylintrc", "CITATION.cff", "meson.build", "pyproject.toml"]
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"
