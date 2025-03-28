@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Analytics in Motion <https://www.analyticsinmotion.com>
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 This Cython module provides functions for calculating string matching metrics between 
 reference and hypothesis strings. It contains two functions: calculations and metrics.

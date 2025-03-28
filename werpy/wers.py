@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Analytics in Motion <https://www.analyticsinmotion.com>
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 This module provides a function for calculating a list of the Word Error Rates for each of the reference and
 hypothesis texts.

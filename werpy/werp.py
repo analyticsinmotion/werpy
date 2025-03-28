@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Analytics in Motion <https://www.analyticsinmotion.com>
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 This module provides a function to calculate a weighted Word Error Rate for the entire reference and hypothesis 
 texts. It allows varying weights to be assigned to the insertion, deletion and substitution errors.

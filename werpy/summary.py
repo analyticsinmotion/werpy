@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Analytics in Motion <https://www.analyticsinmotion.com>
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 This module provides a summary function to display a complete breakdown of the calculated results, returned in a 
 DataFrame.
