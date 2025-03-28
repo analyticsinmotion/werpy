@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023-2025 Analytics in Motion <https://www.analyticsinmotion.com>
+# SPDX-FileType: SOURCE
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 This module provides a function for calculating the Word Error Rate (WER) between a reference text and a hypothesis 
 text. The WER is calculated as the number of edits (insertions, deletions, and substitutions) needed to transform 
