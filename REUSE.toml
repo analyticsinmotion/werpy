@@ -9,13 +9,21 @@ version = 1
 [[annotations]]
 path = ["*.md"]
 precedence = "override"
-SPDX-FileCopyrightText = "2023-2025 Analytics in Motion <https://www.analyticsinmotion.com>"
+SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"
 
 # Apply BSD-3-Clause license to all YAML files inside .github/workflows/,
 # overriding any other annotations.
 [[annotations]]
 path = [".github/workflows/*.yml"]
+precedence = "override"
+SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
+SPDX-License-Identifier = "BSD-3-Clause"
+
+# Apply BSD-3-Clause license to all files directly inside docs/ (excluding subfolders),
+# overriding any other annotations.
+[[annotations]]
+path = ["docs/*"]
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"
