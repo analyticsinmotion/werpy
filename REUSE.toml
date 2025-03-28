@@ -5,9 +5,17 @@
 version = 1
 
 # Apply BSD-3-Clause license to all Markdown files in the repository root,
-# overriding any other annotations. Also sets the copyright.
+# overriding any other annotations.
 [[annotations]]
 path = ["*.md"]
+precedence = "override"
+SPDX-FileCopyrightText = "2023-2025 Analytics in Motion <https://www.analyticsinmotion.com>"
+SPDX-License-Identifier = "BSD-3-Clause"
+
+# Apply BSD-3-Clause license to all YAML files inside .github/workflows/,
+# overriding any other annotations.
+[[annotations]]
+path = [".github/workflows/*.yml"]
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"
