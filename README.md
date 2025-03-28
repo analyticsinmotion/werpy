@@ -194,11 +194,7 @@ print(weighted_summary)
 
 ``werpy`` is released under the terms of the BSD 3-Clause License. Please refer to the <a href="https://github.com/analyticsinmotion/werpy/blob/main/LICENSE">LICENSE</a> file for full details.
 
-This project uses third-party libraries NumPy, Pandas, and Cython, which are licensed under BSD and Apache-2.0 respectively.
+This project uses standard scientific Python libraries including NumPy and Pandas. For license details, please refer to their official repositories:
 
-The full NumPy, Pandas and Cython licenses can be found directly at the following source code links:
-
-- NumPy - <a href="https://github.com/numpy/numpy/blob/main/LICENSE.txt">https://github.com/numpy/numpy/blob/main/LICENSE.txt</a>
-- Pandas - <a href="https://github.com/pandas-dev/pandas/blob/main/LICENSE">https://github.com/pandas-dev/pandas/blob/main/LICENSE</a>
-- Cython - <a href="https://github.com/cython/cython/blob/master/LICENSE.txt">https://github.com/cython/cython/blob/master/LICENSE.txt</a>
-
+- NumPy - <a href="https://github.com/numpy/numpy">https://github.com/numpy/numpy</a>
+- Pandas - <a href="https://github.com/pandas-dev/pandas">https://github.com/pandas-dev/pandas</a>
