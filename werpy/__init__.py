@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023-2025 Analytics in Motion <https://www.analyticsinmotion.com>
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 The werpy package provides tools for calculating word error rates (WERs) and related metrics on text data.
 """
