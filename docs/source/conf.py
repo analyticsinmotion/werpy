@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Analytics in Motion <https://www.analyticsinmotion.com>
+# SPDX-License-Identifier: BSD-3-Clause
+
 """
 This is the configuration file for the Sphinx documentation builder.
 
