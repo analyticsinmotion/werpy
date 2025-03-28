@@ -27,3 +27,11 @@ path = ["docs/*"]
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"
+
+# Apply BSD-3-Clause license to all .rst files in docs/source/ and all its subdirectories,
+# overriding any other annotations.
+[[annotations]]
+path = ["docs/source/**/*.rst"]
+precedence = "override"
+SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
+SPDX-License-Identifier = "BSD-3-Clause"
