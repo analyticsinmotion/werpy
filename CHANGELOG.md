@@ -4,6 +4,36 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
+## Version 3.0.2-beta
+**Released:** TBD<br />
+**Tag:** v3.0.2
+
+### Enhancements
+
+- Updated tests to better handle and validate invalid input types.
+
+- Improved code quality by addressing some minor CodeFactor alerts:
+  - Fixed naming issues and built-in name overrides.
+  - Updated constants to use proper UPPER_CASE naming style.
+
+- Included 'ZeroDivisionError' in exception handling across source files for better error coverage.
+
+- Adopted REUSE and SDCX specifications for license compliance:
+  - Removed unnecessary license files for third-party dependencies ('numpy', 'pandas', 'cython') from the 'LICENSES' directory.
+  - Added 'BSD-3-Clause.txt' license file to the 'LICENSES' directory.
+  - Added 'SPDX-FileCopyrightText' and 'SPDX-License-Identifier' headers directly in all '.py' and '.pyx' source files.
+  - Created a 'REUSE.toml' file to centralize license declarations. The benefits of doing this for other files include:
+    - Centralized license declarations — avoids repetitive SPDX headers in every file (there are lots of other files).
+    - Cleaner source files — especially for binary or non-comment-friendly formats (e.g., '.png', '.yml', '.toml').
+    - Scalable and maintainable — simplifies licensing for new files and directories.
+    - Improved automation — supports tools like 'reuse lint' and CI-based license checks.
+    - Clarity and compliance — enhances transparency and ensures open source compliance through machine-readable metadata.
+
+
+
+<br />
+
+
 ## Version 3.0.1 (Latest)
 **Released:** March 26, 2025<br />
 **Tag:** v3.0.1
