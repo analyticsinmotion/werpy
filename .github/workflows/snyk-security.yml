@@ -53,12 +53,15 @@ jobs:
         env:
           # This is where you will need to introduce the Snyk API token created with your Snyk account
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          SNYK_ORG: analytics-in-motion
 
         # Runs Snyk Code (SAST) analysis and uploads result into GitHub.
         # Use || true to not fail the pipeline
       - name: Snyk Code test
         #run: snyk code test --sarif > snyk-code.sarif # || true
-        run: snyk code test --sarif --debug > snyk-code.sarif
+        #run: snyk code test --sarif --debug > snyk-code.sarif
+        run: snyk code test --org=$SNYK_ORG --sarif --debug > snyk-code.sarif || true
+
 
         # Runs Snyk Open Source (SCA) analysis and uploads result to Snyk.
       - name: Snyk Open Source monitor
