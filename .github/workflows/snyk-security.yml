@@ -60,7 +60,8 @@ jobs:
       - name: Snyk Code test
         #run: snyk code test --sarif > snyk-code.sarif # || true
         #run: snyk code test --org=$SNYK_ORG --sarif > snyk-code.sarif || true
-        run: snyk code test --org=$SNYK_ORG || true
+        #run: snyk code test --org=$SNYK_ORG || true
+        run: snyk code test --org=$SNYK_ORG
 
         # Generate requirements.txt for Snyk SCA
       - name: Generate requirements.txt
