@@ -12,7 +12,7 @@ project(
 )
 
 # Find Python
-py = import('python').find_installation('python3')
+py = import('python').find_installation(pure: false)
 
 # Cython files
 pyx_files = files('werpy/metrics.pyx')
@@ -40,8 +40,7 @@ py.install_sources(
 # Install py.typed file
 install_data(
     'werpy/py.typed',
-    install_dir: py.get_install_dir() / 'werpy',
-    pure: false
+    install_dir: py.get_install_dir() / 'werpy'
 )
 
 # Find NumPy include directories
