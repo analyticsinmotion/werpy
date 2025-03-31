@@ -1,0 +1,39 @@
+name: Ruff Analyzer
+
+#on: [ push, pull_request ]
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+  # Schedule the workflow to trigger at a specified time each day using a CRON expression
+  # schedule:
+    #        ┌───────────── minute (0 - 59)
+    #        │  ┌───────────── hour (0 - 23)
+    #        │  │ ┌───────────── day of the month (1 - 31)
+    #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #        │  │ │ │ │
+    # - cron: '25 0 * * *'  # Runs at 12:25am UTC every day
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install a specific version and validate the checksum
+        #uses: astral-sh/ruff-action@v3
+        uses: astral-sh/ruff-action@9828f49eb4cadf267b40eaa330295c412c68c1f9 #v3.2.2
+        # This is the Ruff version
+        with:
+            version: "0.11.2"
+            checksum: "4773878ee70ea9b700d3d57c3ca4a917c7d8ea38"
+
+      - name: Run Ruff
+        run: ruff . --format text
