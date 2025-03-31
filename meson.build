@@ -37,6 +37,12 @@ py.install_sources(
     pure: false,
 )
 
+# Install py.typed file
+install_data(
+    'werpy/py.typed',
+    install_dir: py.get_install_dir() / 'werpy'
+)
+
 # Find NumPy include directories
 numpy_includes = run_command(py, '-c', 'import numpy; print(numpy.get_include())').stdout().strip()
 
