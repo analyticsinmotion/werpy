@@ -32,8 +32,9 @@ jobs:
         uses: astral-sh/ruff-action@9828f49eb4cadf267b40eaa330295c412c68c1f9 #v3.2.2
         # This is the Ruff version
         with:
-            version: "0.11.2"
-            checksum: "4773878ee70ea9b700d3d57c3ca4a917c7d8ea38"
+            #version: "0.11.2"
+            #checksum: "4773878ee70ea9b700d3d57c3ca4a917c7d8ea38"
+            version: "latest"
 
       - name: Run Ruff
         run: ruff . --format text
