@@ -40,7 +40,8 @@ py.install_sources(
 # Install py.typed file
 install_data(
     'werpy/py.typed',
-    install_dir: py.get_install_dir() / 'werpy'
+    install_dir: py.get_install_dir() / 'werpy',
+    pure: false
 )
 
 # Find NumPy include directories
