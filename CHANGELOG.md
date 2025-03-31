@@ -29,6 +29,7 @@ It is organized by version and release date followed by a list of Enhancements, 
     - Improved automation — supports tools like 'reuse lint' and CI-based license checks.
     - Clarity and compliance — enhances transparency and ensures open source compliance through machine-readable metadata.
 
+- Initial support for static type checking: included py.typed marker file to enable type checkers to recognize the package as typed. Note: full type coverage is not yet guaranteed and will be improved incrementally.
 
 
 <br />
