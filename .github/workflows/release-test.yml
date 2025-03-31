@@ -62,7 +62,8 @@ jobs:
           name: cibw-sdist
           path: dist/*.tar.gz
 
-  upload_all:
+  check_upload_artifacts:
+    name: Validate the wheel and distribution files that would be uploaded 
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     steps:
