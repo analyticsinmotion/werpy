@@ -37,4 +37,4 @@ jobs:
             version: "latest"
 
       - name: Run Ruff
-        run: ruff check . --output-format text
+        run: ruff check . --output-format github
