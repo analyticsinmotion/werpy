@@ -43,23 +43,40 @@ jobs:
           publish_results: false # means cannot get the badge
         env:
           DISABLE_SIGSTORE: "true"
-          
-      - name: Print detailed Scorecard results
+      
+      
+      - name: Generate and print Scorecard summary
         run: |
-          echo "📋 OpenSSF Scorecard Results (Detailed)"
-          echo "----------------------------------------"
-          jq -r '
-            .checks[] |
-            "🔍 \(.name): \(.score)/10\n📌 \(.reason)\n" +
-            (
-              (.details // [])
-              | map("  - " + .)
-              | join("\n")
-            ) + "\n"
-          ' results.json
+          {
+            echo "📋 OpenSSF Scorecard Summary for analyticsinmotion/werpy"
+            echo ""
+            echo "🔢 Overall Score: $(jq -r '.score' results.json) / 10"
+            echo "📅 Date: $(jq -r '.date' results.json)"
+            echo "🔀 Commit: $(jq -r '.repo.commit' results.json)"
+            echo "🔧 Scorecard Version: $(jq -r '.scorecard.version' results.json)"
+            echo ""
+            echo "----------------------------------------"
+            echo "📋 OpenSSF Scorecard Results (Detailed)"
+            echo "----------------------------------------"
+            jq -r '
+              .checks[] |
+              "🔍 \(.name): \(.score)/10\n📌 \(.reason)\n" +
+              (
+                (.details // [])
+                | map("  - " + .)
+                | join("\n")
+              ) + "\n"
+            ' results.json
+          } | tee summary.txt
 
-      - name: Upload Scorecard Results
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4.6.2
+      - name: Upload Scorecard Summary
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: scorecard-results
+          name: scorecard-summary
+          path: summary.txt
+
+      - name: Upload Raw Scorecard JSON
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: scorecard-json
           path: results.json
