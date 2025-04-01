@@ -1,0 +1,44 @@
+name: OpenSSF Scorecard
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+  # Schedule the workflow to trigger at a specified time each day using a CRON expression
+  # schedule:
+    #        ┌───────────── minute (0 - 59)
+    #        │  ┌───────────── hour (0 - 23)
+    #        │  │ ┌───────────── day of the month (1 - 31)
+    #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #        │  │ │ │ │
+    # - cron: '25 0 * * *'  # Runs at 12:25am UTC every day
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Declare default permissions as read only.
+permissions: read-all
+
+jobs:
+  run-scorecard:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Run the OpenSSF Scorecard action
+      - name: Run OpenSSF Scorecard
+        uses: ossf/scorecard-action@main
+        with:
+          #results_file: results.sarif
+          #results_format: sarif
+          results_file: results.json
+          results_format: json
+          publish_results: true
+          
