@@ -40,7 +40,7 @@ jobs:
           #results_format: sarif
           results_file: results.json
           results_format: json
-          publish_results: true
+          publish_results: false # means cannot get the badge
         env:
           DISABLE_SIGSTORE: "true"
           
