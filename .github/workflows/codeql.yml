@@ -17,7 +17,20 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '15 13 * * 5'
+    #        ┌───────────── minute (0 - 59)
+    #        │  ┌───────────── hour (0 - 23)
+    #        │  │ ┌───────────── day of the month (1 - 31)
+    #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #        │  │ │ │ │
+    - cron: '15 8 * * 0' # Runs at 08:15am UTC every Sunday
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Declare default permissions as read only.
+permissions: read-all
+
 
 jobs:
   analyze:
