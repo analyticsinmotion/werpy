@@ -1,5 +1,9 @@
 name: Pylint
 
+# Set default permissions for all jobs in the workflow
+permissions:
+  contents: read
+
 on: [push]
 
 jobs:
