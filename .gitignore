@@ -103,14 +103,25 @@ ipython_config.py
 
 # pdm
 #   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#pdm.lock
+pdm.lock
 #   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
 #   in version control.
-#   https://pdm.fming.dev/#use-with-ide
+#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
 .pdm.toml
+.pdm-python
+.pdm-build/
+
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
+
+# PyPI configuration file
+.pypirc
 
 # Celery stuff
 celerybeat-schedule
@@ -134,6 +145,9 @@ venv.bak/
 
 # Rope project settings
 .ropeproject
+
+# Ruff stuff:
+.ruff_cache/
 
 # mkdocs documentation
 /site
@@ -160,7 +174,4 @@ cython_debug/
 #.idea/
 
 # VSCode
-.vscode
 .vscode/
-vscode
-vscode/
