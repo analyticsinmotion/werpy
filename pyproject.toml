@@ -31,7 +31,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering",
     "Topic :: Software Development",
     "Topic :: Text Processing",
@@ -41,13 +40,13 @@ classifiers = [
 keywords = [
     "wer",
     "word error rate",
-    "python",
-    "python package",
+    "asr",
+    "automatic speech recognition",
     "stt",
     "speech-to-text",
     "levenshtein distance",
     "nlp",
-    "metrics"
+    "accuracy metrics"
 ]
 dependencies = [
   "numpy>=1.26.0; python_version<'3.12'",
