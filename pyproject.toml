@@ -38,6 +38,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics"
 ]
 keywords = [
+    "werpy",
     "wer",
     "word error rate",
     "asr",
@@ -45,6 +46,7 @@ keywords = [
     "stt",
     "speech-to-text",
     "levenshtein distance",
+    "text similarity",
     "nlp",
     "accuracy metrics"
 ]
