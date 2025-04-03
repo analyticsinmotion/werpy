@@ -4,8 +4,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
-## Version 3.0.2-beta
-**Released:** TBD<br />
+## Version 3.0.2 (Latest)
+**Released:** April 3, 2025<br />
 **Tag:** v3.0.2
 
 ### Enhancements
@@ -35,7 +35,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br />
 
 
-## Version 3.0.1 (Latest)
+## Version 3.0.1 
 **Released:** March 26, 2025<br />
 **Tag:** v3.0.1
 
