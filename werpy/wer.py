@@ -14,7 +14,7 @@ import numpy as np
 from .errorhandler import error_handler
 
 
-def wer(reference, hypothesis) -> float:
+def wer(reference, hypothesis) -> float | np.float64 | None:
     """
     This function will calculate the overall Word Error Rate for the entire reference and hypothesis texts.
 
@@ -36,9 +36,10 @@ def wer(reference, hypothesis) -> float:
 
     Returns
     -------
-    np.float64
-        This function will return a single Word Error Rate, which is calculated as the number of edits (insertions,
-        deletions and substitutions) divided by the number of words in the reference text.
+    float, np.float64, or None
+        This function will return a single Word Error Rate as a float or NumPy float64, which is calculated as the 
+        number of edits (insertions, deletions, and substitutions) divided by the number of words in the reference 
+        text. If an exception occurs (e.g., invalid input), the function will return None.
 
     Examples
     --------
