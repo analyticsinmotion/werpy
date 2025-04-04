@@ -14,7 +14,7 @@ import pandas as pd
 from .errorhandler import error_handler
 
 
-def summary(reference, hypothesis):
+def summary(reference, hypothesis) -> pd.DataFrame | None:
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, Levenshtein
     Distance and all the insertion, deletion and substitution errors.
