@@ -1,0 +1,49 @@
+name: Type Check with Mypy
+
+# Controls when the workflow will run
+on:
+    # Triggers the workflow on push or pull request events but only for the "main" branch
+  #  push:
+  #    branches: [ "main" ]
+  #  pull_request:
+  #    branches: [ "main" ]
+    # Schedule the workflow to trigger at a specified time each day using a CRON expression
+    # schedule:
+      #        ┌───────────── minute (0 - 59)
+      #        │  ┌───────────── hour (0 - 23)
+      #        │  │ ┌───────────── day of the month (1 - 31)
+      #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+      #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+      #        │  │ │ │ │
+      # - cron: '25 0 * * *'  # Runs at 12:25am UTC every day
+  
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+jobs:
+  type-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install mypy .  # Assumes pyproject.toml or setup.py is present
+
+    - name: Run mypy and show in logs
+      run: |
+        mypy werpy/ | tee mypy_output.txt || true
+      
+    - name: Upload mypy report
+      uses: actions/upload-artifact@v4
+      with:
+        name: mypy-report
+        path: mypy_output.txt
