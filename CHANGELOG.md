@@ -4,6 +4,23 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
+## Version 3.0.3-beta 
+**Released:** TBD<br />
+**Tag:** v3.0.3
+
+### Enhancements
+
+- Updated the 'summary' function in 'summary.py' to include a precise return type hint: 'pd.DataFrame | None'.
+  - Improved readability and type safety for the function.
+
+- Updated the return type hint for the 'wer' function in 'wer.py' from 'float' to 'float | np.float64 | None'.
+  - Enhanced type accuracy and alignment with the function's behavior.
+
+- Continued work on type hinting improvements and resolving 'mypy' errors for better code quality and maintainability.
+
+
+<br />
+
 ## Version 3.0.2 (Latest)
 **Released:** April 3, 2025<br />
 **Tag:** v3.0.2
