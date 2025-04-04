@@ -36,7 +36,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install mypy .  # Assumes pyproject.toml or setup.py is present
+        pip install mypy pandas-stubs .  # Install pandas-stubs to fix missing stubs
 
     - name: Run mypy and show in logs
       run: |
