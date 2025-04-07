@@ -28,8 +28,9 @@
 <br>
 Built for flexibility and ease of use, it supports multiple input types such as strings, lists, and NumPy arrays—making it ideal for everything from quick experiments to large-scale evaluations.  
 <br>
-Designed for speed at any scale, werpy leverages the power of C/C++ to significantly accelerate its complex calculations, resulting in blazingly fast performance. Whether you're working with a handful of transcripts or millions of rows, werpy delivers results with exceptional speed.  
-<br>
+With speed in mind at every scale, werpy harnesses the efficiency of C optimizations to accelerate processing, delivering ultra-fast results from small datasets to enterprise-level workloads.
+
+
 It also comes packed with powerful features, including:  
 - 🔤 Built-in text normalization to handle data inconsistencies  
 - ⚙️ Customizable error penalties for insertions, deletions, and substitutions  
