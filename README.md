@@ -24,12 +24,29 @@
 
 
 ## What is werpy?
+**werpy** is an ultra-fast, lightweight Python package for calculating and analyzing Word Error Rate (WER) between two sets of text.  
+<br>
+Built for flexibility and ease of use, it supports multiple input types such as strings, lists, and NumPy arrays—making it ideal for everything from quick experiments to large-scale evaluations.  
+<br>
+Designed for speed at any scale, werpy leverages the power of C/C++ to significantly accelerate its complex calculations, resulting in blazingly fast performance. Whether you're working with a handful of transcripts or millions of rows, werpy delivers results with exceptional speed.  
+<br>
+It also comes packed with powerful features, including:  
+- 🔤 Built-in text normalization to handle data inconsistencies  
+- ⚙️ Customizable error penalties for insertions, deletions, and substitutions  
+- 📋 A detailed summary output for in-depth error analysis  
+
+werpy is a quality-focused package, built to production-grade standards for reliability and robustness.
+<br />
+
+
+<!--
 **werpy** is a powerful yet lightweight Python package that rapidly calculates and analyzes the Word Error Rate (WER) between two sets of text. 
 It has been designed with the flexibility to handle multiple input data types such as strings, lists and NumPy arrays.<br />
 
 The package also includes a full set of features such as normalizing the input text to account for data collection variability and the capability to easily assign different weights/penalties to specific error classifications (insertions, deletions, and substitutions).
 Additionally, the summary function provides a comprehensive breakdown of the calculated results to assist in analyzing the specific errors quickly and in more detail.
 <br />
+-->
 
 ## Functions available in werpy
 The following table provides an overview of the functions that can be used in werpy.
