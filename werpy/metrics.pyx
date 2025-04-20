@@ -36,7 +36,7 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     cdef list hypothesis_word = hypothesis.split()
 
     cdef Py_ssize_t m, n, i, j, substitution_cost, ld, insertions, deletions, substitutions
-    cdef list inserted_words, deleted_words, substituted_words
+
     m, n = len(reference_word), len(hypothesis_word)
     ldm = [[0] * (n + 1) for _ in range(m + 1)]
 
@@ -58,7 +58,11 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     wer = ld / m
 
     insertions, deletions, substitutions = 0, 0, 0
-    inserted_words, deleted_words, substituted_words = [], [], []
+    cdef int insert_idx = 0, delete_idx = 0, substitute_idx = 0
+    cdef int max_len = max(len(reference_word), len(hypothesis_word))
+    cdef list inserted_words = [None] * max_len
+    cdef list deleted_words = [None] * max_len
+    cdef list substituted_words = [None] * max_len
     i, j = m, n
     while i > 0 or j > 0:
         if i > 0 and j > 0 and reference_word[i - 1] == hypothesis_word[j - 1]:
@@ -67,39 +71,35 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
         else:
             if i > 0 and j > 0 and ldm[i][j] == ldm[i - 1][j - 1] + 1:
                 substitutions += 1
-                substituted_words.append((reference_word[i - 1], hypothesis_word[j - 1]))
+                # Insert at the current substitute_idx to preserve reverse order
+                substituted_words[substitute_idx] = (reference_word[i - 1], hypothesis_word[j - 1])
+                substitute_idx += 1
                 i -= 1
                 j -= 1
             elif j > 0 and ldm[i][j] == ldm[i][j - 1] + 1:
                 insertions += 1
-                inserted_words.append(hypothesis_word[j - 1])
+                # Insert at the current insert_idx to preserve reverse order
+                inserted_words[insert_idx] = hypothesis_word[j - 1]
+                insert_idx += 1
                 j -= 1
             elif i > 0 and ldm[i][j] == ldm[i - 1][j] + 1:
                 deletions += 1
-                deleted_words.append(reference_word[i - 1])
+                # Insert at the current delete_idx to preserve reverse order
+                deleted_words[delete_idx] = reference_word[i - 1]
+                delete_idx += 1
                 i -= 1
 
-    inserted_words.reverse(), deleted_words.reverse(), substituted_words.reverse()
+    # Slice off trailing None values
+    inserted_words = inserted_words[:insert_idx]
+    deleted_words = deleted_words[:delete_idx]
+    substituted_words = substituted_words[:substitute_idx]
 
     return np.array(
         [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words],
-        dtype=object)
+        dtype=object
+    )
 
-def metrics(object reference, object hypothesis):
-    """
-    Cython implementation of the metrics function to replace np.vectorize.
-    """
-    cdef Py_ssize_t i, n
-    cdef cnp.ndarray result
-    cdef list temp_results = []
-
-    # Ensure reference and hypothesis have the same length
-    if len(reference) != len(hypothesis):
-        raise ValueError("Reference and hypothesis must have the same length.")
-
-    n = len(reference)
-    for i in range(n):
-        temp_results.append(calculations(reference[i], hypothesis[i]))
-
-    result = np.array(temp_results, dtype=object)
+def metrics(reference, hypothesis):
+    vectorize_calculations = np.vectorize(calculations)
+    result = vectorize_calculations(reference, hypothesis)
     return result
