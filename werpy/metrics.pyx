@@ -28,11 +28,6 @@ cimport numpy as cnp
 cnp.import_array()
 
 cimport cython
-from cython.parallel import prange
-from multiprocessing import cpu_count
-
-# Cache the number of CPUs globally to avoid repeated calls to cpu_count()
-NUM_CPUS = cpu_count()
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -90,33 +85,21 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
         [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words],
         dtype=object)
 
-
 def metrics(object reference, object hypothesis):
     """
-    Optimized metrics function with conditional parallelization based on CPU count.
+    Cython implementation of the metrics function to replace np.vectorize.
     """
     cdef Py_ssize_t i, n
-    cdef cnp.ndarray[object, ndim=1] result
-    cdef int THRESHOLD
-
-    # Dynamically calculate the threshold based on the number of CPUs
-    THRESHOLD = 1000 * NUM_CPUS
-
-    n = len(reference)
+    cdef cnp.ndarray result
+    cdef list temp_results = []
 
     # Ensure reference and hypothesis have the same length
     if len(reference) != len(hypothesis):
         raise ValueError("Reference and hypothesis must have the same length.")
 
-    result = np.empty(n, dtype=object)  # Preallocate result array
+    n = len(reference)
+    for i in range(n):
+        temp_results.append(calculations(reference[i], hypothesis[i]))
 
-    if n < THRESHOLD:
-        # Serial execution for small datasets
-        for i in range(n):
-            result[i] = calculations(reference[i], hypothesis[i])
-    else:
-        # Parallel execution for large datasets (with GIL)
-        for i in prange(n, nogil=False):  # nogil=False because calculations uses Python objects
-            result[i] = calculations(reference[i], hypothesis[i])
-
+    result = np.array(temp_results, dtype=object)
     return result
