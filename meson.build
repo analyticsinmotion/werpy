@@ -1,7 +1,7 @@
 project(
     'werpy', 
     'c', 'cython',
-    version : '3.0.2',
+    version : '3.1.0.dev1',
     license: 'BSD-3',
     meson_version: '>= 1.1.0',
     default_options : [
@@ -44,7 +44,7 @@ install_data(
 )
 
 # Find NumPy include directories
-numpy_includes = run_command(py, '-c', 'import numpy; print(numpy.get_include())').stdout().strip()
+numpy_includes = run_command(py, '-c', 'import numpy; print(numpy.get_include())', check: true).stdout().strip()
 
 # Cython module
 py.extension_module(
