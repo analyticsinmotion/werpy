@@ -91,12 +91,7 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
         [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words],
         dtype=object)
 
-def metrics(list reference, list hypothesis):
-    cdef int i
-    cdef int num_pairs = len(reference)
-    cdef cnp.ndarray[object, ndim=1] result = np.empty(num_pairs, dtype=object)
-
-    for i in range(num_pairs):
-        result[i] = calculations(reference[i], hypothesis[i])
-
+def metrics(reference, hypothesis):
+    vectorize_calculations = np.vectorize(calculations)
+    result = vectorize_calculations(reference, hypothesis)
     return result
