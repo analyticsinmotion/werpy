@@ -94,7 +94,7 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
 def metrics(list reference, list hypothesis):
     cdef int i
     cdef int num_pairs = len(reference)
-    cdef np.ndarray result = np.empty(num_pairs, dtype=object)
+    cdef cnp.ndarray[object, ndim=1] result = np.empty(num_pairs, dtype=object)
 
     for i in range(num_pairs):
         result[i] = calculations(reference[i], hypothesis[i])
