@@ -32,8 +32,8 @@ cimport cython
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef cnp.ndarray calculations(object reference, object hypothesis):
-    cdef cnp.ndarray[object, ndim=1] reference_word = np.array(reference.split(), dtype=object)
-    cdef cnp.ndarray[object, ndim=1] hypothesis_word = np.array(hypothesis.split(), dtype=object)
+    cdef list reference_word = reference.split()
+    cdef list hypothesis_word = hypothesis.split()
 
     # Use Py_ssize_t for indices and sizes
     cdef Py_ssize_t m = len(reference_word)
