@@ -43,24 +43,24 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     cdef list inserted_words, deleted_words, substituted_words
 
     # Initialize the Levenshtein distance matrix
-    ldm = [[0] * (n + 1) for _ in range(m + 1)]
+    cdef int[:, :] ldm = np.zeros((m + 1, n + 1), dtype=np.int32)
 
     # Fill the Levenshtein distance matrix
     for i in range(m + 1):
         for j in range(n + 1):
             if i == 0:
-                ldm[i][j] = j
+                ldm[i, j] = j
             elif j == 0:
-                ldm[i][j] = i
+                ldm[i, j] = i
             else:
                 substitution_cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
-                ldm[i][j] = min(
-                    ldm[i - 1][j] + 1,  # Deletion
-                    ldm[i][j - 1] + 1,  # Insertion
-                    ldm[i - 1][j - 1] + substitution_cost  # Substitution
+                ldm[i, j] = min(
+                    ldm[i - 1, j] + 1,  # Deletion
+                    ldm[i, j - 1] + 1,  # Insertion
+                    ldm[i - 1, j - 1] + substitution_cost  # Substitution
                 )
 
-    ld = ldm[m][n]
+    ld = ldm[m, n]
     wer = ld / m
 
     insertions, deletions, substitutions = 0, 0, 0
@@ -71,16 +71,16 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
             i -= 1
             j -= 1
         else:
-            if i > 0 and j > 0 and ldm[i][j] == ldm[i - 1][j - 1] + 1:
+            if i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
                 substitutions += 1
                 substituted_words.append((reference_word[i - 1], hypothesis_word[j - 1]))
                 i -= 1
                 j -= 1
-            elif j > 0 and ldm[i][j] == ldm[i][j - 1] + 1:
+            elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
                 insertions += 1
                 inserted_words.append(hypothesis_word[j - 1])
                 j -= 1
-            elif i > 0 and ldm[i][j] == ldm[i - 1][j] + 1:
+            elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
                 deletions += 1
                 deleted_words.append(reference_word[i - 1])
                 i -= 1
