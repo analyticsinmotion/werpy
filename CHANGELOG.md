@@ -4,9 +4,9 @@ It is organized by version and release date followed by a list of Enhancements, 
 <br /><br />
 
 
-## Version 3.0.3-beta 
-**Released:** TBD<br />
-**Tag:** v3.0.3
+## Version 3.1.0 (Latest)
+**Released:** April 22, 2025<br />
+**Tag:** v3.1.0
 
 ### Enhancements
 
@@ -18,10 +18,16 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Continued work on type hinting improvements and resolving 'mypy' errors for better code quality and maintainability.
 
+- Optimized Levenshtein distance matrix initialization in calculations() by replacing a Python list-of-lists with a Cython-typed NumPy array (cdef int[:, :]). This reduces memory overhead and significantly speeds up execution on typical workloads, especially for large datasets or repeated function calls. It improves scalability, responsiveness, and memory efficiency.
+
+- Refactored internal variable typing in calculations() for clarity and consistency:
+  - Loop indices and size variables now use Py_ssize_t, matching Python's internal conventions.
+  - Grouped and explicitly typed intermediate variables like inserted_words, deleted_words, and substituted_words for improved readability and static checks. This enhances code quality, reduces reliance on dynamic typing in performance-critical paths, and prepares the function for future optimizations.
+
 
 <br />
 
-## Version 3.0.2 (Latest)
+## Version 3.0.2 
 **Released:** April 3, 2025<br />
 **Tag:** v3.0.2
 
