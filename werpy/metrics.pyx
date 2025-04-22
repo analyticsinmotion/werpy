@@ -37,6 +37,9 @@ cdef class Result:
         }
 
 cpdef Result calculations(object reference, object hypothesis):
+    """
+    Dummy version of calculations to benchmark loop overhead.
+    """
     cdef Result result = Result()
     result.wer = 0.1
     result.ld = 1
@@ -44,10 +47,9 @@ cpdef Result calculations(object reference, object hypothesis):
     result.insertions = 0
     result.deletions = 0
     result.substitutions = 0
-    # Skip creating lists:
-    result.inserted_words = None
-    result.deleted_words = None
-    result.substituted_words = None
+    result.inserted_words = []
+    result.deleted_words = []
+    result.substituted_words = []
     return result
 
 cpdef list metrics(object reference_list, object hypothesis_list):
