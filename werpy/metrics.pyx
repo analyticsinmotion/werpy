@@ -29,42 +29,11 @@ cnp.import_array()
 
 cimport cython
 
-cdef list cython_split(str text, str delimiter=" "):
-    """
-    A Cython replacement for str.split(" "), optimized for performance.
-    Only supports single-character delimiters.
-    """
-    cdef list result = []
-    cdef Py_ssize_t start = 0, end = 0, length = len(text)
-    cdef char delim
-
-    if len(delimiter) != 1:
-        raise ValueError("cython_split() only supports single-character delimiters.")
-
-    delim = delimiter[0]
-
-    while end < length:
-        if text[end] == delim:
-            if start != end:
-                result.append(text[start:end])
-            start = end + 1
-        end += 1
-
-    if start < length:
-        result.append(text[start:])
-
-    return result
-
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef cnp.ndarray calculations(object reference, object hypothesis):
-    # Ensure inputs are Python strings
-    cdef str reference_str = str(reference)
-    cdef str hypothesis_str = str(hypothesis)
-
-    # Use cython_split for splitting
-    cdef list reference_word = cython_split(reference_str)
-    cdef list hypothesis_word = cython_split(hypothesis_str)
+    cdef list reference_word = reference.split()
+    cdef list hypothesis_word = hypothesis.split()
 
     # Use Py_ssize_t for indices and sizes
     cdef Py_ssize_t m = len(reference_word)
