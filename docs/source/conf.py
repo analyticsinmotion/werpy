@@ -17,7 +17,7 @@ It contains project information and various settings for building the docs.
 PROJECT = "werpy"
 PROJECT_COPYRIGHT = "2023 Analytics in Motion"
 AUTHOR = "Ross Armstrong"
-RELEASE = "3.1.0.dev1"
+RELEASE = "3.1.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
