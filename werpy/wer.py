@@ -16,7 +16,8 @@ from .errorhandler import error_handler
 
 def wer(reference, hypothesis) -> float | np.float64 | None:
     """
-    This function will calculate the overall Word Error Rate for the entire reference and hypothesis texts.
+    This function will calculate the overall Word Error Rate for the entire reference and hypothesis texts 
+    (i.e., the full corpus).
 
     Parameters
     ----------
