@@ -10,10 +10,11 @@ This module defines the following function:
     - wer(reference, hypothesis): Calculate the WER between a reference text and a hypothesis text.
 """
 
+import numpy as np
 from .errorhandler import error_handler
 
 
-def wer(reference, hypothesis) -> float | None:
+def wer(reference, hypothesis) -> float | np.float64 | None:
     """
     This function will calculate the overall Word Error Rate for the entire reference and hypothesis texts.
 
@@ -35,10 +36,10 @@ def wer(reference, hypothesis) -> float | None:
 
     Returns
     -------
-    float or None
-        This function will return a single Word Error Rate as a float, calculated as the number of edits 
-        (insertions, deletions, and substitutions) divided by the number of words in the reference text. 
-        If an exception occurs (e.g., invalid input), the function will return None.
+    float, np.float64, or None
+        This function will return a single Word Error Rate as a float or NumPy float64, which is calculated as the 
+        number of edits (insertions, deletions, and substitutions) divided by the number of words in the reference 
+        text. If an exception occurs (e.g., invalid input), the function will return None.
 
     Examples
     --------
@@ -53,16 +54,17 @@ def wer(reference, hypothesis) -> float | None:
     0.2
     """
     try:
-        results = error_handler(reference, hypothesis)
+        word_error_rate_breakdown = error_handler(reference, hypothesis)
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
-
-    if isinstance(results, list):
-        # Calculate overall WER for multiple pairs
-        total_edits = sum(result.ld for result in results)
-        total_words = sum(result.m for result in results)
-        return total_edits / total_words if total_words > 0 else None
+    if isinstance(word_error_rate_breakdown[0], np.ndarray):
+        transform_word_error_rate_breakdown = np.transpose(
+            word_error_rate_breakdown.tolist()
+        )
+        wer_result = (np.sum(transform_word_error_rate_breakdown[1])) / (
+            np.sum(transform_word_error_rate_breakdown[2])
+        )
     else:
-        # Single pair case
-        return results.wer
+        wer_result = word_error_rate_breakdown[0]
+    return wer_result
