@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
-This module will handle the exceptions for this package
+This module will handle the exceptions for this package.
 """
 
 from .metrics import metrics
@@ -10,7 +10,7 @@ from .metrics import metrics
 
 def error_handler(reference, hypothesis):
     """
-    This function provides the overall wrapper to handle exceptions within this package
+    This function provides the overall wrapper to handle exceptions within this package.
 
     Parameters
     ----------
@@ -30,13 +30,14 @@ def error_handler(reference, hypothesis):
 
     Returns
     -------
-    np.ndarray
-        This function will return a ragged array containing the Word Error Rate, Levenshtein distance, the number of
-        words in the reference sequence, insertions count, deletions count, substitutions count, a list of inserted
-        words, a list of deleted words and a list of substituted words.
+    list[Result] or Result
+        This function will return either a single `Result` object or a list of `Result` objects, depending on the input.
     """
     try:
-        word_error_rate_breakdown = metrics(reference, hypothesis)
+        if isinstance(reference, str) and isinstance(hypothesis, str):
+            reference = [reference]
+            hypothesis = [hypothesis]
+        return metrics(reference, hypothesis)
     except ValueError as exc:
         raise ValueError(
             "The Reference and Hypothesis input parameters must have the same number of elements."
@@ -50,4 +51,3 @@ def error_handler(reference, hypothesis):
         raise ZeroDivisionError(
             "Invalid input: reference must not be blank, and reference and hypothesis cannot both be empty."
         ) from exc
-    return word_error_rate_breakdown

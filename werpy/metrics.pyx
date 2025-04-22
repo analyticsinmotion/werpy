@@ -2,40 +2,45 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
-This Cython module provides functions for calculating string matching metrics between 
-reference and hypothesis strings. It contains two functions: calculations and metrics.
-The calculations function takes two input sequences (reference and hypothesis) and 
-returns a ragged array containing the word error rate (WER), Levenshtein distance (LD), 
-number of words in the reference sequence, counts of insertions, deletions and 
-substitutions, as well as lists of inserted, deleted and substituted words. The metrics 
-function applies vectorization to the calculations function, enabling it to take in 
-multiple values for reference and hypothesis in the form of lists or numpy arrays.
-
 This Cython module provides efficient implementations of word error rate (WER) and 
-Levenshtein distance (LD) calculations by utilizing C data types.
+Levenshtein distance (LD) calculations using native C types and optimized loops.
 
 Functions:
-- calculations(reference, hypothesis) -> np.ndarray: Calculates WER and related metrics 
-for two input sequences and returns a ragged array containing the metrics.
-- metrics(reference, hypothesis) -> np.ndarray: Applies vectorization to the 
-calculations function to calculate WER and related metrics for multiple pairs of input 
-sequences.
+- calculations(reference, hypothesis) -> Result: Calculates WER and related metrics for two sequences.
+- metrics(reference_list, hypothesis_list) -> list[Result]: Applies the calculations to multiple pairs.
 """
 
 import numpy as np
 cimport numpy as cnp
 
-cnp.import_array()
-
 cimport cython
+
+cnp.import_array()
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef cnp.ndarray calculations(object reference, object hypothesis):
+cdef class Result:
+    cdef public double wer
+    cdef public int ld, m, insertions, deletions, substitutions
+    cdef public list inserted_words, deleted_words, substituted_words
+
+    def to_dict(self):
+        return {
+            "wer": self.wer,
+            "ld": self.ld,
+            "m": self.m,
+            "insertions": self.insertions,
+            "deletions": self.deletions,
+            "substitutions": self.substitutions,
+            "inserted_words": self.inserted_words,
+            "deleted_words": self.deleted_words,
+            "substituted_words": self.substituted_words
+        }
+
+cpdef Result calculations(object reference, object hypothesis):
     cdef list reference_word = reference.split()
     cdef list hypothesis_word = hypothesis.split()
 
-    # Use Py_ssize_t for indices and sizes
     cdef Py_ssize_t m = len(reference_word)
     cdef Py_ssize_t n = len(hypothesis_word)
     cdef Py_ssize_t i, j
@@ -55,43 +60,62 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
             else:
                 substitution_cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
                 ldm[i, j] = min(
-                    ldm[i - 1, j] + 1,  # Deletion
-                    ldm[i, j - 1] + 1,  # Insertion
-                    ldm[i - 1, j - 1] + substitution_cost  # Substitution
+                    ldm[i - 1, j] + 1, # Deletion
+                    ldm[i, j - 1] + 1, # Insertion
+                    ldm[i - 1, j - 1] + substitution_cost # Substitution
                 )
 
     ld = ldm[m, n]
     wer = ld / m
 
-    insertions, deletions, substitutions = 0, 0, 0
+    insertions = deletions = substitutions = 0
     inserted_words, deleted_words, substituted_words = [], [], []
     i, j = m, n
     while i > 0 or j > 0:
         if i > 0 and j > 0 and reference_word[i - 1] == hypothesis_word[j - 1]:
             i -= 1
             j -= 1
-        else:
-            if i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
-                substitutions += 1
-                substituted_words.append((reference_word[i - 1], hypothesis_word[j - 1]))
-                i -= 1
-                j -= 1
-            elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
-                insertions += 1
-                inserted_words.append(hypothesis_word[j - 1])
-                j -= 1
-            elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
-                deletions += 1
-                deleted_words.append(reference_word[i - 1])
-                i -= 1
+        elif i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
+            substitutions += 1
+            substituted_words.append((reference_word[i - 1], hypothesis_word[j - 1]))
+            i -= 1
+            j -= 1
+        elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
+            insertions += 1
+            inserted_words.append(hypothesis_word[j - 1])
+            j -= 1
+        elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
+            deletions += 1
+            deleted_words.append(reference_word[i - 1])
+            i -= 1
 
-    inserted_words.reverse(), deleted_words.reverse(), substituted_words.reverse()
+    inserted_words.reverse()
+    deleted_words.reverse()
+    substituted_words.reverse()
 
-    return np.array(
-        [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words],
-        dtype=object)
+    cdef Result result = Result()
+    result.wer = wer
+    result.ld = ld
+    result.m = m
+    result.insertions = insertions
+    result.deletions = deletions
+    result.substitutions = substitutions
+    result.inserted_words = inserted_words
+    result.deleted_words = deleted_words
+    result.substituted_words = substituted_words
 
-def metrics(reference, hypothesis):
-    vectorize_calculations = np.vectorize(calculations)
-    result = vectorize_calculations(reference, hypothesis)
     return result
+
+
+cpdef list metrics(object reference_list, object hypothesis_list):
+    """
+    Apply the calculations function to each pair of reference and hypothesis.
+    Returns a list of Result objects.
+    """
+    cdef Py_ssize_t i
+    cdef Py_ssize_t size = len(reference_list)
+    cdef list results = []
+    for i in range(size):
+        results.append(calculations(reference_list[i], hypothesis_list[i]))
+    return results
+
