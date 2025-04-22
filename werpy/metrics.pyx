@@ -93,6 +93,7 @@ cpdef Result calculations(object reference, object hypothesis):
     deleted_words.reverse()
     substituted_words.reverse()
 
+cpdef Result calculations(object reference, object hypothesis):
     cdef Result result = Result()
     result.wer = wer
     result.ld = ld
