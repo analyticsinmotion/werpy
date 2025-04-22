@@ -58,8 +58,13 @@ cdef list cython_split(str text, str delimiter=" "):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef cnp.ndarray calculations(object reference, object hypothesis):
-    cdef list reference_word = cython_split(reference)
-    cdef list hypothesis_word = cython_split(hypothesis)
+    # Ensure inputs are Python strings
+    cdef str reference_str = str(reference)
+    cdef str hypothesis_str = str(hypothesis)
+
+    # Use cython_split for splitting
+    cdef list reference_word = cython_split(reference_str)
+    cdef list hypothesis_word = cython_split(hypothesis_str)
 
     # Use Py_ssize_t for indices and sizes
     cdef Py_ssize_t m = len(reference_word)
