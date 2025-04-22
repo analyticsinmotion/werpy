@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
-This module will handle the exceptions for this package
+Responsible for defining custom exceptions and handling errors across the package.
 """
 
 from .metrics import metrics
@@ -10,7 +10,7 @@ from .metrics import metrics
 
 def error_handler(reference, hypothesis):
     """
-    This function provides the overall wrapper to handle exceptions within this package
+    This function provides the overall wrapper to handle exceptions within this package.
 
     Parameters
     ----------
