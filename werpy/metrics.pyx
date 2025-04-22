@@ -31,9 +31,7 @@ cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef cnp.ndarray calculations(object reference, object hypothesis):
-    cdef list reference_word = reference.split()
-    cdef list hypothesis_word = hypothesis.split()
+cpdef cnp.ndarray calculations_tokenized(list reference_word, list hypothesis_word):
 
     # Use Py_ssize_t for indices and sizes
     cdef Py_ssize_t m = len(reference_word)
@@ -92,6 +90,9 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
         dtype=object)
 
 def metrics(reference, hypothesis):
-    vectorize_calculations = np.vectorize(calculations)
-    result = vectorize_calculations(reference, hypothesis)
-    return result
+    # Pre-tokenize in Python before calling Cython
+    reference_tokens = [r.split() for r in reference]
+    hypothesis_tokens = [h.split() for h in hypothesis]
+
+    vectorize_calculations = np.vectorize(calculations_tokenized)
+    return vectorize_calculations(reference_tokens, hypothesis_tokens)
