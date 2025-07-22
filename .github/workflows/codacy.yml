@@ -50,7 +50,8 @@ jobs:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           verbose: true
           #output: results.sarif
-          output: ./results.sarif
+          #output: ./results.sarif
+          output: ${{ github.workspace }}/results.sarif
           format: sarif
           # Adjust severity of non-security issues
           gh-code-scanning-compat: true
