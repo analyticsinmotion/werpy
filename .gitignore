@@ -178,3 +178,10 @@ cython_debug/
 
 # VSCode
 .vscode/
+
+# Ignore Claude Code files
+.claude/
+
+# Meson build directories
+build/
+builddir/
