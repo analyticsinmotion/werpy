@@ -44,13 +44,15 @@ install_data(
 )
 
 # Find NumPy include directories
-numpy_includes = run_command(py, '-c', 'import numpy; print(numpy.get_include())', check: true).stdout().strip()
+#numpy_includes = run_command(py, '-c', 'import numpy; print(numpy.get_include())', check: true).stdout().strip()
+numpy_dep = dependency('numpy')
 
 # Cython module
 py.extension_module(
     'metrics',
     pyx_files,
-    include_directories : include_directories(numpy_includes),
+    #include_directories : include_directories(numpy_includes),
+    dependencies : [numpy_dep],
     install : true,
     subdir : 'werpy'
 )
