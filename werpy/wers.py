@@ -52,11 +52,40 @@ def wers(reference, hypothesis):
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
-    if isinstance(word_error_rate_breakdown[0], np.ndarray):
-        transform_word_error_rate_breakdown = np.transpose(
-            word_error_rate_breakdown.tolist()
-        )
-        wers_result = transform_word_error_rate_breakdown[0].tolist()
+
+    b = word_error_rate_breakdown
+
+    # Unwrap 0-D container
+    if isinstance(b, np.ndarray) and b.ndim == 0:
+        b = b.item()
+
+    if isinstance(b, np.ndarray):
+        if b.ndim == 2:
+            # True 2-D numeric batch
+            t = b.T
+            wers_result = t[0].tolist()
+
+        elif b.ndim == 1:
+            # Could be either:
+            # (a) single example row vector, or
+            # (b) object array of per-example vectors
+            first = b[0] if b.size else None
+
+            if isinstance(first, (np.ndarray, list, tuple)):
+                # Batch stored as 1-D object array of per-example vectors (ragged fields exist)
+                wers_result = []
+                for r in b:
+                    rr = r.tolist() if isinstance(r, np.ndarray) else r
+                    wers_result.append(float(rr[0]))
+            else:
+                # Single example vector
+                wers_result = float(b[0])
+
+        else:
+            raise ValueError(f"Unexpected metrics output ndim: {b.ndim}")
+
     else:
-        wers_result = word_error_rate_breakdown[0]
+        # Non-numpy fallback (assume [wer, ld, m, ...])
+        wers_result = float(b[0])
+
     return wers_result
