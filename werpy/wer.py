@@ -59,13 +59,43 @@ def wer(reference, hypothesis) -> float | np.float64 | None:
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
-    if isinstance(word_error_rate_breakdown[0], np.ndarray):
-        transform_word_error_rate_breakdown = np.transpose(
-            word_error_rate_breakdown.tolist()
-        )
-        wer_result = (np.sum(transform_word_error_rate_breakdown[1])) / (
-            np.sum(transform_word_error_rate_breakdown[2])
-        )
+
+    b = word_error_rate_breakdown
+
+    # Unwrap 0-D container
+    if isinstance(b, np.ndarray) and b.ndim == 0:
+        b = b.item()
+
+    if isinstance(b, np.ndarray):
+        if b.ndim == 2:
+            # True 2-D numeric batch
+            t = b.T
+            wer_result = float(np.sum(t[1]) / np.sum(t[2]))
+
+        elif b.ndim == 1:
+            # Could be either:
+            # (a) single example row vector, or
+            # (b) object array of per-example vectors
+            first = b[0] if b.size else None
+
+            if isinstance(first, (np.ndarray, list, tuple)):
+                # Batch stored as 1-D object array of per-example vectors (ragged fields exist)
+                total_ld = 0.0
+                total_m = 0.0
+                for r in b:
+                    rr = r.tolist() if isinstance(r, np.ndarray) else r
+                    total_ld += float(rr[1])
+                    total_m += float(rr[2])
+                wer_result = float(total_ld / total_m) if total_m else 0.0
+            else:
+                # Single example vector
+                wer_result = float(b[0])
+
+        else:
+            raise ValueError(f"Unexpected metrics output ndim: {b.ndim}")
+
     else:
-        wer_result = word_error_rate_breakdown[0]
+        # Non-numpy fallback (assume [wer, ld, m, ...])
+        wer_result = float(b[0])
+
     return wer_result

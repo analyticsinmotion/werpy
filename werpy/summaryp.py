@@ -69,29 +69,66 @@ def summaryp(
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
-    if isinstance(word_error_rate_breakdown[0], np.ndarray):
-        word_error_rate_breakdown = word_error_rate_breakdown.tolist()
-        transform_word_error_rate_breakdown = np.transpose(word_error_rate_breakdown)
-        weighted_insertions = transform_word_error_rate_breakdown[3] * insertions_weight
-        weighted_deletions = transform_word_error_rate_breakdown[4] * deletions_weight
-        weighted_substitutions = (
-            transform_word_error_rate_breakdown[5] * substitutions_weight
-        )
-        m = transform_word_error_rate_breakdown[2]
-        weighted_errors = sum(
-            (weighted_insertions, weighted_deletions, weighted_substitutions)
-        )
-        werps_result = (weighted_errors / m).tolist()
+
+    b = word_error_rate_breakdown
+
+    # Unwrap 0-D container
+    if isinstance(b, np.ndarray) and b.ndim == 0:
+        b = b.item()
+
+    if isinstance(b, np.ndarray):
+        if b.ndim == 2:
+            # True 2-D numeric batch
+            word_error_rate_breakdown = b.tolist()
+            t = b.T
+            weighted_insertions = t[3] * insertions_weight
+            weighted_deletions = t[4] * deletions_weight
+            weighted_substitutions = t[5] * substitutions_weight
+            m = t[2]
+            weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
+            werps_result = (weighted_errors / m).tolist()
+
+        elif b.ndim == 1:
+            # Could be either:
+            # (a) single example row vector, or
+            # (b) object array of per-example vectors
+            first = b[0] if b.size else None
+
+            if isinstance(first, (np.ndarray, list, tuple)):
+                # Batch stored as 1-D object array of per-example vectors (ragged fields exist)
+                word_error_rate_breakdown = []
+                werps_result = []
+                for r in b:
+                    rr = r.tolist() if isinstance(r, np.ndarray) else r
+                    word_error_rate_breakdown.append(rr)
+                    w_ins = float(rr[3]) * insertions_weight
+                    w_del = float(rr[4]) * deletions_weight
+                    w_sub = float(rr[5]) * substitutions_weight
+                    m_val = float(rr[2])
+                    weighted_wer = (w_ins + w_del + w_sub) / m_val if m_val else 0.0
+                    werps_result.append(weighted_wer)
+            else:
+                # Single example vector - wrap in list for DataFrame
+                word_error_rate_breakdown = [b.tolist()]
+                weighted_insertions = b[3] * insertions_weight
+                weighted_deletions = b[4] * deletions_weight
+                weighted_substitutions = b[5] * substitutions_weight
+                m = b[2]
+                weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
+                werps_result = float(weighted_errors / m) if m else 0.0
+
+        else:
+            raise ValueError(f"Unexpected metrics output ndim: {b.ndim}")
+
     else:
-        word_error_rate_breakdown = [word_error_rate_breakdown.tolist()]
-        weighted_insertions = word_error_rate_breakdown[0][3] * insertions_weight
-        weighted_deletions = word_error_rate_breakdown[0][4] * deletions_weight
-        weighted_substitutions = word_error_rate_breakdown[0][5] * substitutions_weight
-        m = word_error_rate_breakdown[0][2]
-        weighted_errors = sum(
-            (weighted_insertions, weighted_deletions, weighted_substitutions)
-        )
-        werps_result = weighted_errors / m
+        # Non-numpy fallback (assume [wer, ld, m, ...])
+        word_error_rate_breakdown = [b.tolist() if hasattr(b, 'tolist') else b]
+        weighted_insertions = b[3] * insertions_weight
+        weighted_deletions = b[4] * deletions_weight
+        weighted_substitutions = b[5] * substitutions_weight
+        m = b[2]
+        weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
+        werps_result = float(weighted_errors / m) if m else 0.0
 
     columns = [
         "wer",

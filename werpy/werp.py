@@ -77,23 +77,61 @@ def werp(
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
-    if isinstance(word_error_rate_breakdown[0], np.ndarray):
-        transform_word_error_rate_breakdown = np.transpose(
-            word_error_rate_breakdown.tolist()
-        )
-        weighted_insertions = transform_word_error_rate_breakdown[3] * insertions_weight
-        weighted_deletions = transform_word_error_rate_breakdown[4] * deletions_weight
-        weighted_substitutions = (
-            transform_word_error_rate_breakdown[5] * substitutions_weight
-        )
-        m = np.sum(transform_word_error_rate_breakdown[2])
+
+    b = word_error_rate_breakdown
+
+    # Unwrap 0-D container
+    if isinstance(b, np.ndarray) and b.ndim == 0:
+        b = b.item()
+
+    if isinstance(b, np.ndarray):
+        if b.ndim == 2:
+            # True 2-D numeric batch
+            t = b.T
+            weighted_insertions = np.sum(t[3]) * insertions_weight
+            weighted_deletions = np.sum(t[4]) * deletions_weight
+            weighted_substitutions = np.sum(t[5]) * substitutions_weight
+            m = np.sum(t[2])
+
+        elif b.ndim == 1:
+            # Could be either:
+            # (a) single example row vector, or
+            # (b) object array of per-example vectors
+            first = b[0] if b.size else None
+
+            if isinstance(first, (np.ndarray, list, tuple)):
+                # Batch stored as 1-D object array of per-example vectors (ragged fields exist)
+                total_insertions = 0.0
+                total_deletions = 0.0
+                total_substitutions = 0.0
+                total_m = 0.0
+                for r in b:
+                    rr = r.tolist() if isinstance(r, np.ndarray) else r
+                    total_insertions += float(rr[3])
+                    total_deletions += float(rr[4])
+                    total_substitutions += float(rr[5])
+                    total_m += float(rr[2])
+                weighted_insertions = total_insertions * insertions_weight
+                weighted_deletions = total_deletions * deletions_weight
+                weighted_substitutions = total_substitutions * substitutions_weight
+                m = total_m
+            else:
+                # Single example vector
+                weighted_insertions = b[3] * insertions_weight
+                weighted_deletions = b[4] * deletions_weight
+                weighted_substitutions = b[5] * substitutions_weight
+                m = b[2]
+
+        else:
+            raise ValueError(f"Unexpected metrics output ndim: {b.ndim}")
+
     else:
-        weighted_insertions = word_error_rate_breakdown[3] * insertions_weight
-        weighted_deletions = word_error_rate_breakdown[4] * deletions_weight
-        weighted_substitutions = word_error_rate_breakdown[5] * substitutions_weight
-        m = np.sum(word_error_rate_breakdown[2])
-    weighted_errors = np.sum(
-        [weighted_insertions, weighted_deletions, weighted_substitutions]
-    )
-    werp_result = weighted_errors / m
+        # Non-numpy fallback (assume [wer, ld, m, ...])
+        weighted_insertions = b[3] * insertions_weight
+        weighted_deletions = b[4] * deletions_weight
+        weighted_substitutions = b[5] * substitutions_weight
+        m = b[2]
+
+    weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
+    werp_result = float(weighted_errors / m) if m else 0.0
     return werp_result

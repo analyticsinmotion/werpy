@@ -55,10 +55,41 @@ def summary(reference, hypothesis) -> pd.DataFrame | None:
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
-    if isinstance(word_error_rate_breakdown[0], np.ndarray):
-        word_error_rate_breakdown = word_error_rate_breakdown.tolist()
+
+    b = word_error_rate_breakdown
+
+    # Unwrap 0-D container
+    if isinstance(b, np.ndarray) and b.ndim == 0:
+        b = b.item()
+
+    if isinstance(b, np.ndarray):
+        if b.ndim == 2:
+            # True 2-D numeric batch
+            word_error_rate_breakdown = b.tolist()
+
+        elif b.ndim == 1:
+            # Could be either:
+            # (a) single example row vector, or
+            # (b) object array of per-example vectors
+            first = b[0] if b.size else None
+
+            if isinstance(first, (np.ndarray, list, tuple)):
+                # Batch stored as 1-D object array of per-example vectors (ragged fields exist)
+                word_error_rate_breakdown = []
+                for r in b:
+                    rr = r.tolist() if isinstance(r, np.ndarray) else r
+                    word_error_rate_breakdown.append(rr)
+            else:
+                # Single example vector - wrap in list for DataFrame
+                word_error_rate_breakdown = [b.tolist()]
+
+        else:
+            raise ValueError(f"Unexpected metrics output ndim: {b.ndim}")
+
     else:
-        word_error_rate_breakdown = [word_error_rate_breakdown.tolist()]
+        # Non-numpy fallback (assume [wer, ld, m, ...])
+        word_error_rate_breakdown = [b.tolist() if hasattr(b, 'tolist') else b]
+
     columns = [
         "wer",
         "ld",
