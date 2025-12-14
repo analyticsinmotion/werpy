@@ -9,7 +9,7 @@ requires = [
 
 [project]
 name = 'werpy'
-version = '3.1.0'
+version = '3.1.1'
 description = 'A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER).'
 readme = 'README.md'
 requires-python = '>=3.10'
