@@ -14,10 +14,12 @@ It contains project information and various settings for building the docs.
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-PROJECT = "werpy"
-PROJECT_COPYRIGHT = "2023 Analytics in Motion"
-AUTHOR = "Ross Armstrong"
-RELEASE = "3.1.0"
+from datetime import datetime
+
+project = "werpy"
+copyright = f'{datetime.now().year} <a href="https://www.analyticsinmotion.com">Analytics in Motion</a>'
+author = "Ross Armstrong"
+release = "3.1.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -32,30 +34,65 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 # html_theme = 'alabaster'
-HTML_THEME = "sphinx_nefertiti"
+html_theme = "sphinx_nefertiti"
 html_theme_options = {
-    # ... other options ...
-    "repository_name": "analyticsinmotion/werpy",
-    "repository_url": "https://github.com/analyticsinmotion/werpy",
+    "header_links": [
+        {
+            "text": "Home",
+            "link": "index",
+        },
+        {
+            "text": "Installation",
+            "link": "installation",
+        },
+        {
+            "text": "Modules",
+            "link": "modules",
+        },
+        {
+            "text": "Usage",
+            "dropdown": [
+                {
+                    "text": "Normalization",
+                    "link": "usage/normalization",
+                },
+                {
+                    "text": "Word Error Rate",
+                    "link": "usage/word-error-rate",
+                },
+                {
+                    "text": "Weighted Word Error Rate",
+                    "link": "usage/weighted-word-error-rate",
+                },
+                {
+                    "text": "Summarization",
+                    "link": "usage/summarization",
+                },
+            ],
+        },
+    ],
     "footer_links": [
         {
-            "text": "Documentation", 
+            "text": "Analytics in Motion",
+            "link": "https://www.analyticsinmotion.com"
+        },
+        {
+            "text": "Documentation",
             "link": "https://werpy.readthedocs.io"
         },
         {
-            "text": "Package", 
+            "text": "Package",
             "link": "https://pypi.org/project/werpy/"
         },
         {
-            "text": "Repository", 
+            "text": "Repository",
             "link": "https://github.com/analyticsinmotion/werpy"
         },
         {
-            "text": "Issues", 
+            "text": "Issues",
             "link": "https://github.com/analyticsinmotion/werpy/issues"
         },
     ],
-    # "show_powered_by": False,
 }
 
 html_static_path = ["_static"]
