@@ -1,11 +1,29 @@
+<!-- markdownlint-disable MD024 -->
 # CHANGELOG
-This changelog file outlines a chronologically ordered list of the changes made on this project. 
+
+This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
-<br /><br />
 
+## Version 3.1.1
 
-## Version 3.1.0 (Latest)
-**Released:** April 22, 2025<br />
+**Released:** December 14, 2025  
+**Tag:** v3.1.1
+
+### Bug Fixes
+
+- Fixed IndexError in wer, wers, werp, werps, summary, and summaryp functions when processing single string inputs. The issue occurred due to incorrect handling of np.vectorize return values, which produce different array structures for single versus batch inputs (0-dimensional arrays for single strings, 1-dimensional object arrays for lists). The fix unwraps 0-dimensional arrays and uses element-type checking to distinguish between single example vectors and batch processing scenarios.
+
+- Improved handling of ragged data structures in batch processing by implementing direct field summation instead of transpose operations. This prevents errors when processing mixed scalar and list data in the word error rate breakdown results.
+
+### Enhancements
+
+- Added comprehensive benchmarking infrastructure to compare performance against werx and jiwer packages using the LibriSpeech evaluation dataset.
+
+- Added optional dependencies groups in pyproject.toml for testing and benchmarking workflows, enabling easier development environment setup.
+
+## Version 3.1.0
+
+**Released:** April 22, 2025  
 **Tag:** v3.1.0
 
 ### Enhancements
@@ -24,11 +42,9 @@ It is organized by version and release date followed by a list of Enhancements, 
   - Loop indices and size variables now use Py_ssize_t, matching Python's internal conventions.
   - Grouped and explicitly typed intermediate variables like inserted_words, deleted_words, and substituted_words for improved readability and static checks. This enhances code quality, reduces reliance on dynamic typing in performance-critical paths, and prepares the function for future optimizations.
 
+## Version 3.0.2
 
-<br />
-
-## Version 3.0.2 
-**Released:** April 3, 2025<br />
+**Released:** April 3, 2025  
 **Tag:** v3.0.2
 
 ### Enhancements
@@ -54,12 +70,9 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Initial support for static type checking: included py.typed marker file to enable type checkers to recognize the package as typed. Note: full type coverage is not yet guaranteed and will be improved incrementally.
 
+## Version 3.0.1
 
-<br />
-
-
-## Version 3.0.1 
-**Released:** March 26, 2025<br />
+**Released:** March 26, 2025  
 **Tag:** v3.0.1
 
 ### Enhancements
@@ -71,13 +84,9 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Publishing process is now automated using GitHub Actions and PyPI Trusted Publishing
 
+## Version 3.0.0
 
-
-<br />
-
-
-## Version 3.0.0 
-**Released:** March 20, 2025<br />
+**Released:** March 20, 2025  
 **Tag:** v3.0.0
 
 ### Breaking Changes
@@ -93,7 +102,6 @@ It is organized by version and release date followed by a list of Enhancements, 
 - NumPy versions below 1.26.0 are no longer supported for Python 3.10+
 
 - NumPy 2.x is required for Python 3.12+, which may introduce API changes
-
 
 ### Enhancements
 
@@ -127,12 +135,9 @@ It is organized by version and release date followed by a list of Enhancements, 
 - Updated Cython Function Type Annotation
   - Changed cpdef np.ndarray calculations(...) to cpdef cnp.ndarray calculations(...) to properly reference the Cython-level NumPy API, ensuring type safety and compatibility with compiled C extensions.
 
-
-<br />
-
-
 ## Version 2.1.3-beta
-**Released:** Not released<br />
+
+**Released:** Not released  
 **Tag:** v2.1.3-beta
 
 ### Enhancements
@@ -147,11 +152,9 @@ All the following changes were incorporated into the major v3.0.0 rollout
 - Bump sphinx-nefertiti from 0.3.2 to 0.3.4 ([#12](https://github.com/analyticsinmotion/werpy/pull/12))
 - Bump certifi from 2023.11.17 to 2024.7.4 in /docs ([#13](https://github.com/analyticsinmotion/werpy/pull/13))
 
-<br />
-
-
 ## Version 2.1.2
-**Released:** April 5, 2024<br />
+
+**Released:** April 5, 2024  
 **Tag:** v2.1.2
 
 ### Enhancements
@@ -170,7 +173,6 @@ All the following changes were incorporated into the major v3.0.0 rollout
 
 - Ensured compliance with the Black code formatting by modifying relevant files.
 
-
 ### Changed
 
 - Bump jinja2 from 3.1.2 to 3.1.3 in /docs. ([#1](https://github.com/analyticsinmotion/werpy/pull/1))
@@ -180,11 +182,9 @@ All the following changes were incorporated into the major v3.0.0 rollout
 
 - Bump sphinx-nefertiti from 0.2.3 to 0.3.1 ([#3](https://github.com/analyticsinmotion/werpy/pull/3))
 
-
-<br /><br />
-
 ## Version 2.1.1
-**Released:** November 27, 2023<br />
+
+**Released:** November 27, 2023  
 **Tag:** v2.1.1
 
 ### Enhancements
@@ -194,22 +194,18 @@ All the following changes were incorporated into the major v3.0.0 rollout
   - Passed the Cython source code directly to the py.extension_module() definition for improved integration.
   - Specified the C standard configuration as C11, instructing Meson to use C11 as the designated C standard.
 
-
-<br /><br />
-
 ## Version 2.1.0
-**Released:** November 23, 2023<br />
+
+**Released:** November 23, 2023  
 **Tag:** v2.1.0
 
 ### New Feature
 
 - Enhanced cross-platform support by integrating cibuildwheel, enabling compatibility with macOS and popular Linux distributions. With existing Windows compatibility, the package now spans all major configurations. Feel free to reach out if you have a specific OS configuration you'd like to discuss for potential inclusion.
 
+## Version 2.0.0
 
-<br /><br />
-
-## Version 2.0.0 
-**Released:** November 23, 2023<br />
+**Released:** November 23, 2023  
 **Tag:** v2.0.0
 
 ### New Feature
@@ -218,18 +214,15 @@ All the following changes were incorporated into the major v3.0.0 rollout
 
 - During the transition to utilizing C optimizations, we opted to switch our Python package build system from Hatchling to Mesonpy. Mesonpy facilitates seamless compilation of C code as an integral part of the package build process. As a result of this transition, you can expect modifications to the pyproject.toml file and the introduction of a new meson.build file. This change under the hood enables us to integrate both Python and C code within the package natively for the performance optimizations.
 
-
 ### Breaking Changes
 
-- In this significant application update, we are introducing phased support for different operating systems. Initially, this version will exclusively support Windows. However, swift additions for UNIX/Linux and macOS compatibility are already in the pipeline and will be incorporated promptly. This temporary change allows us to roll out the major version upgrade incrementally while ensuring reliability for our user base. 
+- In this significant application update, we are introducing phased support for different operating systems. Initially, this version will exclusively support Windows. However, swift additions for UNIX/Linux and macOS compatibility are already in the pipeline and will be incorporated promptly. This temporary change allows us to roll out the major version upgrade incrementally while ensuring reliability for our user base.
 
 - Certain web applications relying exclusively on pure Python environments might encounter challenges running this package successfully. If your applications are affected, please don't hesitate to get in touch to discuss potential compatibility issues.
- 
-
-<br /><br />
 
 ## Version 1.1.2
-**Released:** November 17, 2023<br />
+
+**Released:** November 17, 2023  
 **Tag:** v1.1.2
 
 ### New Feature
@@ -238,18 +231,15 @@ All the following changes were incorporated into the major v3.0.0 rollout
 
 - Added corresponding new tests for the 'summaryp' function within the 'werpy' package, enhancing test coverage and ensuring robust functionality. The additional tests provide comprehensive validation of the 'summaryp' function, contributing to improved reliability and accuracy in the package's performance.
 
-
 ### Bug Fixes
 
 - Fixed an AttributeError in the 'summary.py' module that occurred when attempting to access the 'size' attribute of a 'float' object. This error happened when the module was provided a single reference and hypothesis string as input. The issue has been resolved.
 
 - Fixed an issue with the attributes of DataFrame column name "ld". Resolved the discrepancy in the "dtype" attribute from int32 to int64.
- 
 
-<br /><br />
+## Version 1.1.1
 
-## Version 1.1.1 
-**Released:** November 13, 2023<br />
+**Released:** November 13, 2023  
 **Tag:** v1.1.1
 
 ### Enhancements
@@ -258,18 +248,15 @@ All the following changes were incorporated into the major v3.0.0 rollout
 
 - Added the CircleCI badge to the repository Readme.md file
 
-
 ### Bug Fixes
 
 - Fixed an AttributeError in the wers.py module caused by an non-standard operation on a 'float' object. This only occurred when a single reference and hypothesis input string was entered and has now been rectified.
 
 - Resolved an AttributeError in the 'werps.py' module, which was triggered by a 'float' object having a size attribute. This issue specifically arose when a single reference and hypothesis input string was provided, and it has been successfully addressed.
- 
-
-<br /><br />
 
 ## Version 1.1.0
-**Released:** November 8, 2023<br />
+
+**Released:** November 8, 2023  
 **Tag:** v1.1.0
 
 ### Enhancements
@@ -278,15 +265,14 @@ All the following changes were incorporated into the major v3.0.0 rollout
 
 - Added the following unit tests to improve code coverage and validation for the functions in the werpy module. The new tests cover additional use cases with longer input sequences and help ensure the wer calculation works properly in different scenarios.
   - Added new unit tests for the wer module.
-  - Added new unit tests for the wers module. 
-  - Added new unit tests for the werp module. 
-  - Added new unit tests for the werps module. 
+  - Added new unit tests for the wers module.
+  - Added new unit tests for the werp module.
+  - Added new unit tests for the werps module.
   - Added new unit tests for the summary module.  
 
-<br /><br />
-
 ## Version 1.0.0
-**Released:** November 2, 2023<br />
+
+**Released:** November 2, 2023  
 **Tag:** v1.0.0
 
 ### Enhancements
@@ -295,10 +281,9 @@ All the following changes were incorporated into the major v3.0.0 rollout
 
 - Added new unit tests for the normalize module. These tests focus on improving test coverage, enhancing the reliability of the module, and ensuring the accuracy of the normalization process. By incorporating these tests, we aim to identify and address issues early in the development cycle, making the upcoming release more stable and reliable.
 
-<br /><br />
-
 ## Version 0.0.5
-**Released:** October 26, 2023<br />
+
+**Released:** October 26, 2023  
 **Tag:** v0.0.5
 
 ### Enhancements
@@ -310,50 +295,44 @@ All the following changes were incorporated into the major v3.0.0 rollout
 - Added a new method to the "normalization" module:
   - `remove_whitespace(text)`: This new method efficiently removes all excess spaces in the input text. It replaces consecutive sequences of spaces with a single space and removes any leading or trailing spaces, ensuring a cleaner and more consistent text output.
 
-<br /><br />
+## Version 0.0.4
 
-## Version 0.0.4 
-**Released:** May 4, 2023<br />
+**Released:** May 4, 2023  
 **Tag:** v0.0.4
 
 ### Enhancements
 
 - The code to handle exceptions and errors has been refactored to reduce code duplication across modules. In addition, the changes will make adding and testing errors or exceptions easier to maintain in the future.
 
-
 ### Bug Fix
 
 - Fixed a number of inconsistent return statements (R1710) within the package modules. This ensures that all functions will return a consistent expression when called.
 
-<br /><br />
-
 ## Version 0.0.3
-**Released:** May 2, 2023<br />
+
+**Released:** May 2, 2023  
 **Tag:** v0.0.3
 
 ### Bug Fix
 
 - Fixed a bug contained within the modules that was causing a Cyclic Import issue (R0401). One of the import statements was missing a period at the start of the module name. The fix has been tested and deployed successfully.
 
-<br /><br />
+## Version 0.0.2
 
-## Version 0.0.2 
-**Released:** May 1, 2023<br />
+**Released:** May 1, 2023  
 **Tag:** v0.0.2
 
 ### General Changes
 
 - Added Module Docstrings
 
-
 ### Bug Fix
 
 - Fixed an unidiomatic-typecheck (C0123) from type() to isinstance(). The idiomatic way to perform an explicit typecheck in Python is to use isinstance(x, y) rather than type(x) == Y.
 
-<br /><br />
-
 ## Version 0.0.1 (Initial Release)
-**Released:** April 28, 2023<br />
+
+**Released:** April 28, 2023  
 **Tag:** v0.0.1
 
 This is the initial release
