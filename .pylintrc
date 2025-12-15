@@ -2,7 +2,15 @@
 max-line-length = 120
 
 [pylint]
-good-names=i,j,m,n,ld,df
+good-names=i,j,m,n,ld,df,ref,hyp
 
 [MESSAGES CONTROL]
-disable=too-many-locals
+disable=
+    too-many-locals,
+    import-error,
+    duplicate-code
+
+[MASTER]
+# Ignore benchmark and development files that use optional dependencies
+ignore-paths=
+    ^(benchmarks|development|docs)[\\/].*$
