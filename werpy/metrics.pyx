@@ -36,32 +36,55 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     cdef list hypothesis_word = hypothesis.split()
 
     # Use Py_ssize_t for indices and sizes
+    # Py_ssize_t matches Python's internal index type and avoids unnecessary
+    # casts or overflow risks when working with Python lists and memoryviews.
     cdef Py_ssize_t m = len(reference_word)
     cdef Py_ssize_t n = len(hypothesis_word)
     cdef Py_ssize_t i, j
-    cdef int substitution_cost, ld, insertions, deletions, substitutions
+
+    # Metrics and outputs
+    cdef int ld, insertions, deletions, substitutions
+    cdef double wer
     cdef list inserted_words, deleted_words, substituted_words
 
+    # Variables for optimized DP loop
+    cdef int cost, del_cost, ins_cost, sub_cost, best
+
     # Initialize the Levenshtein distance matrix
-    cdef int[:, :] ldm = np.zeros((m + 1, n + 1), dtype=np.int32)
+    # Use empty instead of zeros to avoid redundant initialization.
+    # SAFETY: All cells are explicitly initialized below (row 0, col 0, then DP loop).
+    # Allocate the (m+1) x (n+1) DP matrix without zero-initialization to avoid
+    # redundant memory writes. Boundary conditions are initialized explicitly.
+    cdef int[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
+
+    # Initialize first column and first row (boundary conditions)
+    for i in range(m + 1):
+        ldm[i, 0] = <int>i
+    for j in range(n + 1):
+        ldm[0, j] = <int>j
 
     # Fill the Levenshtein distance matrix
-    for i in range(m + 1):
-        for j in range(n + 1):
-            if i == 0:
-                ldm[i, j] = j
-            elif j == 0:
-                ldm[i, j] = i
-            else:
-                substitution_cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
-                ldm[i, j] = min(
-                    ldm[i - 1, j] + 1,  # Deletion
-                    ldm[i, j - 1] + 1,  # Insertion
-                    ldm[i - 1, j - 1] + substitution_cost  # Substitution
-                )
+    # Compute edit distances using a branch-free inner loop and manual minimum
+    # selection to keep all operations at C level and minimize per-cell overhead.
+    # No boundary condition branches in the hot loop, manual min selection.
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+
+            del_cost = ldm[i - 1, j] + 1
+            ins_cost = ldm[i, j - 1] + 1
+            sub_cost = ldm[i - 1, j - 1] + cost
+
+            best = del_cost
+            if ins_cost < best:
+                best = ins_cost
+            if sub_cost < best:
+                best = sub_cost
+
+            ldm[i, j] = best
 
     ld = ldm[m, n]
-    wer = ld / m
+    wer = (<double>ld) / m
 
     insertions, deletions, substitutions = 0, 0, 0
     inserted_words, deleted_words, substituted_words = [], [], []
