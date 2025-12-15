@@ -91,7 +91,44 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
         [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words],
         dtype=object)
 
-def metrics(reference, hypothesis):
-    vectorize_calculations = np.vectorize(calculations)
-    result = vectorize_calculations(reference, hypothesis)
-    return result
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef cnp.ndarray _metrics_batch(list references, list hypotheses):
+    """
+    Private batch processing function. Processes multiple reference-hypothesis
+    pairs at C speed, eliminating np.vectorize overhead.
+
+    Returns (n, 9) object array where each row contains:
+    [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words]
+    """
+    cdef Py_ssize_t n = len(references)
+    cdef Py_ssize_t idx, j
+
+    # Rows output, dtype=object because cols 6-8 are lists
+    cdef cnp.ndarray out = np.empty((n, 9), dtype=object)
+
+    cdef object r
+    for idx in range(n):
+        r = calculations(references[idx], hypotheses[idx])
+
+        # Safety: unwrap 0-D wrappers if they ever occur
+        if isinstance(r, np.ndarray) and r.ndim == 0:
+            r = r.item()
+
+        for j in range(9):
+            out[idx, j] = r[j]
+
+    return out
+
+
+cpdef object metrics(object reference, object hypothesis):
+    """
+    Unified fast metrics entry point (Option A, rows contract).
+
+    Returns:
+    - strings: a single row (len 9)
+    - sequences: an (n, 9) object ndarray, one row per pair
+    """
+    if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
+        return _metrics_batch(list(reference), list(hypothesis))
+    return calculations(reference, hypothesis)
