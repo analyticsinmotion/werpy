@@ -12,6 +12,7 @@ This module defines the following function:
 import numpy as np
 import pandas as pd
 from .errorhandler import error_handler
+from .metrics import metrics
 
 
 def summary(reference, hypothesis) -> pd.DataFrame | None:
@@ -51,44 +52,20 @@ def summary(reference, hypothesis) -> pd.DataFrame | None:
             word and the hypothesis word. For example: [(cited, sighted), (abnormally, normally)]
     """
     try:
-        word_error_rate_breakdown = error_handler(reference, hypothesis)
+        error_handler(reference, hypothesis)
+        result = metrics(reference, hypothesis)
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
 
-    b = word_error_rate_breakdown
-
-    # Unwrap 0-D container
-    if isinstance(b, np.ndarray) and b.ndim == 0:
-        b = b.item()
-
-    if isinstance(b, np.ndarray):
-        if b.ndim == 2:
-            # True 2-D numeric batch
-            word_error_rate_breakdown = b.tolist()
-
-        elif b.ndim == 1:
-            # Could be either:
-            # (a) single example row vector, or
-            # (b) object array of per-example vectors
-            first = b[0] if b.size else None
-
-            if isinstance(first, (np.ndarray, list, tuple)):
-                # Batch stored as 1-D object array of per-example vectors (ragged fields exist)
-                word_error_rate_breakdown = []
-                for r in b:
-                    rr = r.tolist() if isinstance(r, np.ndarray) else r
-                    word_error_rate_breakdown.append(rr)
-            else:
-                # Single example vector - wrap in list for DataFrame
-                word_error_rate_breakdown = [b.tolist()]
-
-        else:
-            raise ValueError(f"Unexpected metrics output ndim: {b.ndim}")
-
+    # Batch rows (n, 9)
+    if isinstance(result, np.ndarray) and result.ndim == 2:
+        word_error_rate_breakdown = result.tolist()
     else:
-        # Non-numpy fallback (assume [wer, ld, m, ...])
-        word_error_rate_breakdown = [b.tolist() if hasattr(b, 'tolist') else b]
+        # Single row - wrap in list for DataFrame
+        if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
+            result = result.item()
+        word_error_rate_breakdown = [result.tolist() if hasattr(result, 'tolist') else list(result)]
 
     columns = [
         "wer",

@@ -11,6 +11,7 @@ This module defines the following function:
 
 import numpy as np
 from .errorhandler import error_handler
+from .metrics import metrics_fast
 
 
 def werp(
@@ -73,65 +74,29 @@ def werp(
     0.25
     """
     try:
-        word_error_rate_breakdown = error_handler(reference, hypothesis)
+        error_handler(reference, hypothesis)
+        result = metrics_fast(reference, hypothesis)
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
 
-    b = word_error_rate_breakdown
+    # Batch: (n, 6) float64
+    if isinstance(result, np.ndarray) and result.ndim == 2:
+        weighted_insertions = result[:, 3] * insertions_weight
+        weighted_deletions = result[:, 4] * deletions_weight
+        weighted_substitutions = result[:, 5] * substitutions_weight
+        m = result[:, 2]
+        weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
+        den = np.sum(m)
+        return float(np.sum(weighted_errors) / den) if den else 0.0
 
-    # Unwrap 0-D container
-    if isinstance(b, np.ndarray) and b.ndim == 0:
-        b = b.item()
+    # Single: (6,) float64
+    if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
+        result = result.item()
 
-    if isinstance(b, np.ndarray):
-        if b.ndim == 2:
-            # True 2-D numeric batch
-            t = b.T
-            weighted_insertions = np.sum(t[3]) * insertions_weight
-            weighted_deletions = np.sum(t[4]) * deletions_weight
-            weighted_substitutions = np.sum(t[5]) * substitutions_weight
-            m = np.sum(t[2])
-
-        elif b.ndim == 1:
-            # Could be either:
-            # (a) single example row vector, or
-            # (b) object array of per-example vectors
-            first = b[0] if b.size else None
-
-            if isinstance(first, (np.ndarray, list, tuple)):
-                # Batch stored as 1-D object array of per-example vectors (ragged fields exist)
-                total_insertions = 0.0
-                total_deletions = 0.0
-                total_substitutions = 0.0
-                total_m = 0.0
-                for r in b:
-                    rr = r.tolist() if isinstance(r, np.ndarray) else r
-                    total_insertions += float(rr[3])
-                    total_deletions += float(rr[4])
-                    total_substitutions += float(rr[5])
-                    total_m += float(rr[2])
-                weighted_insertions = total_insertions * insertions_weight
-                weighted_deletions = total_deletions * deletions_weight
-                weighted_substitutions = total_substitutions * substitutions_weight
-                m = total_m
-            else:
-                # Single example vector
-                weighted_insertions = b[3] * insertions_weight
-                weighted_deletions = b[4] * deletions_weight
-                weighted_substitutions = b[5] * substitutions_weight
-                m = b[2]
-
-        else:
-            raise ValueError(f"Unexpected metrics output ndim: {b.ndim}")
-
-    else:
-        # Non-numpy fallback (assume [wer, ld, m, ...])
-        weighted_insertions = b[3] * insertions_weight
-        weighted_deletions = b[4] * deletions_weight
-        weighted_substitutions = b[5] * substitutions_weight
-        m = b[2]
-
+    weighted_insertions = result[3] * insertions_weight
+    weighted_deletions = result[4] * deletions_weight
+    weighted_substitutions = result[5] * substitutions_weight
+    m = result[2]
     weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-    werp_result = float(weighted_errors / m) if m else 0.0
-    return werp_result
+    return float(weighted_errors / m) if m else 0.0

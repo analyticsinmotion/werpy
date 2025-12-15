@@ -2,15 +2,19 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
-Responsible for defining custom exceptions and handling errors across the package.
+Input validation and consistent exceptions for werpy public functions.
 """
 
-from .metrics import metrics
+import numpy as np
 
 
 def error_handler(reference, hypothesis):
     """
-    This function provides the overall wrapper to handle exceptions within this package.
+    Validate inputs and raise consistent exceptions.
+
+    This function does not compute metrics. Computation is handled by:
+    - metrics.metrics (router) for strings and batches
+    - metrics.calculations for a single pair
 
     Parameters
     ----------
@@ -30,24 +34,43 @@ def error_handler(reference, hypothesis):
 
     Returns
     -------
-    np.ndarray
-        This function will return a ragged array containing the Word Error Rate, Levenshtein distance, the number of
-        words in the reference sequence, insertions count, deletions count, substitutions count, a list of inserted
-        words, a list of deleted words and a list of substituted words.
+    bool
+        True if validation passes.
     """
-    try:
-        word_error_rate_breakdown = metrics(reference, hypothesis)
-    except ValueError as exc:
-        raise ValueError(
-            "The Reference and Hypothesis input parameters must have the same number of elements."
-        ) from exc
-    except AttributeError as exc:
+    valid_types = (str, list, np.ndarray)
+
+    if not isinstance(reference, valid_types) or not isinstance(hypothesis, valid_types):
         raise AttributeError(
             "All text should be in a string format. Please check your input does not include any "
             "Numeric data types."
-        ) from exc
-    except ZeroDivisionError as exc:
+        )
+
+    ref_is_seq = isinstance(reference, (list, np.ndarray))
+    hyp_is_seq = isinstance(hypothesis, (list, np.ndarray))
+
+    if ref_is_seq != hyp_is_seq:
+        raise AttributeError(
+            "Reference and hypothesis must both be strings, or both be lists/arrays."
+        )
+
+    if ref_is_seq and hyp_is_seq:
+        if len(reference) != len(hypothesis):
+            raise ValueError(
+                "The Reference and Hypothesis input parameters must have the same number of elements."
+            )
+        return True
+
+    # At this point, both are strings (validated above)
+    ref_s = str(reference).strip()
+    hyp_s = str(hypothesis).strip()
+
+    if ref_s == "" and hyp_s == "":
         raise ZeroDivisionError(
             "Invalid input: reference must not be blank, and reference and hypothesis cannot both be empty."
-        ) from exc
-    return word_error_rate_breakdown
+        )
+    if ref_s == "":
+        raise ZeroDivisionError(
+            "Invalid input: reference must not be blank, and reference and hypothesis cannot both be empty."
+        )
+
+    return True

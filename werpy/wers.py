@@ -11,6 +11,7 @@ This module defines the following function:
 
 import numpy as np
 from .errorhandler import error_handler
+from .metrics import metrics_fast
 
 
 def wers(reference, hypothesis):
@@ -48,44 +49,18 @@ def wers(reference, hypothesis):
     [0.0, 0.2]
     """
     try:
-        word_error_rate_breakdown = error_handler(reference, hypothesis)
+        error_handler(reference, hypothesis)
+        result = metrics_fast(reference, hypothesis)
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
 
-    b = word_error_rate_breakdown
+    # Batch: (n, 6) float64
+    if isinstance(result, np.ndarray) and result.ndim == 2:
+        return result[:, 0].tolist()
 
-    # Unwrap 0-D container
-    if isinstance(b, np.ndarray) and b.ndim == 0:
-        b = b.item()
+    # Single: (6,) float64, WER is at index 0
+    if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
+        result = result.item()
 
-    if isinstance(b, np.ndarray):
-        if b.ndim == 2:
-            # True 2-D numeric batch
-            t = b.T
-            wers_result = t[0].tolist()
-
-        elif b.ndim == 1:
-            # Could be either:
-            # (a) single example row vector, or
-            # (b) object array of per-example vectors
-            first = b[0] if b.size else None
-
-            if isinstance(first, (np.ndarray, list, tuple)):
-                # Batch stored as 1-D object array of per-example vectors (ragged fields exist)
-                wers_result = []
-                for r in b:
-                    rr = r.tolist() if isinstance(r, np.ndarray) else r
-                    wers_result.append(float(rr[0]))
-            else:
-                # Single example vector
-                wers_result = float(b[0])
-
-        else:
-            raise ValueError(f"Unexpected metrics output ndim: {b.ndim}")
-
-    else:
-        # Non-numpy fallback (assume [wer, ld, m, ...])
-        wers_result = float(b[0])
-
-    return wers_result
+    return float(result[0])

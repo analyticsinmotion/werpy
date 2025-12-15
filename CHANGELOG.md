@@ -4,6 +4,33 @@
 This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 
+## Version 3.2.0
+
+**Released:** December 15, 2025
+**Tag:** v3.2.0
+
+### Enhancements
+
+- Refactored metrics computation architecture to eliminate `np.vectorize()` overhead by replacing it with a C-level batch processing loop (`_metrics_batch()`). This provides cleaner code structure and establishes a foundation for future performance optimizations without introducing any performance regression.
+
+- Fixed double computation bug where `error_handler()` was calling `metrics()` for validation, then wrapper functions were computing metrics again. The `error_handler()` function is now validation-only, and all metric calculations happen through a single unified `metrics()` entry point, improving efficiency and code maintainability.
+
+- Standardized internal metrics return format to row-based `(n, 9)` array structure instead of columnar format. This simplifies DataFrame construction in `summary()` and `summaryp()` functions by eliminating complex transpose operations and reducing code complexity.
+
+- Improved code organization with unified `metrics()` router function that dispatches to either single-pair `calculations()` or batch `_metrics_batch()` processing, providing a cleaner and more maintainable architecture for metric computation.
+
+- Updated Pylint configuration to suppress import errors for Cython modules during static analysis and exclude benchmark/development directories from linting. This resolves CI/CD build failures while maintaining code quality standards for the core package.
+
+- Optimized Levenshtein distance algorithm in `calculations()` function with C-level performance improvements: replaced `np.zeros()` with `np.empty()` to eliminate redundant initialization, moved boundary condition initialization outside the main DP loop to remove conditional branches from the hot path, and replaced Python's `min()` function with manual C-level sequential comparisons.
+
+- Implemented dual-path architecture with fast path optimization for functions that don't require word tracking. Added three new functions (`calculations_fast()`, `_metrics_batch_fast()`, `metrics_fast()`) that skip word list construction and return float64 arrays instead of object arrays. Updated `wer()`, `wers()`, `werp()`, and `werps()` functions to use the fast path, achieving performance improvement on synthetic benchmarks. Functions requiring word tracking (`summary()` and `summaryp()`) continue using the full path.
+
+### Bug Fixes
+
+- Expanded try/except scope in all wrapper functions (`wer.py`, `wers.py`, `werp.py`, `werps.py`, `summary.py`, `summaryp.py`) to properly catch exceptions from both validation (`error_handler()`) and computation (`metrics()`/`metrics_fast()`). This fixes 6 pre-existing test failures where invalid input types (e.g., lists of integers) would crash instead of returning None with an error message.
+
+- Added division-by-zero guards in `calculations_fast()` function (`wer = (<double>ld) / m if m > 0 else 0.0`) and corpus-level wrapper functions (`wer.py`, `werp.py`) to prevent crashes on empty input. Also added per-row masked division in `werps.py` to handle cases where individual samples have zero reference length.
+
 ## Version 3.1.1
 
 **Released:** December 14, 2025  

@@ -185,3 +185,7 @@ cython_debug/
 # Meson build directories
 build/
 builddir/
+
+# Personal development workspace (local testing only)
+development/
+!development/README.md
