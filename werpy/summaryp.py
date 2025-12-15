@@ -67,11 +67,10 @@ def summaryp(
     """
     try:
         error_handler(reference, hypothesis)
+        result = metrics(reference, hypothesis)
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
-
-    result = metrics(reference, hypothesis)
 
     # Batch rows (n, 9)
     if isinstance(result, np.ndarray) and result.ndim == 2:

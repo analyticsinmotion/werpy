@@ -12,7 +12,7 @@ This module defines the following function:
 
 import numpy as np
 from .errorhandler import error_handler
-from .metrics import metrics
+from .metrics import metrics_fast
 
 
 def wer(reference, hypothesis) -> float | np.float64 | None:
@@ -57,20 +57,18 @@ def wer(reference, hypothesis) -> float | np.float64 | None:
     """
     try:
         error_handler(reference, hypothesis)
+        result = metrics_fast(reference, hypothesis)
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
 
-    result = metrics(reference, hypothesis)
-
-    # Batch rows (n, 9)
+    # Batch: (n, 6) float64
     if isinstance(result, np.ndarray) and result.ndim == 2:
-        ld_total = float(np.sum(result[:, 1]))
-        m_total = float(np.sum(result[:, 2]))
-        return ld_total / m_total
+        den = np.sum(result[:, 2])
+        return float(np.sum(result[:, 1]) / den) if den else 0.0
 
-    # Single row
+    # Single: (6,) float64, WER is at index 0
     if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
         result = result.item()
 
-    return float(result[1]) / float(result[2])
+    return float(result[0])

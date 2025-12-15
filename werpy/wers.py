@@ -11,7 +11,7 @@ This module defines the following function:
 
 import numpy as np
 from .errorhandler import error_handler
-from .metrics import metrics
+from .metrics import metrics_fast
 
 
 def wers(reference, hypothesis):
@@ -50,17 +50,16 @@ def wers(reference, hypothesis):
     """
     try:
         error_handler(reference, hypothesis)
+        result = metrics_fast(reference, hypothesis)
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
 
-    result = metrics(reference, hypothesis)
-
-    # Batch rows (n, 9)
+    # Batch: (n, 6) float64
     if isinstance(result, np.ndarray) and result.ndim == 2:
-        return [float(x) for x in result[:, 0].tolist()]
+        return result[:, 0].tolist()
 
-    # Single row
+    # Single: (6,) float64, WER is at index 0
     if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
         result = result.item()
 

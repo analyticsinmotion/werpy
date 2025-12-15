@@ -84,7 +84,7 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
             ldm[i, j] = best
 
     ld = ldm[m, n]
-    wer = (<double>ld) / m
+    wer = (<double>ld) / m if m > 0 else 0.0
 
     insertions, deletions, substitutions = 0, 0, 0
     inserted_words, deleted_words, substituted_words = [], [], []
@@ -125,7 +125,7 @@ cdef cnp.ndarray _metrics_batch(list references, list hypotheses):
     [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words]
     """
     cdef Py_ssize_t n = len(references)
-    cdef Py_ssize_t idx, j
+    cdef Py_ssize_t idx
 
     # Rows output, dtype=object because cols 6-8 are lists
     cdef cnp.ndarray out = np.empty((n, 9), dtype=object)
@@ -138,8 +138,7 @@ cdef cnp.ndarray _metrics_batch(list references, list hypotheses):
         if isinstance(r, np.ndarray) and r.ndim == 0:
             r = r.item()
 
-        for j in range(9):
-            out[idx, j] = r[j]
+        out[idx, :] = r
 
     return out
 
@@ -155,3 +154,117 @@ cpdef object metrics(object reference, object hypothesis):
     if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
         return _metrics_batch(list(reference), list(hypothesis))
     return calculations(reference, hypothesis)
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
+    """
+    Fast path for WER/LD calculations without word tracking.
+    Returns only numeric metrics (WER, LD, m, insertions, deletions, substitutions).
+
+    This function is optimized for use cases that only need counts and metrics,
+    not the actual lists of inserted/deleted/substituted words.
+
+    Returns (6,) float64 array: [wer, ld, m, insertions, deletions, substitutions]
+    """
+    cdef list reference_word = reference.split()
+    cdef list hypothesis_word = hypothesis.split()
+
+    cdef Py_ssize_t m = len(reference_word)
+    cdef Py_ssize_t n = len(hypothesis_word)
+    cdef Py_ssize_t i, j
+
+    cdef int ld, insertions, deletions, substitutions
+    cdef double wer
+
+    cdef int cost, del_cost, ins_cost, sub_cost, best
+
+    # Allocate the (m+1) x (n+1) DP matrix without zero-initialization
+    cdef int[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
+
+    # Initialize first column and first row (boundary conditions)
+    for i in range(m + 1):
+        ldm[i, 0] = <int>i
+    for j in range(n + 1):
+        ldm[0, j] = <int>j
+
+    # Fill the Levenshtein distance matrix
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+
+            del_cost = ldm[i - 1, j] + 1
+            ins_cost = ldm[i, j - 1] + 1
+            sub_cost = ldm[i - 1, j - 1] + cost
+
+            best = del_cost
+            if ins_cost < best:
+                best = ins_cost
+            if sub_cost < best:
+                best = sub_cost
+
+            ldm[i, j] = best
+
+    ld = ldm[m, n]
+    wer = (<double>ld) / m if m > 0 else 0.0
+
+    # Backtrace to count errors (no word tracking)
+    insertions, deletions, substitutions = 0, 0, 0
+    i, j = m, n
+    while i > 0 or j > 0:
+        if i > 0 and j > 0 and reference_word[i - 1] == hypothesis_word[j - 1]:
+            i -= 1
+            j -= 1
+        else:
+            if i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
+                substitutions += 1
+                i -= 1
+                j -= 1
+            elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
+                insertions += 1
+                j -= 1
+            elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
+                deletions += 1
+                i -= 1
+
+    return np.array(
+        [wer, <double>ld, <double>m,
+         <double>insertions, <double>deletions, <double>substitutions],
+        dtype=np.float64
+    )
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef cnp.ndarray _metrics_batch_fast(list references, list hypotheses):
+    """
+    Fast batch processing without word tracking.
+
+    Returns (n, 6) float64 array where each row contains:
+    [wer, ld, m, insertions, deletions, substitutions]
+    """
+    cdef Py_ssize_t n = len(references)
+    cdef Py_ssize_t idx
+
+    cdef cnp.ndarray out = np.empty((n, 6), dtype=np.float64)
+
+    cdef cnp.ndarray r
+    for idx in range(n):
+        r = calculations_fast(references[idx], hypotheses[idx])
+        out[idx, :] = r
+
+    return out
+
+
+cpdef object metrics_fast(object reference, object hypothesis):
+    """
+    Fast metrics entry point without word tracking.
+
+    Returns:
+    - strings: (6,) float64 array [wer, ld, m, insertions, deletions, substitutions]
+    - sequences: (n, 6) float64 array, one row per pair
+    """
+    if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
+        return _metrics_batch_fast(list(reference), list(hypothesis))
+    return calculations_fast(reference, hypothesis)

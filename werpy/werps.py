@@ -11,7 +11,7 @@ This module defines the following function:
 
 import numpy as np
 from .errorhandler import error_handler
-from .metrics import metrics
+from .metrics import metrics_fast
 
 
 def werps(
@@ -69,22 +69,24 @@ def werps(
     """
     try:
         error_handler(reference, hypothesis)
+        result = metrics_fast(reference, hypothesis)
     except (ValueError, AttributeError, ZeroDivisionError) as err:
         print(f"{type(err).__name__}: {str(err)}")
         return None
 
-    result = metrics(reference, hypothesis)
-
-    # Batch rows (n, 9)
+    # Batch: (n, 6) float64
     if isinstance(result, np.ndarray) and result.ndim == 2:
         weighted_insertions = result[:, 3] * insertions_weight
         weighted_deletions = result[:, 4] * deletions_weight
         weighted_substitutions = result[:, 5] * substitutions_weight
         m = result[:, 2]
         weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-        return (weighted_errors / m).tolist()
+        out = np.zeros_like(weighted_errors, dtype=np.float64)
+        mask = m != 0
+        out[mask] = weighted_errors[mask] / m[mask]
+        return out.tolist()
 
-    # Single row
+    # Single: (6,) float64
     if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
         result = result.item()
 
