@@ -19,7 +19,7 @@ from datetime import datetime
 project = "werpy"
 copyright = f'{datetime.now().year} <a href="https://www.analyticsinmotion.com">Analytics in Motion</a>'
 author = "Ross Armstrong"
-release = "3.2.0"
+release = "3.3.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
