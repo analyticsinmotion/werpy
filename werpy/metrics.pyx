@@ -55,13 +55,13 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     # SAFETY: All cells are explicitly initialized below (row 0, col 0, then DP loop).
     # Allocate the (m+1) x (n+1) DP matrix without zero-initialization to avoid
     # redundant memory writes. Boundary conditions are initialized explicitly.
-    cdef int[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
+    cdef cnp.int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
 
     # Initialize first column and first row (boundary conditions)
     for i in range(m + 1):
-        ldm[i, 0] = <int>i
+        ldm[i, 0] = <cnp.int32_t>i
     for j in range(n + 1):
-        ldm[0, j] = <int>j
+        ldm[0, j] = <cnp.int32_t>j
 
     # Fill the Levenshtein distance matrix
     # Compute edit distances using a branch-free inner loop and manual minimum
@@ -181,13 +181,13 @@ cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
     cdef int cost, del_cost, ins_cost, sub_cost, best
 
     # Allocate the (m+1) x (n+1) DP matrix without zero-initialization
-    cdef int[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
+    cdef cnp.int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
 
     # Initialize first column and first row (boundary conditions)
     for i in range(m + 1):
-        ldm[i, 0] = <int>i
+        ldm[i, 0] = <cnp.int32_t>i
     for j in range(n + 1):
-        ldm[0, j] = <int>j
+        ldm[0, j] = <cnp.int32_t>j
 
     # Fill the Levenshtein distance matrix
     for i in range(1, m + 1):
@@ -268,3 +268,177 @@ cpdef object metrics_fast(object reference, object hypothesis):
     if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
         return _metrics_batch_fast(list(reference), list(hypothesis))
     return calculations_fast(reference, hypothesis)
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
+    """
+    WER-only fast path - 2-row DP (O(n) memory), no backtrace.
+    Returns only [wer, ld, m] without error counts or word tracking.
+
+    This is the fastest path for pure WER calculation, using space-optimized
+    Wagner-Fischer algorithm with rolling 2-row buffer instead of full matrix.
+
+    Returns (3,) float64 array: [wer, ld, m]
+    """
+    cdef list reference_word = reference.split()
+    cdef list hypothesis_word = hypothesis.split()
+
+    cdef Py_ssize_t m = len(reference_word)
+    cdef Py_ssize_t n = len(hypothesis_word)
+
+    cdef Py_ssize_t i, j
+    cdef int cost, del_cost, ins_cost, sub_cost, best, ld
+    cdef double wer
+
+    cdef cnp.ndarray prev_arr = np.empty(n + 1, dtype=np.int32)
+    cdef cnp.ndarray curr_arr = np.empty(n + 1, dtype=np.int32)
+
+    cdef cnp.int32_t[:] prev = prev_arr
+    cdef cnp.int32_t[:] curr = curr_arr
+
+    for j in range(n + 1):
+        prev[j] = <cnp.int32_t>j
+
+    for i in range(1, m + 1):
+        curr[0] = <cnp.int32_t>i
+        for j in range(1, n + 1):
+            cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+
+            del_cost = prev[j] + 1
+            ins_cost = curr[j - 1] + 1
+            sub_cost = prev[j - 1] + cost
+
+            best = del_cost
+            if ins_cost < best:
+                best = ins_cost
+            if sub_cost < best:
+                best = sub_cost
+
+            curr[j] = best
+
+        prev, curr = curr, prev
+
+    ld = prev[n]
+    wer = (<double>ld) / m if m > 0 else 0.0
+
+    return np.array([wer, <double>ld, <double>m], dtype=np.float64)
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef inline void _calculations_wer_only_reuse_ptr(
+    object reference,
+    object hypothesis,
+    cnp.int32_t* prev,
+    cnp.int32_t* curr,
+    double* out3,
+) except *:
+    """
+    Internal WER-only DP using caller-provided buffers and pointer swap (no copying).
+    Writes: out3[0]=wer, out3[1]=ld, out3[2]=m
+
+    This implementation uses true pointer swapping instead of copying values,
+    eliminating O(n) copy overhead per outer iteration.
+    """
+    cdef list reference_word = reference.split()
+    cdef list hypothesis_word = hypothesis.split()
+
+    cdef Py_ssize_t m = len(reference_word)
+    cdef Py_ssize_t n = len(hypothesis_word)
+
+    cdef Py_ssize_t i, j
+    cdef int cost, del_cost, ins_cost, sub_cost, best, ld
+    cdef cnp.int32_t* tmp
+
+    # Initialize base row: prev[j] = j for j=0..n
+    for j in range(n + 1):
+        prev[j] = j
+
+    for i in range(1, m + 1):
+        curr[0] = i
+        for j in range(1, n + 1):
+            cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+
+            del_cost = prev[j] + 1
+            ins_cost = curr[j - 1] + 1
+            sub_cost = prev[j - 1] + cost
+
+            best = del_cost
+            if ins_cost < best:
+                best = ins_cost
+            if sub_cost < best:
+                best = sub_cost
+
+            curr[j] = best
+
+        # Swap prev and curr pointers (zero-cost operation)
+        tmp = prev
+        prev = curr
+        curr = tmp
+
+    ld = prev[n]
+    out3[0] = (<double>ld) / m if m > 0 else 0.0
+    out3[1] = <double>ld
+    out3[2] = <double>m
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef cnp.ndarray _metrics_batch_wer_only(list references, list hypotheses):
+    """
+    Fast batch processing for WER-only calculations with buffer reuse and pointer swapping.
+
+    Eliminates repeated buffer allocations by reusing prev/curr arrays across all pairs
+    in the batch, sized to the maximum hypothesis length. Uses true pointer swapping
+    instead of value copying for optimal performance.
+
+    Returns (n, 3) float64 array where each row contains:
+    [wer, ld, m]
+    """
+    cdef Py_ssize_t n_pairs = len(references)
+    cdef Py_ssize_t idx
+
+    cdef cnp.ndarray out = np.empty((n_pairs, 3), dtype=np.float64)
+
+    # Find max hypothesis token length to size buffers once
+    cdef Py_ssize_t max_n = 0
+    cdef Py_ssize_t this_n
+    cdef object h
+    cdef list h_words
+    for idx in range(n_pairs):
+        h = hypotheses[idx]
+        h_words = h.split()
+        this_n = len(h_words)
+        if this_n > max_n:
+            max_n = this_n
+
+    # Allocate reusable DP buffers once for the entire batch
+    cdef cnp.ndarray prev_arr = np.empty(max_n + 1, dtype=np.int32)
+    cdef cnp.ndarray curr_arr = np.empty(max_n + 1, dtype=np.int32)
+
+    # Get raw pointers for zero-cost swapping
+    cdef cnp.int32_t* prev = <cnp.int32_t*>cnp.PyArray_DATA(prev_arr)
+    cdef cnp.int32_t* curr = <cnp.int32_t*>cnp.PyArray_DATA(curr_arr)
+
+    # Process each pair using shared buffers, writing directly to output rows
+    cdef double* out_row
+    for idx in range(n_pairs):
+        out_row = <double*>cnp.PyArray_DATA(out) + (idx * 3)
+        _calculations_wer_only_reuse_ptr(references[idx], hypotheses[idx], prev, curr, out_row)
+
+    return out
+
+
+cpdef object metrics_wer_only(object reference, object hypothesis):
+    """
+    WER-only metrics entry point (fastest path).
+
+    Returns:
+    - strings: (3,) float64 array [wer, ld, m]
+    - sequences: (n, 3) float64 array, one row per pair
+    """
+    if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
+        return _metrics_batch_wer_only(list(reference), list(hypothesis))
+    return calculations_wer_only(reference, hypothesis)

@@ -4,6 +4,21 @@
 This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 
+## Version 3.3.0
+
+**Released:** December 19, 2025
+**Tag:** v3.3.0
+
+### Enhancements
+
+- Implemented ultra-fast WER-only path with space-optimized 2-row dynamic programming algorithm and batch buffer reuse. Added four new functions (`calculations_wer_only()`, `_calculations_wer_only_reuse_ptr()`, `_metrics_batch_wer_only()`, `metrics_wer_only()`) that eliminate backtrace overhead and use O(n) memory instead of O(m×n). This optimization uses pointer swapping instead of value copying and reuses DP buffers across entire batches, providing significant performance gains for `wer()` and `wers()` functions that only need the WER metric without error counts or word lists.
+
+- Fixed portability issue in WER-only batch processing by replacing platform-dependent `int*` pointers with guaranteed 32-bit `cnp.int32_t*` pointers. This ensures correct behavior on all platforms where `sizeof(int)` may differ from 4 bytes, while also removing unnecessary type casts for cleaner code that follows NumPy/Cython best practices.
+
+- Expanded benchmarking support by adding optional third-party WER libraries (`pywer`, `evaluate`, `universal-edit-distance`, `torchmetrics`) to `pyproject.toml` under the `benchmarks` extra. Updated `benchmark_synthetic_data_local.py` to safely import optional dependencies, ensure all benchmark functions are always defined, and enforce consistent numeric return types. This fixes static analysis warnings, prevents runtime errors when optional packages are missing, and enables more comprehensive and reliable cross-package performance comparisons.
+
+- Standardized all Levenshtein dynamic programming buffers and memoryviews to use cnp.int32_t instead of platform-dependent int. This ensures strict dtype alignment with NumPy int32 arrays, removes undefined behavior on platforms where sizeof(int) != 4, and improves type safety without impacting performance.
+
 ## Version 3.2.0
 
 **Released:** December 15, 2025

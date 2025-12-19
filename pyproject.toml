@@ -9,7 +9,7 @@ requires = [
 
 [project]
 name = 'werpy'
-version = '3.2.0'
+version = '3.3.0'
 description = 'A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER).'
 readme = 'README.md'
 requires-python = '>=3.10'
@@ -75,4 +75,8 @@ benchmarks = [
     "datasets>=4.4.1",
     "werx>=0.3.1",
     "jiwer>=4.0.0",
+    "pywer>=0.1.1",
+    "evaluate>=0.4.6",
+    "universal-edit-distance>=0.4.3",
+    "torchmetrics",
 ]
