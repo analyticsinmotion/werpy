@@ -55,13 +55,13 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     # SAFETY: All cells are explicitly initialized below (row 0, col 0, then DP loop).
     # Allocate the (m+1) x (n+1) DP matrix without zero-initialization to avoid
     # redundant memory writes. Boundary conditions are initialized explicitly.
-    cdef int[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
+    cdef cnp.int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
 
     # Initialize first column and first row (boundary conditions)
     for i in range(m + 1):
-        ldm[i, 0] = <int>i
+        ldm[i, 0] = <cnp.int32_t>i
     for j in range(n + 1):
-        ldm[0, j] = <int>j
+        ldm[0, j] = <cnp.int32_t>j
 
     # Fill the Levenshtein distance matrix
     # Compute edit distances using a branch-free inner loop and manual minimum
@@ -181,13 +181,13 @@ cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
     cdef int cost, del_cost, ins_cost, sub_cost, best
 
     # Allocate the (m+1) x (n+1) DP matrix without zero-initialization
-    cdef int[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
+    cdef cnp.int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
 
     # Initialize first column and first row (boundary conditions)
     for i in range(m + 1):
-        ldm[i, 0] = <int>i
+        ldm[i, 0] = <cnp.int32_t>i
     for j in range(n + 1):
-        ldm[0, j] = <int>j
+        ldm[0, j] = <cnp.int32_t>j
 
     # Fill the Levenshtein distance matrix
     for i in range(1, m + 1):
@@ -295,14 +295,14 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
     cdef cnp.ndarray prev_arr = np.empty(n + 1, dtype=np.int32)
     cdef cnp.ndarray curr_arr = np.empty(n + 1, dtype=np.int32)
 
-    cdef int[:] prev = prev_arr
-    cdef int[:] curr = curr_arr
+    cdef cnp.int32_t[:] prev = prev_arr
+    cdef cnp.int32_t[:] curr = curr_arr
 
     for j in range(n + 1):
-        prev[j] = <int>j
+        prev[j] = <cnp.int32_t>j
 
     for i in range(1, m + 1):
-        curr[0] = <int>i
+        curr[0] = <cnp.int32_t>i
         for j in range(1, n + 1):
             cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
 
