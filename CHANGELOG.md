@@ -17,6 +17,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Expanded benchmarking support by adding optional third-party WER libraries (`pywer`, `evaluate`, `universal-edit-distance`, `torchmetrics`) to `pyproject.toml` under the `benchmarks` extra. Updated `benchmark_synthetic_data_local.py` to safely import optional dependencies, ensure all benchmark functions are always defined, and enforce consistent numeric return types. This fixes static analysis warnings, prevents runtime errors when optional packages are missing, and enables more comprehensive and reliable cross-package performance comparisons.
 
+- Standardized all Levenshtein dynamic programming buffers and memoryviews to use cnp.int32_t instead of platform-dependent int. This ensures strict dtype alignment with NumPy int32 arrays, removes undefined behavior on platforms where sizeof(int) != 4, and improves type safety without impacting performance.
+
 ## Version 3.2.0
 
 **Released:** December 15, 2025
