@@ -2,24 +2,34 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
-This Cython module provides functions for calculating string matching metrics between 
-reference and hypothesis strings. It contains two functions: calculations and metrics.
-The calculations function takes two input sequences (reference and hypothesis) and 
-returns a ragged array containing the word error rate (WER), Levenshtein distance (LD), 
-number of words in the reference sequence, counts of insertions, deletions and 
-substitutions, as well as lists of inserted, deleted and substituted words. The metrics 
-function applies vectorization to the calculations function, enabling it to take in 
-multiple values for reference and hypothesis in the form of lists or numpy arrays.
+This Cython module provides functions for calculating string matching metrics between
+reference and hypothesis strings. Word error rate (WER) and Levenshtein distance (LD) are
+computed with C data types, and batches are processed in a C-level loop.
 
-This Cython module provides efficient implementations of word error rate (WER) and 
-Levenshtein distance (LD) calculations by utilizing C data types.
+Three calculation paths are available, each with a single-pair function and a router that
+accepts either a pair of strings or a pair of equal-length lists or numpy arrays:
 
-Functions:
-- calculations(reference, hypothesis) -> np.ndarray: Calculates WER and related metrics 
-for two input sequences and returns a ragged array containing the metrics.
-- metrics(reference, hypothesis) -> np.ndarray: Applies vectorization to the 
-calculations function to calculate WER and related metrics for multiple pairs of input 
-sequences.
+- calculations(reference, hypothesis) -> np.ndarray: the full path. Returns a nine-element
+  object array containing the WER, LD, number of words in the reference, counts of
+  insertions, deletions and substitutions, and lists of the inserted, deleted and
+  substituted words.
+- metrics(reference, hypothesis) -> np.ndarray: routes to calculations for a pair of strings
+  and returns a (9,) object array, or processes a batch and returns an (n, 9) object array
+  with one row per pair.
+- calculations_fast(reference, hypothesis) -> np.ndarray: the counts-only path. Returns a
+  (6,) float64 array containing the WER, LD, number of words in the reference, and counts of
+  insertions, deletions and substitutions. No word lists are built.
+- metrics_fast(reference, hypothesis) -> np.ndarray: routes to calculations_fast for a pair
+  of strings, or returns an (n, 6) float64 array for a batch.
+- calculations_wer_only(reference, hypothesis) -> np.ndarray: the WER-only path. Returns a
+  (3,) float64 array containing the WER, LD and number of words in the reference, computed
+  with a two-row dynamic programming buffer.
+- metrics_wer_only(reference, hypothesis) -> np.ndarray: routes to calculations_wer_only for
+  a pair of strings, or returns an (n, 3) float64 array for a batch, reusing one pair of
+  buffers across the whole batch.
+
+Input validation is performed by werpy.errorhandler.error_handler before these functions
+are called by the public werpy functions.
 """
 
 import numpy as np
@@ -354,10 +364,10 @@ cdef inline void _calculations_wer_only_reuse_ptr(
 
     # Initialize base row: prev[j] = j for j=0..n
     for j in range(n + 1):
-        prev[j] = j
+        prev[j] = <cnp.int32_t>j
 
     for i in range(1, m + 1):
-        curr[0] = i
+        curr[0] = <cnp.int32_t>i
         for j in range(1, n + 1):
             cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
 

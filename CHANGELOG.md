@@ -16,6 +16,22 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Corrected the docstrings of `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` to state that the functions print a message and return `None` when the input is invalid. The return type annotation of `wer()` is now `float | None`. In version 4.0.0 invalid input will raise an exception instead of returning `None`.
 
+- Pinned the build requirements in `pyproject.toml` to exact versions of `meson-python`, `meson` and `Cython`, and removed `wheel` from the build requirements.
+
+- The compiled extension is now built against a stated NumPy C API version (`NPY_TARGET_VERSION=NPY_1_25_API_VERSION`), the API level provided by NumPy 1.26.
+
+- Added a `linetrace` Meson build option, off by default, that compiles `metrics.pyx` with Cython line tracing for coverage measurement.
+
+- The default Meson build type is now `release` with `b_ndebug=if-release`, and the license in `meson.build` is declared with the SPDX identifier `BSD-3-Clause`.
+
+- Added the `<cnp.int32_t>` casts to the two buffer assignments in `_calculations_wer_only_reuse_ptr()` that did not carry them, matching the other calculation paths, and replaced the `metrics.pyx` module docstring with a description of the three calculation paths and their return shapes.
+
+- The Windows wheel no longer contains the MSVC import library (`.lib`) of the compiled extension.
+
+- The source distribution no longer contains the CI configuration, documentation, benchmark and development files.
+
+- The generated `werpy/metrics.c` file produced by a line tracing build is ignored.
+
 ## Version 3.3.0
 
 **Released:** December 19, 2025

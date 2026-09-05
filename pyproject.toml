@@ -1,10 +1,10 @@
 [build-system]
 build-backend = 'mesonpy'
 requires = [
-    'meson-python', 
-    'wheel', 
-    'Cython', 
-    'numpy'
+    'meson-python==0.20.0',
+    'meson==1.10.0',
+    'Cython==3.2.2',
+    'numpy>=2.0,<3'
 ]
 
 [project]
@@ -80,3 +80,6 @@ benchmarks = [
     "universal-edit-distance>=0.4.3",
     "torchmetrics",
 ]
+
+[tool.meson-python.wheel]
+exclude = ['*.lib']
