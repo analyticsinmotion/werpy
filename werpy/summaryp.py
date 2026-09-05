@@ -40,18 +40,9 @@ def summaryp(
     substitutions_weight: int or float, optional
         The weight multiplier for a substitution error
 
-    Raises
-    ------
-    ValueError
-        if the two input parameters do not contain the same amount of elements.
-    AttributeError
-        if input text is not a string, list or np.ndarray data type.
-    ZeroDivisionError
-        if input in reference is blank or both reference and hypothesis are empty.
-
     Returns
     -------
-    pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame or None
         Returns a dataframe containing the following ten columns:
             wer - The Word Error Rate
             werp - The weighted Word Error Rate
@@ -64,6 +55,7 @@ def summaryp(
             deleted_words - list of deleted words
             substituted_words - list of substitutions. Each substitution will be shown as a tuple with the reference
             word and the hypothesis word. For example: [(cited, sighted), (abnormally, normally)]
+        If the input is invalid, the function prints a message describing the problem and returns None.
     """
     try:
         error_handler(reference, hypothesis)
@@ -80,7 +72,10 @@ def summaryp(
         weighted_substitutions = result[:, 5] * substitutions_weight
         m = result[:, 2]
         weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-        werps_result = (weighted_errors / m).tolist()
+        out = np.zeros_like(weighted_errors, dtype=np.float64)
+        mask = m != 0
+        out[mask] = weighted_errors[mask] / m[mask]
+        werps_result = out.tolist()
     else:
         # Single row - wrap in list for DataFrame
         if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:

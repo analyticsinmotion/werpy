@@ -38,19 +38,11 @@ def werp(
     substitutions_weight: int or float, optional
         The weight multiplier for a substitution error
 
-    Raises
-    ------
-    ValueError
-        if the two input parameters do not contain the same amount of elements.
-    AttributeError
-        if input text is not a string, list or np.ndarray data type.
-    ZeroDivisionError
-        if input in reference is blank or both reference and hypothesis are empty.
-
     Returns
     -------
-    float
+    float or None
         This function will return a single weighted Word Error Rate.
+        If the input is invalid, the function prints a message describing the problem and returns None.
 
     Examples
     --------

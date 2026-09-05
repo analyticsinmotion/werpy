@@ -22,7 +22,10 @@ Note: If the 'wers' module is not imported successfully, an ImportError is raise
 to ensure that the required module is available for testing.
 """
 
+import contextlib
+import io
 import unittest
+import numpy as np
 from werpy.wers import wers
 
 
@@ -128,6 +131,67 @@ class TestWers(unittest.TestCase):
         hyp = [2, 3, 3, 3]
         # The actual return value is None from the try/except block in wers module
         expected_result = None
+
+        self.assertEqual(wers(ref, hyp), expected_result)
+
+    def test_wers_blank_reference_in_list(self):
+        """
+        Test the wers function with a list containing a blank reference.
+
+        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = wers(["", "a b"], ["x y", "a b"])
+
+        self.assertIsNone(result)
+        self.assertEqual(
+            buffer.getvalue().strip(),
+            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 0.",
+        )
+
+    def test_wers_empty_sequences(self):
+        """
+        Test the wers function with two empty lists.
+
+        It verifies that two empty lists yield an empty list.
+        """
+        self.assertEqual(wers([], []), [])
+
+    def test_wers_tuple_input(self):
+        """
+        Test the wers function with reference and hypothesis given as tuples.
+
+        It verifies that the function prints a message and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = wers(("i love pizza",), ("i love pizza",))
+
+        self.assertIsNone(result)
+        self.assertEqual(
+            buffer.getvalue().strip(),
+            "AttributeError: All text should be in a string format. Please check your input does not include any "
+            "Numeric data types.",
+        )
+
+    def test_wers_numpy_string_array(self):
+        """
+        Test the wers function with reference and hypothesis given as numpy arrays of string dtype.
+        """
+        ref = np.array(["i love cold pizza", "the sugar bear character was popular"])
+        hyp = np.array(["i love pizza", "the sugar bare character was popular"])
+        expected_result = [0.25, 0.16666666666666666]
+
+        self.assertEqual(wers(ref, hyp), expected_result)
+
+    def test_wers_numpy_object_array(self):
+        """
+        Test the wers function with reference and hypothesis given as numpy arrays of object dtype.
+        """
+        ref = np.array(["i love cold pizza", "the sugar bear character was popular"], dtype=object)
+        hyp = np.array(["i love pizza", "the sugar bare character was popular"], dtype=object)
+        expected_result = [0.25, 0.16666666666666666]
 
         self.assertEqual(wers(ref, hyp), expected_result)
 

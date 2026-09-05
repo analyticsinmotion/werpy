@@ -4,6 +4,18 @@
 This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 
+## Unreleased
+
+### Bug Fixes
+
+- Blank references inside a list or numpy array are now rejected by `error_handler()`, matching the existing check for a single blank reference string. The message names the index of the first blank reference, and the `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` functions print that message and return `None`. Previously a blank reference inside a sequence contributed a Word Error Rate of `0.0`.
+
+- Added a zero guard to the per-row weighted Word Error Rate calculation in `summaryp()`, matching the guard already used in `werps()`, so a reference with zero words no longer raises an uncaught `ZeroDivisionError`.
+
+### Enhancements
+
+- Corrected the docstrings of `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` to state that the functions print a message and return `None` when the input is invalid. The return type annotation of `wer()` is now `float | None`. In version 4.0.0 invalid input will raise an exception instead of returning `None`.
+
 ## Version 3.3.0
 
 **Released:** December 19, 2025

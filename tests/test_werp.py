@@ -22,6 +22,8 @@ Note: If the 'werp' module is not imported successfully, an ImportError is raise
 to ensure that the required module is available for testing.
 """
 
+import contextlib
+import io
 import unittest
 from werpy.werp import werp
 
@@ -142,6 +144,43 @@ class TestWerp(unittest.TestCase):
         expected_result = None
 
         self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
+
+    def test_werp_blank_reference_in_list(self):
+        """
+        Test the werp function with a list containing a whitespace-only reference.
+
+        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = werp(["i love pizza", "   "], ["i love pizza", "a b"], 0.5, 0.5, 1)
+
+        self.assertIsNone(result)
+        self.assertEqual(
+            buffer.getvalue().strip(),
+            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 1.",
+        )
+
+    def test_werp_empty_sequences(self):
+        """
+        Test the werp function with two empty lists.
+
+        It verifies that two empty lists yield a weighted Word Error Rate of 0.0.
+        """
+        self.assertEqual(werp([], [], 0.5, 0.5, 1), 0.0)
+
+    def test_werp_nested_list_input(self):
+        """
+        Test the werp function with reference and hypothesis given as lists of lists.
+
+        It verifies that the function prints a message and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = werp([["i love pizza"]], [["i love pizza"]], 0.5, 0.5, 1)
+
+        self.assertIsNone(result)
+        self.assertEqual(buffer.getvalue().strip(), "AttributeError: 'list' object has no attribute 'split'")
 
 
 if __name__ == "__main__":  # pragma: no cover
