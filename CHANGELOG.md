@@ -32,6 +32,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - The generated `werpy/metrics.c` file produced by a line tracing build is ignored.
 
+- Every token of a reference and hypothesis pair is now mapped to one canonical object per distinct word before the edit distance is computed, so the dynamic programming loops in `metrics.pyx` compare words by pointer equality instead of by string comparison. The results of every calculation path are unchanged.
+
 ## Version 3.3.0
 
 **Released:** December 19, 2025

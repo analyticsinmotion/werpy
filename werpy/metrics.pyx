@@ -28,6 +28,10 @@ accepts either a pair of strings or a pair of equal-length lists or numpy arrays
   a pair of strings, or returns an (n, 3) float64 array for a batch, reusing one pair of
   buffers across the whole batch.
 
+Before the edit distance is computed, every token of a pair is mapped to one canonical
+object per distinct word, so that the dynamic programming loops compare words by pointer
+equality rather than by string comparison.
+
 Input validation is performed by werpy.errorhandler.error_handler before these functions
 are called by the public werpy functions.
 """
@@ -38,6 +42,37 @@ cimport numpy as cnp
 cnp.import_array()
 
 cimport cython
+from cpython.ref cimport PyObject
+from cpython.dict cimport PyDict_SetDefault
+from cpython.mem cimport PyMem_Malloc, PyMem_Free
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef inline int _canonical_tokens(
+    list reference_word,
+    list hypothesis_word,
+    PyObject** ref_tok,
+    PyObject** hyp_tok,
+) except -1:
+    """
+    Fill ref_tok and hyp_tok with one canonical object per distinct word, taken from the
+    first occurrence of that word in either list. Two tokens are the same word exactly when
+    their canonical pointers are equal. The pointers are borrowed from the token lists, which
+    must stay alive while the buffers are in use.
+    """
+    cdef dict canonical = {}
+    cdef Py_ssize_t k
+    cdef object word
+
+    for k in range(len(reference_word)):
+        word = reference_word[k]
+        ref_tok[k] = PyDict_SetDefault(canonical, word, word)
+    for k in range(len(hypothesis_word)):
+        word = hypothesis_word[k]
+        hyp_tok[k] = PyDict_SetDefault(canonical, word, word)
+    return 0
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -60,6 +95,10 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     # Variables for optimized DP loop
     cdef int cost, del_cost, ins_cost, sub_cost, best
 
+    # Canonical token pointers, reference tokens first, hypothesis tokens after them
+    cdef PyObject** ref_tok
+    cdef PyObject** hyp_tok
+
     # Initialize the Levenshtein distance matrix
     # Use empty instead of zeros to avoid redundant initialization.
     # SAFETY: All cells are explicitly initialized below (row 0, col 0, then DP loop).
@@ -73,50 +112,60 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     for j in range(n + 1):
         ldm[0, j] = <cnp.int32_t>j
 
-    # Fill the Levenshtein distance matrix
-    # Compute edit distances using a branch-free inner loop and manual minimum
-    # selection to keep all operations at C level and minimize per-cell overhead.
-    # No boundary condition branches in the hot loop, manual min selection.
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+    ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
+    if ref_tok == NULL:
+        raise MemoryError()
+    hyp_tok = ref_tok + m
 
-            del_cost = ldm[i - 1, j] + 1
-            ins_cost = ldm[i, j - 1] + 1
-            sub_cost = ldm[i - 1, j - 1] + cost
+    try:
+        _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
 
-            best = del_cost
-            if ins_cost < best:
-                best = ins_cost
-            if sub_cost < best:
-                best = sub_cost
+        # Fill the Levenshtein distance matrix
+        # Compute edit distances using a branch-free inner loop and manual minimum
+        # selection to keep all operations at C level and minimize per-cell overhead.
+        # No boundary condition branches in the hot loop, manual min selection.
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-            ldm[i, j] = best
+                del_cost = ldm[i - 1, j] + 1
+                ins_cost = ldm[i, j - 1] + 1
+                sub_cost = ldm[i - 1, j - 1] + cost
 
-    ld = ldm[m, n]
-    wer = (<double>ld) / m if m > 0 else 0.0
+                best = del_cost
+                if ins_cost < best:
+                    best = ins_cost
+                if sub_cost < best:
+                    best = sub_cost
 
-    insertions, deletions, substitutions = 0, 0, 0
-    inserted_words, deleted_words, substituted_words = [], [], []
-    i, j = m, n
-    while i > 0 or j > 0:
-        if i > 0 and j > 0 and reference_word[i - 1] == hypothesis_word[j - 1]:
-            i -= 1
-            j -= 1
-        else:
-            if i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
-                substitutions += 1
-                substituted_words.append((reference_word[i - 1], hypothesis_word[j - 1]))
+                ldm[i, j] = best
+
+        ld = ldm[m, n]
+        wer = (<double>ld) / m if m > 0 else 0.0
+
+        insertions, deletions, substitutions = 0, 0, 0
+        inserted_words, deleted_words, substituted_words = [], [], []
+        i, j = m, n
+        while i > 0 or j > 0:
+            if i > 0 and j > 0 and ref_tok[i - 1] == hyp_tok[j - 1]:
                 i -= 1
                 j -= 1
-            elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
-                insertions += 1
-                inserted_words.append(hypothesis_word[j - 1])
-                j -= 1
-            elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
-                deletions += 1
-                deleted_words.append(reference_word[i - 1])
-                i -= 1
+            else:
+                if i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
+                    substitutions += 1
+                    substituted_words.append((reference_word[i - 1], hypothesis_word[j - 1]))
+                    i -= 1
+                    j -= 1
+                elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
+                    insertions += 1
+                    inserted_words.append(hypothesis_word[j - 1])
+                    j -= 1
+                elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
+                    deletions += 1
+                    deleted_words.append(reference_word[i - 1])
+                    i -= 1
+    finally:
+        PyMem_Free(ref_tok)
 
     inserted_words.reverse(), deleted_words.reverse(), substituted_words.reverse()
 
@@ -190,6 +239,10 @@ cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
 
     cdef int cost, del_cost, ins_cost, sub_cost, best
 
+    # Canonical token pointers, reference tokens first, hypothesis tokens after them
+    cdef PyObject** ref_tok
+    cdef PyObject** hyp_tok
+
     # Allocate the (m+1) x (n+1) DP matrix without zero-initialization
     cdef cnp.int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
 
@@ -199,44 +252,54 @@ cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
     for j in range(n + 1):
         ldm[0, j] = <cnp.int32_t>j
 
-    # Fill the Levenshtein distance matrix
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+    ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
+    if ref_tok == NULL:
+        raise MemoryError()
+    hyp_tok = ref_tok + m
 
-            del_cost = ldm[i - 1, j] + 1
-            ins_cost = ldm[i, j - 1] + 1
-            sub_cost = ldm[i - 1, j - 1] + cost
+    try:
+        _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
 
-            best = del_cost
-            if ins_cost < best:
-                best = ins_cost
-            if sub_cost < best:
-                best = sub_cost
+        # Fill the Levenshtein distance matrix
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-            ldm[i, j] = best
+                del_cost = ldm[i - 1, j] + 1
+                ins_cost = ldm[i, j - 1] + 1
+                sub_cost = ldm[i - 1, j - 1] + cost
 
-    ld = ldm[m, n]
-    wer = (<double>ld) / m if m > 0 else 0.0
+                best = del_cost
+                if ins_cost < best:
+                    best = ins_cost
+                if sub_cost < best:
+                    best = sub_cost
 
-    # Backtrace to count errors (no word tracking)
-    insertions, deletions, substitutions = 0, 0, 0
-    i, j = m, n
-    while i > 0 or j > 0:
-        if i > 0 and j > 0 and reference_word[i - 1] == hypothesis_word[j - 1]:
-            i -= 1
-            j -= 1
-        else:
-            if i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
-                substitutions += 1
+                ldm[i, j] = best
+
+        ld = ldm[m, n]
+        wer = (<double>ld) / m if m > 0 else 0.0
+
+        # Backtrace to count errors (no word tracking)
+        insertions, deletions, substitutions = 0, 0, 0
+        i, j = m, n
+        while i > 0 or j > 0:
+            if i > 0 and j > 0 and ref_tok[i - 1] == hyp_tok[j - 1]:
                 i -= 1
                 j -= 1
-            elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
-                insertions += 1
-                j -= 1
-            elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
-                deletions += 1
-                i -= 1
+            else:
+                if i > 0 and j > 0 and ldm[i, j] == ldm[i - 1, j - 1] + 1:
+                    substitutions += 1
+                    i -= 1
+                    j -= 1
+                elif j > 0 and ldm[i, j] == ldm[i, j - 1] + 1:
+                    insertions += 1
+                    j -= 1
+                elif i > 0 and ldm[i, j] == ldm[i - 1, j] + 1:
+                    deletions += 1
+                    i -= 1
+    finally:
+        PyMem_Free(ref_tok)
 
     return np.array(
         [wer, <double>ld, <double>m,
@@ -302,6 +365,10 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
     cdef int cost, del_cost, ins_cost, sub_cost, best, ld
     cdef double wer
 
+    # Canonical token pointers, reference tokens first, hypothesis tokens after them
+    cdef PyObject** ref_tok
+    cdef PyObject** hyp_tok
+
     cdef cnp.ndarray prev_arr = np.empty(n + 1, dtype=np.int32)
     cdef cnp.ndarray curr_arr = np.empty(n + 1, dtype=np.int32)
 
@@ -311,24 +378,34 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
     for j in range(n + 1):
         prev[j] = <cnp.int32_t>j
 
-    for i in range(1, m + 1):
-        curr[0] = <cnp.int32_t>i
-        for j in range(1, n + 1):
-            cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+    ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
+    if ref_tok == NULL:
+        raise MemoryError()
+    hyp_tok = ref_tok + m
 
-            del_cost = prev[j] + 1
-            ins_cost = curr[j - 1] + 1
-            sub_cost = prev[j - 1] + cost
+    try:
+        _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
 
-            best = del_cost
-            if ins_cost < best:
-                best = ins_cost
-            if sub_cost < best:
-                best = sub_cost
+        for i in range(1, m + 1):
+            curr[0] = <cnp.int32_t>i
+            for j in range(1, n + 1):
+                cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-            curr[j] = best
+                del_cost = prev[j] + 1
+                ins_cost = curr[j - 1] + 1
+                sub_cost = prev[j - 1] + cost
 
-        prev, curr = curr, prev
+                best = del_cost
+                if ins_cost < best:
+                    best = ins_cost
+                if sub_cost < best:
+                    best = sub_cost
+
+                curr[j] = best
+
+            prev, curr = curr, prev
+    finally:
+        PyMem_Free(ref_tok)
 
     ld = prev[n]
     wer = (<double>ld) / m if m > 0 else 0.0
@@ -362,31 +439,45 @@ cdef inline void _calculations_wer_only_reuse_ptr(
     cdef int cost, del_cost, ins_cost, sub_cost, best, ld
     cdef cnp.int32_t* tmp
 
+    # Canonical token pointers, reference tokens first, hypothesis tokens after them
+    cdef PyObject** ref_tok
+    cdef PyObject** hyp_tok
+
     # Initialize base row: prev[j] = j for j=0..n
     for j in range(n + 1):
         prev[j] = <cnp.int32_t>j
 
-    for i in range(1, m + 1):
-        curr[0] = <cnp.int32_t>i
-        for j in range(1, n + 1):
-            cost = 0 if reference_word[i - 1] == hypothesis_word[j - 1] else 1
+    ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
+    if ref_tok == NULL:
+        raise MemoryError()
+    hyp_tok = ref_tok + m
 
-            del_cost = prev[j] + 1
-            ins_cost = curr[j - 1] + 1
-            sub_cost = prev[j - 1] + cost
+    try:
+        _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
 
-            best = del_cost
-            if ins_cost < best:
-                best = ins_cost
-            if sub_cost < best:
-                best = sub_cost
+        for i in range(1, m + 1):
+            curr[0] = <cnp.int32_t>i
+            for j in range(1, n + 1):
+                cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-            curr[j] = best
+                del_cost = prev[j] + 1
+                ins_cost = curr[j - 1] + 1
+                sub_cost = prev[j - 1] + cost
 
-        # Swap prev and curr pointers (zero-cost operation)
-        tmp = prev
-        prev = curr
-        curr = tmp
+                best = del_cost
+                if ins_cost < best:
+                    best = ins_cost
+                if sub_cost < best:
+                    best = sub_cost
+
+                curr[j] = best
+
+            # Swap prev and curr pointers (zero-cost operation)
+            tmp = prev
+            prev = curr
+            curr = tmp
+    finally:
+        PyMem_Free(ref_tok)
 
     ld = prev[n]
     out3[0] = (<double>ld) / m if m > 0 else 0.0
