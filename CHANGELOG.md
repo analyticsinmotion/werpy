@@ -34,6 +34,14 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Every token of a reference and hypothesis pair is now mapped to one canonical object per distinct word before the edit distance is computed, so the dynamic programming loops in `metrics.pyx` compare words by pointer equality instead of by string comparison. The results of every calculation path are unchanged.
 
+- When the reference and the hypothesis are the same string, the calculation functions return a zero edit distance and zero counts directly, without building the token mapping or the edit distance table.
+
+- The Word Error Rate batch path no longer splits every hypothesis in a preliminary pass to size its buffers. The row buffers are sized on demand as the batch is processed.
+
+- The Word Error Rate batch path now shares one token buffer across every pair in the batch, grown on demand and freed once when the batch is finished, instead of allocating and freeing a buffer for each pair.
+
+- The punctuation translation table used by `normalize()` is now built once when the module is imported rather than on every call.
+
 ## Version 3.3.0
 
 **Released:** December 19, 2025

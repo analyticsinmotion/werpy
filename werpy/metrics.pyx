@@ -26,7 +26,7 @@ accepts either a pair of strings or a pair of equal-length lists or numpy arrays
   with a two-row dynamic programming buffer.
 - metrics_wer_only(reference, hypothesis) -> np.ndarray: routes to calculations_wer_only for
   a pair of strings, or returns an (n, 3) float64 array for a batch, reusing one pair of
-  buffers across the whole batch.
+  row buffers and one token buffer across the whole batch.
 
 Before the edit distance is computed, every token of a pair is mapped to one canonical
 object per distinct word, so that the dynamic programming loops compare words by pointer
@@ -44,7 +44,7 @@ cnp.import_array()
 cimport cython
 from cpython.ref cimport PyObject
 from cpython.dict cimport PyDict_SetDefault
-from cpython.mem cimport PyMem_Malloc, PyMem_Free
+from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
 
 
 @cython.boundscheck(False)
@@ -78,14 +78,22 @@ cdef inline int _canonical_tokens(
 @cython.wraparound(False)
 cpdef cnp.ndarray calculations(object reference, object hypothesis):
     cdef list reference_word = reference.split()
-    cdef list hypothesis_word = hypothesis.split()
+    cdef list hypothesis_word
 
     # Use Py_ssize_t for indices and sizes
     # Py_ssize_t matches Python's internal index type and avoids unnecessary
     # casts or overflow risks when working with Python lists and memoryviews.
     cdef Py_ssize_t m = len(reference_word)
-    cdef Py_ssize_t n = len(hypothesis_word)
+    cdef Py_ssize_t n
     cdef Py_ssize_t i, j
+
+    # An identical pair has no edits, so the token mapping and the dynamic
+    # programme are skipped. Only the reference word count is needed.
+    if reference == hypothesis:
+        return np.array([0.0, 0, m, 0, 0, 0, [], [], []], dtype=object)
+
+    hypothesis_word = hypothesis.split()
+    n = len(hypothesis_word)
 
     # Metrics and outputs
     cdef int ld, insertions, deletions, substitutions
@@ -228,11 +236,19 @@ cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
     Returns (6,) float64 array: [wer, ld, m, insertions, deletions, substitutions]
     """
     cdef list reference_word = reference.split()
-    cdef list hypothesis_word = hypothesis.split()
+    cdef list hypothesis_word
 
     cdef Py_ssize_t m = len(reference_word)
-    cdef Py_ssize_t n = len(hypothesis_word)
+    cdef Py_ssize_t n
     cdef Py_ssize_t i, j
+
+    # An identical pair has no edits, so the token mapping and the dynamic
+    # programme are skipped. Only the reference word count is needed.
+    if reference == hypothesis:
+        return np.array([0.0, 0.0, <double>m, 0.0, 0.0, 0.0], dtype=np.float64)
+
+    hypothesis_word = hypothesis.split()
+    n = len(hypothesis_word)
 
     cdef int ld, insertions, deletions, substitutions
     cdef double wer
@@ -356,10 +372,10 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
     Returns (3,) float64 array: [wer, ld, m]
     """
     cdef list reference_word = reference.split()
-    cdef list hypothesis_word = hypothesis.split()
+    cdef list hypothesis_word
 
     cdef Py_ssize_t m = len(reference_word)
-    cdef Py_ssize_t n = len(hypothesis_word)
+    cdef Py_ssize_t n
 
     cdef Py_ssize_t i, j
     cdef int cost, del_cost, ins_cost, sub_cost, best, ld
@@ -369,11 +385,23 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
     cdef PyObject** ref_tok
     cdef PyObject** hyp_tok
 
-    cdef cnp.ndarray prev_arr = np.empty(n + 1, dtype=np.int32)
-    cdef cnp.ndarray curr_arr = np.empty(n + 1, dtype=np.int32)
+    cdef cnp.ndarray prev_arr
+    cdef cnp.ndarray curr_arr
+    cdef cnp.int32_t[:] prev
+    cdef cnp.int32_t[:] curr
 
-    cdef cnp.int32_t[:] prev = prev_arr
-    cdef cnp.int32_t[:] curr = curr_arr
+    # An identical pair has no edits, so the token mapping and the dynamic
+    # programme are skipped. Only the reference word count is needed.
+    if reference == hypothesis:
+        return np.array([0.0, 0.0, <double>m], dtype=np.float64)
+
+    hypothesis_word = hypothesis.split()
+    n = len(hypothesis_word)
+
+    prev_arr = np.empty(n + 1, dtype=np.int32)
+    curr_arr = np.empty(n + 1, dtype=np.int32)
+    prev = prev_arr
+    curr = curr_arr
 
     for j in range(n + 1):
         prev[j] = <cnp.int32_t>j
@@ -413,76 +441,136 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
     return np.array([wer, <double>ld, <double>m], dtype=np.float64)
 
 
+cdef struct _BatchBuffers:
+    # Two dynamic programming rows and one token buffer shared across a batch.
+    # Each is grown on demand and freed once when the batch is finished.
+    cnp.int32_t* prev
+    cnp.int32_t* curr
+    Py_ssize_t row_capacity
+    PyObject** tok
+    Py_ssize_t tok_capacity
+
+
+cdef inline int _ensure_batch_buffers(
+    _BatchBuffers* buf,
+    Py_ssize_t rows,
+    Py_ssize_t tokens,
+) except -1:
+    """
+    Make each dynamic programming row hold at least `rows` cells and the token buffer
+    hold at least `tokens` pointers. Capacity at least doubles on every growth, so a
+    batch performs a bounded number of allocations however its lengths are ordered.
+    """
+    cdef Py_ssize_t capacity
+    cdef cnp.int32_t* row_mem
+    cdef PyObject** tok_mem
+
+    if rows > buf.row_capacity:
+        capacity = 2 * buf.row_capacity
+        if capacity < rows:
+            capacity = rows
+        row_mem = <cnp.int32_t*>PyMem_Realloc(buf.prev, 2 * capacity * sizeof(cnp.int32_t))
+        if row_mem == NULL:
+            raise MemoryError()
+        buf.prev = row_mem
+        buf.curr = row_mem + capacity
+        buf.row_capacity = capacity
+
+    if tokens > buf.tok_capacity:
+        capacity = 2 * buf.tok_capacity
+        if capacity < tokens:
+            capacity = tokens
+        tok_mem = <PyObject**>PyMem_Realloc(buf.tok, capacity * sizeof(PyObject*))
+        if tok_mem == NULL:
+            raise MemoryError()
+        buf.tok = tok_mem
+        buf.tok_capacity = capacity
+
+    return 0
+
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef inline void _calculations_wer_only_reuse_ptr(
+cdef inline int _calculations_wer_only_reuse_ptr(
     object reference,
     object hypothesis,
-    cnp.int32_t* prev,
-    cnp.int32_t* curr,
+    _BatchBuffers* buf,
     double* out3,
-) except *:
+) except -1:
     """
     Internal WER-only DP using caller-provided buffers and pointer swap (no copying).
     Writes: out3[0]=wer, out3[1]=ld, out3[2]=m
 
     This implementation uses true pointer swapping instead of copying values,
-    eliminating O(n) copy overhead per outer iteration.
+    eliminating O(n) copy overhead per outer iteration. The rows and the token
+    buffer are owned by the caller and grown here when a pair needs more room.
     """
     cdef list reference_word = reference.split()
-    cdef list hypothesis_word = hypothesis.split()
+    cdef list hypothesis_word
 
     cdef Py_ssize_t m = len(reference_word)
-    cdef Py_ssize_t n = len(hypothesis_word)
+    cdef Py_ssize_t n
 
     cdef Py_ssize_t i, j
     cdef int cost, del_cost, ins_cost, sub_cost, best, ld
+    cdef cnp.int32_t* prev
+    cdef cnp.int32_t* curr
     cdef cnp.int32_t* tmp
 
     # Canonical token pointers, reference tokens first, hypothesis tokens after them
     cdef PyObject** ref_tok
     cdef PyObject** hyp_tok
 
+    # An identical pair has no edits, so the token mapping and the dynamic
+    # programme are skipped. Only the reference word count is needed.
+    if reference == hypothesis:
+        out3[0] = 0.0
+        out3[1] = 0.0
+        out3[2] = <double>m
+        return 0
+
+    hypothesis_word = hypothesis.split()
+    n = len(hypothesis_word)
+
+    _ensure_batch_buffers(buf, n + 1, m + n)
+    prev = buf.prev
+    curr = buf.curr
+    ref_tok = buf.tok
+    hyp_tok = ref_tok + m
+
     # Initialize base row: prev[j] = j for j=0..n
     for j in range(n + 1):
         prev[j] = <cnp.int32_t>j
 
-    ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
-    if ref_tok == NULL:
-        raise MemoryError()
-    hyp_tok = ref_tok + m
+    _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
 
-    try:
-        _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
+    for i in range(1, m + 1):
+        curr[0] = <cnp.int32_t>i
+        for j in range(1, n + 1):
+            cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-        for i in range(1, m + 1):
-            curr[0] = <cnp.int32_t>i
-            for j in range(1, n + 1):
-                cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
+            del_cost = prev[j] + 1
+            ins_cost = curr[j - 1] + 1
+            sub_cost = prev[j - 1] + cost
 
-                del_cost = prev[j] + 1
-                ins_cost = curr[j - 1] + 1
-                sub_cost = prev[j - 1] + cost
+            best = del_cost
+            if ins_cost < best:
+                best = ins_cost
+            if sub_cost < best:
+                best = sub_cost
 
-                best = del_cost
-                if ins_cost < best:
-                    best = ins_cost
-                if sub_cost < best:
-                    best = sub_cost
+            curr[j] = best
 
-                curr[j] = best
-
-            # Swap prev and curr pointers (zero-cost operation)
-            tmp = prev
-            prev = curr
-            curr = tmp
-    finally:
-        PyMem_Free(ref_tok)
+        # Swap prev and curr pointers (zero-cost operation)
+        tmp = prev
+        prev = curr
+        curr = tmp
 
     ld = prev[n]
     out3[0] = (<double>ld) / m if m > 0 else 0.0
     out3[1] = <double>ld
     out3[2] = <double>m
+    return 0
 
 
 @cython.boundscheck(False)
@@ -491,9 +579,10 @@ cdef cnp.ndarray _metrics_batch_wer_only(list references, list hypotheses):
     """
     Fast batch processing for WER-only calculations with buffer reuse and pointer swapping.
 
-    Eliminates repeated buffer allocations by reusing prev/curr arrays across all pairs
-    in the batch, sized to the maximum hypothesis length. Uses true pointer swapping
-    instead of value copying for optimal performance.
+    One pair of dynamic programming rows and one token buffer are shared by every pair in
+    the batch. They are grown on demand as longer pairs are met and freed once at the end,
+    so the hypotheses are split only inside the loop. Uses true pointer swapping instead
+    of value copying for optimal performance.
 
     Returns (n, 3) float64 array where each row contains:
     [wer, ld, m]
@@ -502,32 +591,22 @@ cdef cnp.ndarray _metrics_batch_wer_only(list references, list hypotheses):
     cdef Py_ssize_t idx
 
     cdef cnp.ndarray out = np.empty((n_pairs, 3), dtype=np.float64)
+    cdef double* out_data = <double*>cnp.PyArray_DATA(out)
 
-    # Find max hypothesis token length to size buffers once
-    cdef Py_ssize_t max_n = 0
-    cdef Py_ssize_t this_n
-    cdef object h
-    cdef list h_words
-    for idx in range(n_pairs):
-        h = hypotheses[idx]
-        h_words = h.split()
-        this_n = len(h_words)
-        if this_n > max_n:
-            max_n = this_n
+    cdef _BatchBuffers buf
+    buf.prev = NULL
+    buf.curr = NULL
+    buf.row_capacity = 0
+    buf.tok = NULL
+    buf.tok_capacity = 0
 
-    # Allocate reusable DP buffers once for the entire batch
-    cdef cnp.ndarray prev_arr = np.empty(max_n + 1, dtype=np.int32)
-    cdef cnp.ndarray curr_arr = np.empty(max_n + 1, dtype=np.int32)
-
-    # Get raw pointers for zero-cost swapping
-    cdef cnp.int32_t* prev = <cnp.int32_t*>cnp.PyArray_DATA(prev_arr)
-    cdef cnp.int32_t* curr = <cnp.int32_t*>cnp.PyArray_DATA(curr_arr)
-
-    # Process each pair using shared buffers, writing directly to output rows
-    cdef double* out_row
-    for idx in range(n_pairs):
-        out_row = <double*>cnp.PyArray_DATA(out) + (idx * 3)
-        _calculations_wer_only_reuse_ptr(references[idx], hypotheses[idx], prev, curr, out_row)
+    # Process each pair using the shared buffers, writing directly to output rows
+    try:
+        for idx in range(n_pairs):
+            _calculations_wer_only_reuse_ptr(references[idx], hypotheses[idx], &buf, out_data + idx * 3)
+    finally:
+        PyMem_Free(buf.prev)
+        PyMem_Free(buf.tok)
 
     return out
 
