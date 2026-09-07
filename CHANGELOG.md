@@ -4,6 +4,54 @@
 This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 
+## Version 3.4.0
+
+**Released:** September 7, 2026
+
+### Bug Fixes
+
+- Blank references inside a list or numpy array are now rejected by `error_handler()`, matching the existing check for a single blank reference string. The message names the index of the first blank reference, and the `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` functions print that message and return `None`. Previously a blank reference inside a sequence contributed a Word Error Rate of `0.0`.
+
+- Added a zero guard to the per-row weighted Word Error Rate calculation in `summaryp()`, matching the guard already used in `werps()`, so a reference with zero words no longer raises an uncaught `ZeroDivisionError`.
+
+### Enhancements
+
+- Corrected the docstrings of `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` to state that the functions print a message and return `None` when the input is invalid. The return type annotation of `wer()` is now `float | None`. In version 4.0.0 invalid input will raise an exception instead of returning `None`.
+
+- Pinned the build requirements in `pyproject.toml` to exact versions of `meson-python`, `meson` and `Cython`, and removed `wheel` from the build requirements.
+
+- The compiled extension is now built against a stated NumPy C API version (`NPY_TARGET_VERSION=NPY_1_25_API_VERSION`), the API level provided by NumPy 1.26.
+
+- Added a `linetrace` Meson build option, off by default, that compiles `metrics.pyx` with Cython line tracing for coverage measurement.
+
+- The default Meson build type is now `release` with `b_ndebug=if-release`, and the license in `meson.build` is declared with the SPDX identifier `BSD-3-Clause`.
+
+- Added the `<cnp.int32_t>` casts to the two buffer assignments in `_calculations_wer_only_reuse_ptr()` that did not carry them, matching the other calculation paths, and replaced the `metrics.pyx` module docstring with a description of the three calculation paths and their return shapes.
+
+- The Windows wheel no longer contains the MSVC import library (`.lib`) of the compiled extension.
+
+- The source distribution no longer contains the CI configuration, documentation, benchmark and development files.
+
+- The generated `werpy/metrics.c` file produced by a line tracing build is ignored.
+
+- Every token of a reference and hypothesis pair is now mapped to one canonical object per distinct word before the edit distance is computed, so the dynamic programming loops in `metrics.pyx` compare words by pointer equality instead of by string comparison. The results of every calculation path are unchanged.
+
+- When the reference and the hypothesis are the same string, the calculation functions return a zero edit distance and zero counts directly, without building the token mapping or the edit distance table.
+
+- The Word Error Rate batch path no longer splits every hypothesis in a preliminary pass to size its buffers. The row buffers are sized on demand as the batch is processed.
+
+- The Word Error Rate batch path now shares one token buffer across every pair in the batch, grown on demand and freed once when the batch is finished, instead of allocating and freeing a buffer for each pair.
+
+- The punctuation translation table used by `normalize()` is now built once when the module is imported rather than on every call.
+
+- Added support for Python 3.14. The package builds and passes its test suite on CPython 3.14, wheels for CPython 3.14 are now built for Linux, macOS and Windows, and the `Programming Language :: Python :: 3.14` classifier was added to `pyproject.toml`.
+
+- Added `werpy/metrics.pyi`, a stub file for the compiled `werpy.metrics` module, installed with the package alongside `py.typed`. It declares the parameter and return types of `calculations()`, `metrics()`, `calculations_fast()`, `metrics_fast()`, `calculations_wer_only()` and `metrics_wer_only()`.
+
+- Added type annotations to `normalize()`, `error_handler()`, `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()`. The `reference` and `hypothesis` parameters are annotated as `str`, `list[str]` or a NumPy array of strings, the types accepted by `error_handler()`. `wers()` and `werps()` declare a `float` return for a pair of strings and a `list[float]` return for a pair of lists or arrays, and `normalize()` declares a `str` return for a string and a `list[str]` return for a list, tuple or array.
+
+- Linux wheels are now built on the `manylinux_2_28` image and require glibc 2.28 or newer. Previously they were built on the `manylinux2014` image, which requires glibc 2.17.
+
 ## Version 3.3.0
 
 **Released:** December 19, 2025

@@ -10,10 +10,36 @@ This module defines the following function:
     - normalize(text)
 """
 
+from __future__ import annotations
+
 import string
+from typing import TYPE_CHECKING, overload
+
+if TYPE_CHECKING:
+    import numpy as np
+    from numpy.typing import NDArray
 
 
-def normalize(text):
+# Translation table that maps every ASCII punctuation byte to NUL and leaves every other
+# byte value unchanged. Built once when the module is imported.
+_PUNCTUATION_TRANSLATE_TABLE = bytes(
+    0 if c in string.punctuation.encode() else c for c in range(256)
+)
+
+
+@overload
+def normalize(text: str) -> str: ...
+
+
+@overload
+def normalize(
+    text: list[str] | tuple[str, ...] | NDArray[np.str_] | NDArray[np.object_],
+) -> list[str]: ...
+
+
+def normalize(
+    text: str | list[str] | tuple[str, ...] | NDArray[np.str_] | NDArray[np.object_],
+) -> str | list[str]:
     """
     This function serves as a versatile text preprocessing tool, designed to transform
     text data into an optimal format for a variety of natural language processing tasks,
@@ -66,8 +92,6 @@ def normalize(text):
         is_string_flag = False
 
     normalized_text = []
-    translate_table = [0 if c in string.punctuation.encode() else c for c in range(256)]
-    translate_bytes = bytes(translate_table)
 
     for sentence in text:
         if not isinstance(sentence, str):
@@ -76,7 +100,7 @@ def normalize(text):
                 "All data types should be flat, have a depth of 1 and "
                 "contain no nested elements."
             )
-        cleaned_sentence = sentence.encode().translate(translate_bytes).decode().lower()
+        cleaned_sentence = sentence.encode().translate(_PUNCTUATION_TRANSLATE_TABLE).decode().lower()
         cleaned_sentence = cleaned_sentence.rstrip("\x00").replace("\x00", "")
         cleaned_sentence = " ".join(cleaned_sentence.split())
         normalized_text.append(cleaned_sentence)

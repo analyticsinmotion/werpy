@@ -24,6 +24,8 @@ Note: If the 'summaryp' module is not imported successfully, an ImportError is r
 to ensure that the required module is available for testing.
 """
 
+import contextlib
+import io
 import unittest
 import pandas as pd
 from werpy.summaryp import summaryp
@@ -85,11 +87,7 @@ class TestSummaryp(unittest.TestCase):
         # Set the data type of the "ld" column to int64
         # expected_result['ld'] = expected_result['ld'].astype('int32')
 
-        try:
-            pd.testing.assert_frame_equal(expected_result, actual_result)
-            print("DataFrames are equal.")
-        except AssertionError as error:  # pragma: no cover
-            print("DataFrames are not equal. Differences:\n", error)
+        pd.testing.assert_frame_equal(expected_result, actual_result)
 
     def test_summaryp_example_2(self):
         """
@@ -126,11 +124,7 @@ class TestSummaryp(unittest.TestCase):
 
         expected_result = pd.DataFrame(data)
 
-        try:
-            pd.testing.assert_frame_equal(expected_result, actual_result)
-            print("DataFrames are equal.")
-        except AssertionError as error:  # pragma: no cover
-            print("DataFrames are not equal. Differences:\n", error)
+        pd.testing.assert_frame_equal(expected_result, actual_result)
 
     def test_summaryp_example_3(self):
         """
@@ -146,6 +140,98 @@ class TestSummaryp(unittest.TestCase):
         expected_result = None
 
         self.assertEqual(summaryp(ref, hyp, 0.5, 0.5, 1), expected_result)
+
+    def test_summaryp_insertion_only(self):
+        """
+        Test the summaryp function with a hypothesis that adds one word to the reference.
+
+        It verifies that the added word is counted and listed as an insertion and that the insertion weight is
+        applied to the weighted Word Error Rate.
+        """
+        actual_result = summaryp("the cat sat", "the big cat sat", 0.5, 0.5, 1)
+
+        expected_result = pd.DataFrame(
+            {
+                "wer": [0.3333333333333333],
+                "werp": [0.16666666666666666],
+                "ld": [1],
+                "m": [3],
+                "insertions": [1],
+                "deletions": [0],
+                "substitutions": [0],
+                "inserted_words": [["big"]],
+                "deleted_words": [[]],
+                "substituted_words": [[]],
+            }
+        )
+
+        pd.testing.assert_frame_equal(expected_result, actual_result)
+
+    def test_summaryp_deletion_only(self):
+        """
+        Test the summaryp function with a hypothesis that omits one word of the reference.
+
+        It verifies that the omitted word is counted and listed as a deletion and that the deletion weight is
+        applied to the weighted Word Error Rate.
+        """
+        actual_result = summaryp(["the big cat sat"], ["the cat sat"], 0.5, 0.5, 1)
+
+        expected_result = pd.DataFrame(
+            {
+                "wer": [0.25],
+                "werp": [0.125],
+                "ld": [1],
+                "m": [4],
+                "insertions": [0],
+                "deletions": [1],
+                "substitutions": [0],
+                "inserted_words": [[]],
+                "deleted_words": [["big"]],
+                "substituted_words": [[]],
+            }
+        )
+
+        pd.testing.assert_frame_equal(expected_result, actual_result)
+
+    def test_summaryp_blank_reference_in_list(self):
+        """
+        Test the summaryp function with a list containing a blank reference.
+
+        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = summaryp(["", "a"], ["x", "a"])
+
+        self.assertIsNone(result)
+        self.assertEqual(
+            buffer.getvalue().strip(),
+            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 0.",
+        )
+
+    def test_summaryp_empty_sequences(self):
+        """
+        Test the summaryp function with two empty lists.
+
+        It verifies that two empty lists yield a dataframe with the ten result columns and no rows.
+        """
+        actual_result = summaryp([], [])
+
+        expected_columns = [
+            "wer",
+            "werp",
+            "ld",
+            "m",
+            "insertions",
+            "deletions",
+            "substitutions",
+            "inserted_words",
+            "deleted_words",
+            "substituted_words",
+        ]
+
+        self.assertEqual(list(actual_result.columns), expected_columns)
+        self.assertEqual(len(actual_result), 0)
 
 
 if __name__ == "__main__":  # pragma: no cover

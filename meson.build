@@ -1,11 +1,12 @@
 project(
-    'werpy', 
+    'werpy',
     'c', 'cython',
-    version : '3.3.0',
-    license: 'BSD-3',
-    meson_version: '>= 1.1.0',
+    version : '3.4.0',
+    license : 'BSD-3-Clause',
+    meson_version : '>= 1.1.0',
     default_options : [
-        'buildtype=debugoptimized',
+        'buildtype=release',
+        'b_ndebug=if-release',
         'warning_level=3',
         'c_std=c17'
         ]
@@ -21,6 +22,7 @@ pyx_files = files('werpy/metrics.pyx')
 py_files = files(
     'werpy/__init__.py',
     'werpy/errorhandler.py',
+    'werpy/metrics.pyi',
     'werpy/normalize.py',
     'werpy/summary.py',
     'werpy/summaryp.py',
@@ -43,16 +45,26 @@ install_data(
     install_dir: py.get_install_dir() / 'werpy'
 )
 
-# Find NumPy include directories
-#numpy_includes = run_command(py, '-c', 'import numpy; print(numpy.get_include())', check: true).stdout().strip()
+# Find NumPy
 numpy_dep = dependency('numpy')
+
+# Compiler arguments for the Cython module.
+# NPY_TARGET_VERSION pins the NumPy C API level the extension is built against;
+# NPY_1_25_API_VERSION is the level provided by NumPy 1.26.
+ext_c_args = ['-DNPY_TARGET_VERSION=NPY_1_25_API_VERSION']
+ext_cython_args = []
+if get_option('linetrace')
+    ext_cython_args += ['-X', 'linetrace=True']
+    ext_c_args += ['-DCYTHON_TRACE=1', '-DCYTHON_TRACE_NOGIL=1', '-DCYTHON_USE_SYS_MONITORING=0']
+endif
 
 # Cython module
 py.extension_module(
     'metrics',
     pyx_files,
-    #include_directories : include_directories(numpy_includes),
     dependencies : [numpy_dep],
+    cython_args : ext_cython_args,
+    c_args : ext_c_args,
     install : true,
     subdir : 'werpy'
 )

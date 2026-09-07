@@ -5,10 +5,18 @@
 Input validation and consistent exceptions for werpy public functions.
 """
 
+from typing import TypeAlias
+
 import numpy as np
+from numpy.typing import NDArray
+
+# The sequence types accepted as a batch of texts, and the full set of accepted inputs.
+# These are the types checked by error_handler below.
+TextBatch: TypeAlias = list[str] | NDArray[np.str_] | NDArray[np.object_]
+TextInput: TypeAlias = str | TextBatch
 
 
-def error_handler(reference, hypothesis):
+def error_handler(reference: object, hypothesis: object) -> bool:
     """
     Validate inputs and raise consistent exceptions.
 
@@ -30,7 +38,8 @@ def error_handler(reference, hypothesis):
     AttributeError
         if input text is not a string, list or np.ndarray data type.
     ZeroDivisionError
-        if input in reference is blank or both reference and hypothesis are empty.
+        if input in reference is blank, either as a single string or as an element of a list or array, or both
+        reference and hypothesis are empty.
 
     Returns
     -------
@@ -58,6 +67,11 @@ def error_handler(reference, hypothesis):
             raise ValueError(
                 "The Reference and Hypothesis input parameters must have the same number of elements."
             )
+        for index, item in enumerate(reference):
+            if str(item).strip() == "":
+                raise ZeroDivisionError(
+                    f"Invalid input: reference must not be blank. A blank reference was found at index {index}."
+                )
         return True
 
     # At this point, both are strings (validated above)

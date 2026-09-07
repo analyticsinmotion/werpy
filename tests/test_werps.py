@@ -23,6 +23,8 @@ Note: If the 'werps' module is not imported successfully, an ImportError is rais
 to ensure that the required module is available for testing.
 """
 
+import contextlib
+import io
 import unittest
 from werpy.werps import werps
 
@@ -174,6 +176,43 @@ class TestWerps(unittest.TestCase):
         expected_result = None
 
         self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
+
+    def test_werps_blank_reference_in_list(self):
+        """
+        Test the werps function with a list containing a blank reference.
+
+        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = werps(["i love pizza", ""], ["i love pizza", "a b"], 0.5, 0.5, 1)
+
+        self.assertIsNone(result)
+        self.assertEqual(
+            buffer.getvalue().strip(),
+            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 1.",
+        )
+
+    def test_werps_empty_sequences(self):
+        """
+        Test the werps function with two empty lists.
+
+        It verifies that two empty lists yield an empty list.
+        """
+        self.assertEqual(werps([], [], 0.5, 0.5, 1), [])
+
+    def test_werps_integer_list_input(self):
+        """
+        Test the werps function with reference and hypothesis given as lists of integers.
+
+        It verifies that the function prints a message and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = werps([1, 2], [1, 2], 0.5, 0.5, 1)
+
+        self.assertIsNone(result)
+        self.assertEqual(buffer.getvalue().strip(), "AttributeError: 'int' object has no attribute 'split'")
 
 
 if __name__ == "__main__":  # pragma: no cover

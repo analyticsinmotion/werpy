@@ -1,15 +1,15 @@
 [build-system]
 build-backend = 'mesonpy'
 requires = [
-    'meson-python', 
-    'wheel', 
-    'Cython', 
-    'numpy'
+    'meson-python==0.20.0',
+    'meson==1.10.0',
+    'Cython==3.2.2',
+    'numpy>=2.0,<3'
 ]
 
 [project]
 name = 'werpy'
-version = '3.3.0'
+version = '3.4.0'
 description = 'A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER).'
 readme = 'README.md'
 requires-python = '>=3.10'
@@ -24,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "License :: OSI Approved :: BSD License",
     "Operating System :: Microsoft :: Windows",
@@ -80,3 +81,10 @@ benchmarks = [
     "universal-edit-distance>=0.4.3",
     "torchmetrics",
 ]
+
+[tool.meson-python.wheel]
+exclude = ['*.lib']
+
+[tool.mypy]
+files = ['werpy']
+strict = true

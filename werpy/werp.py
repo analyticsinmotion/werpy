@@ -6,21 +6,21 @@ This module provides a function to calculate a weighted Word Error Rate for the 
 texts. It allows varying weights to be assigned to the insertion, deletion and substitution errors.
 
 This module defines the following function:
-    - werp(reference, hypothesis)
+    - werp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
 """
 
 import numpy as np
-from .errorhandler import error_handler
+from .errorhandler import TextInput, error_handler
 from .metrics import metrics_fast
 
 
 def werp(
-    reference,
-    hypothesis,
-    insertions_weight=1,
-    deletions_weight=1,
-    substitutions_weight=1,
-):
+    reference: TextInput,
+    hypothesis: TextInput,
+    insertions_weight: float = 1,
+    deletions_weight: float = 1,
+    substitutions_weight: float = 1,
+) -> float | None:
     """
     This function calculates a weighted Word Error Rate for the entire reference and hypothesis texts. It allows the
     insertion, deletion and substitution errors to be penalized or weighted at different rates.
@@ -38,19 +38,11 @@ def werp(
     substitutions_weight: int or float, optional
         The weight multiplier for a substitution error
 
-    Raises
-    ------
-    ValueError
-        if the two input parameters do not contain the same amount of elements.
-    AttributeError
-        if input text is not a string, list or np.ndarray data type.
-    ZeroDivisionError
-        if input in reference is blank or both reference and hypothesis are empty.
-
     Returns
     -------
-    float
+    float or None
         This function will return a single weighted Word Error Rate.
+        If the input is invalid, the function prints a message describing the problem and returns None.
 
     Examples
     --------
@@ -91,9 +83,6 @@ def werp(
         return float(np.sum(weighted_errors) / den) if den else 0.0
 
     # Single: (6,) float64
-    if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
-        result = result.item()
-
     weighted_insertions = result[3] * insertions_weight
     weighted_deletions = result[4] * deletions_weight
     weighted_substitutions = result[5] * substitutions_weight

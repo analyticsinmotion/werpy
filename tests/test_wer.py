@@ -26,7 +26,11 @@ Note: If the 'wer' module is not imported successfully, an ImportError is raised
 to ensure that the required module is available for testing.
 """
 
+import contextlib
+import io
 import unittest
+import numpy as np
+import werpy
 from werpy.wer import wer
 
 
@@ -124,6 +128,96 @@ class TestWer(unittest.TestCase):
         expected_result = None
 
         self.assertEqual(wer(ref, hyp), expected_result)
+
+    def test_wer_blank_reference_in_list(self):
+        """
+        Test the wer function with a list containing a blank reference.
+
+        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = wer([""], ["x y"])
+
+        self.assertIsNone(result)
+        self.assertEqual(
+            buffer.getvalue().strip(),
+            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 0.",
+        )
+
+    def test_wer_blank_hypothesis(self):
+        """
+        Test the wer function with a blank hypothesis on both the string and the list path.
+
+        It verifies that a blank hypothesis is valid input and yields a Word Error Rate of 1.0.
+        """
+        self.assertEqual(wer("i love pizza", ""), 1.0)
+        self.assertEqual(wer(["i love pizza"], [""]), 1.0)
+
+    def test_wer_empty_sequences(self):
+        """
+        Test the wer function with two empty lists.
+
+        It verifies that two empty lists yield a Word Error Rate of 0.0.
+        """
+        self.assertEqual(wer([], []), 0.0)
+
+    def test_wer_none_input(self):
+        """
+        Test the wer function with None as the reference.
+
+        It verifies that the function prints a message and returns None.
+        """
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            result = wer(None, "i love pizza")
+
+        self.assertIsNone(result)
+        self.assertEqual(
+            buffer.getvalue().strip(),
+            "AttributeError: All text should be in a string format. Please check your input does not include any "
+            "Numeric data types.",
+        )
+
+    def test_wer_numpy_string_array(self):
+        """
+        Test the wer function with reference and hypothesis given as numpy arrays of string dtype.
+        """
+        ref = np.array(["i love cold pizza", "the sugar bear character was popular"])
+        hyp = np.array(["i love pizza", "the sugar bare character was popular"])
+        expected_result = 0.2
+
+        self.assertEqual(wer(ref, hyp), expected_result)
+
+    def test_wer_numpy_object_array(self):
+        """
+        Test the wer function with reference and hypothesis given as numpy arrays of object dtype.
+        """
+        ref = np.array(["i love cold pizza", "the sugar bear character was popular"], dtype=object)
+        hyp = np.array(["i love pizza", "the sugar bare character was popular"], dtype=object)
+        expected_result = 0.2
+
+        self.assertEqual(wer(ref, hyp), expected_result)
+
+    def test_werpy_public_surface(self):
+        """
+        Test that the names exported by the werpy package are exactly the documented public functions.
+        """
+        expected_names = [
+            "error_handler",
+            "metrics",
+            "normalize",
+            "summary",
+            "summaryp",
+            "wer",
+            "werp",
+            "werps",
+            "wers",
+        ]
+
+        self.assertEqual(sorted(werpy.__all__), expected_names)
+        for name in expected_names:
+            self.assertTrue(callable(getattr(werpy, name)))
 
 
 if __name__ == "__main__":  # pragma: no cover

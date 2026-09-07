@@ -5,6 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
+werpy/metrics.c
 
 # Distribution / packaging
 .Python
@@ -188,4 +189,3 @@ builddir/
 
 # Personal development workspace (local testing only)
 development/
-!development/README.md
