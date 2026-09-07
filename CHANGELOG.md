@@ -4,7 +4,9 @@
 This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 
-## Unreleased
+## Version 3.4.0
+
+**Released:** September 7, 2026
 
 ### Bug Fixes
 
