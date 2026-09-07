@@ -10,7 +10,14 @@ This module defines the following function:
     - normalize(text)
 """
 
+from __future__ import annotations
+
 import string
+from typing import TYPE_CHECKING, overload
+
+if TYPE_CHECKING:
+    import numpy as np
+    from numpy.typing import NDArray
 
 
 # Translation table that maps every ASCII punctuation byte to NUL and leaves every other
@@ -20,7 +27,19 @@ _PUNCTUATION_TRANSLATE_TABLE = bytes(
 )
 
 
-def normalize(text):
+@overload
+def normalize(text: str) -> str: ...
+
+
+@overload
+def normalize(
+    text: list[str] | tuple[str, ...] | NDArray[np.str_] | NDArray[np.object_],
+) -> list[str]: ...
+
+
+def normalize(
+    text: str | list[str] | tuple[str, ...] | NDArray[np.str_] | NDArray[np.object_],
+) -> str | list[str]:
     """
     This function serves as a versatile text preprocessing tool, designed to transform
     text data into an optimal format for a variety of natural language processing tasks,

@@ -11,11 +11,11 @@ This module defines the following function:
 """
 
 import numpy as np
-from .errorhandler import error_handler
+from .errorhandler import TextInput, error_handler
 from .metrics import metrics_wer_only
 
 
-def wer(reference, hypothesis) -> float | None:
+def wer(reference: TextInput, hypothesis: TextInput) -> float | None:
     """
     This function will calculate the overall Word Error Rate for the entire reference and hypothesis texts 
     (i.e., the full corpus).
@@ -59,7 +59,4 @@ def wer(reference, hypothesis) -> float | None:
         return float(np.sum(result[:, 1]) / den) if den else 0.0  # ld column
 
     # Single: (3,) float64, WER is at index 0
-    if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
-        result = result.item()
-
     return float(result[0])

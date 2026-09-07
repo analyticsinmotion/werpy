@@ -5,10 +5,18 @@
 Input validation and consistent exceptions for werpy public functions.
 """
 
+from typing import TypeAlias
+
 import numpy as np
+from numpy.typing import NDArray
+
+# The sequence types accepted as a batch of texts, and the full set of accepted inputs.
+# These are the types checked by error_handler below.
+TextBatch: TypeAlias = list[str] | NDArray[np.str_] | NDArray[np.object_]
+TextInput: TypeAlias = str | TextBatch
 
 
-def error_handler(reference, hypothesis):
+def error_handler(reference: object, hypothesis: object) -> bool:
     """
     Validate inputs and raise consistent exceptions.
 

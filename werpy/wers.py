@@ -9,12 +9,22 @@ This module defines the following function:
     - wers(reference, hypothesis)
 """
 
+from typing import cast, overload
+
 import numpy as np
-from .errorhandler import error_handler
+from .errorhandler import TextBatch, TextInput, error_handler
 from .metrics import metrics_wer_only
 
 
-def wers(reference, hypothesis):
+@overload
+def wers(reference: str, hypothesis: str) -> float | None: ...
+
+
+@overload
+def wers(reference: TextBatch, hypothesis: TextBatch) -> list[float] | None: ...
+
+
+def wers(reference: TextInput, hypothesis: TextInput) -> float | list[float] | None:
     """
     This function calculates a list of the Word Error Rates for each of the reference and hypothesis texts.
 
@@ -49,10 +59,7 @@ def wers(reference, hypothesis):
 
     # Batch: (n, 3) float64, columns [wer, ld, m]
     if isinstance(result, np.ndarray) and result.ndim == 2:
-        return result[:, 0].tolist()  # Return wer column
+        return cast(list[float], result[:, 0].tolist())  # Return wer column
 
     # Single: (3,) float64, WER is at index 0
-    if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
-        result = result.item()
-
     return float(result[0])

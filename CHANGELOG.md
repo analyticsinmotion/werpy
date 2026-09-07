@@ -44,6 +44,10 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Added support for Python 3.14. The package builds and passes its test suite on CPython 3.14, wheels for CPython 3.14 are now built for Linux, macOS and Windows, and the `Programming Language :: Python :: 3.14` classifier was added to `pyproject.toml`.
 
+- Added `werpy/metrics.pyi`, a stub file for the compiled `werpy.metrics` module, installed with the package alongside `py.typed`. It declares the parameter and return types of `calculations()`, `metrics()`, `calculations_fast()`, `metrics_fast()`, `calculations_wer_only()` and `metrics_wer_only()`.
+
+- Added type annotations to `normalize()`, `error_handler()`, `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()`. The `reference` and `hypothesis` parameters are annotated as `str`, `list[str]` or a NumPy array of strings, the types accepted by `error_handler()`. `wers()` and `werps()` declare a `float` return for a pair of strings and a `list[float]` return for a pair of lists or arrays, and `normalize()` declares a `str` return for a string and a `list[str]` return for a list, tuple or array.
+
 ## Version 3.3.0
 
 **Released:** December 19, 2025

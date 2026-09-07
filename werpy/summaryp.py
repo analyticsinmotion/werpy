@@ -7,22 +7,22 @@ DataFrame. It differs from the summary function in that it also calculates a wei
 dataframe.
 
 This module defines the following function:
-    - summaryp(reference, hypothesis)
+    - summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
 """
 
 import numpy as np
 import pandas as pd
-from .errorhandler import error_handler
+from .errorhandler import TextInput, error_handler
 from .metrics import metrics
 
 
 def summaryp(
-    reference,
-    hypothesis,
-    insertions_weight=1,
-    deletions_weight=1,
-    substitutions_weight=1,
-):
+    reference: TextInput,
+    hypothesis: TextInput,
+    insertions_weight: float = 1,
+    deletions_weight: float = 1,
+    substitutions_weight: float = 1,
+) -> pd.DataFrame | None:
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, weighted
     WER, Levenshtein Distance and all the insertion, deletion and substitution errors.
@@ -78,8 +78,6 @@ def summaryp(
         werps_result = out.tolist()
     else:
         # Single row - wrap in list for DataFrame
-        if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
-            result = result.item()
         word_error_rate_breakdown = [result.tolist() if hasattr(result, 'tolist') else list(result)]
         weighted_insertions = result[3] * insertions_weight
         weighted_deletions = result[4] * deletions_weight

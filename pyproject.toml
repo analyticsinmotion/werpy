@@ -84,3 +84,7 @@ benchmarks = [
 
 [tool.meson-python.wheel]
 exclude = ['*.lib']
+
+[tool.mypy]
+files = ['werpy']
+strict = true

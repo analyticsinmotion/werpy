@@ -22,6 +22,7 @@ pyx_files = files('werpy/metrics.pyx')
 py_files = files(
     'werpy/__init__.py',
     'werpy/errorhandler.py',
+    'werpy/metrics.pyi',
     'werpy/normalize.py',
     'werpy/summary.py',
     'werpy/summaryp.py',

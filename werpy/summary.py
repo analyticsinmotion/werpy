@@ -11,11 +11,11 @@ This module defines the following function:
 
 import numpy as np
 import pandas as pd
-from .errorhandler import error_handler
+from .errorhandler import TextInput, error_handler
 from .metrics import metrics
 
 
-def summary(reference, hypothesis) -> pd.DataFrame | None:
+def summary(reference: TextInput, hypothesis: TextInput) -> pd.DataFrame | None:
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, Levenshtein
     Distance and all the insertion, deletion and substitution errors.
@@ -55,8 +55,6 @@ def summary(reference, hypothesis) -> pd.DataFrame | None:
         word_error_rate_breakdown = result.tolist()
     else:
         # Single row - wrap in list for DataFrame
-        if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
-            result = result.item()
         word_error_rate_breakdown = [result.tolist() if hasattr(result, 'tolist') else list(result)]
 
     columns = [

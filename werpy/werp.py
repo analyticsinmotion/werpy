@@ -6,21 +6,21 @@ This module provides a function to calculate a weighted Word Error Rate for the 
 texts. It allows varying weights to be assigned to the insertion, deletion and substitution errors.
 
 This module defines the following function:
-    - werp(reference, hypothesis)
+    - werp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
 """
 
 import numpy as np
-from .errorhandler import error_handler
+from .errorhandler import TextInput, error_handler
 from .metrics import metrics_fast
 
 
 def werp(
-    reference,
-    hypothesis,
-    insertions_weight=1,
-    deletions_weight=1,
-    substitutions_weight=1,
-):
+    reference: TextInput,
+    hypothesis: TextInput,
+    insertions_weight: float = 1,
+    deletions_weight: float = 1,
+    substitutions_weight: float = 1,
+) -> float | None:
     """
     This function calculates a weighted Word Error Rate for the entire reference and hypothesis texts. It allows the
     insertion, deletion and substitution errors to be penalized or weighted at different rates.
@@ -83,9 +83,6 @@ def werp(
         return float(np.sum(weighted_errors) / den) if den else 0.0
 
     # Single: (6,) float64
-    if isinstance(result, np.ndarray) and getattr(result, "ndim", 0) == 0:
-        result = result.item()
-
     weighted_insertions = result[3] * insertions_weight
     weighted_deletions = result[4] * deletions_weight
     weighted_substitutions = result[5] * substitutions_weight
