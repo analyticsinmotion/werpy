@@ -1,0 +1,90 @@
+name: Tests
+
+# Set default permissions for all jobs in the workflow
+permissions:
+  contents: read
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on every push and pull request
+  push:
+    branches: [main, development]
+  pull_request:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Cancel a run that is still in progress when a newer run starts for the same ref
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}${{ matrix.numpy != 'default' && format(' / NumPy {0}', matrix.numpy) || '' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        # The NumPy version installed after the package has been built and installed.
+        # "default" keeps the version selected by the resolver.
+        numpy: ["default"]
+        include:
+          # The compiled extension targets the NumPy 1.25 C API (NPY_TARGET_VERSION in meson.build).
+          # This cell runs a wheel built against NumPy 2.x headers with NumPy 1.26 installed.
+          - os: ubuntu-latest
+            python-version: "3.11"
+            numpy: "1.26.4"
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv and Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          python-version: ${{ matrix.python-version }}
+          activate-environment: true
+          venv-path: ${{ runner.temp }}/venv
+          enable-cache: true
+          cache-suffix: numpy-${{ matrix.numpy }}
+
+      - name: Build the wheel
+        run: uv build --wheel --out-dir dist
+
+      - name: Install the wheel and pytest
+        run: uv pip install dist/*.whl pytest
+
+      - name: Install NumPy ${{ matrix.numpy }}
+        if: matrix.numpy != 'default'
+        run: uv pip install "numpy==${{ matrix.numpy }}"
+
+      # The remaining steps run outside the repository so that the source tree
+      # cannot shadow the installed package.
+      - name: Check that the installed package is imported
+        working-directory: ${{ runner.temp }}
+        run: |
+          python - <<'EOF'
+          import pathlib
+          import sysconfig
+
+          import numpy
+          import werpy
+
+          package_dir = pathlib.Path(werpy.__file__).resolve().parent
+          platlib = pathlib.Path(sysconfig.get_paths()["platlib"]).resolve()
+          print(f"werpy {werpy.__version__} from {package_dir}")
+          print(f"numpy {numpy.__version__}")
+          if not package_dir.is_relative_to(platlib):
+              raise SystemExit(f"werpy was imported from {package_dir}, not from {platlib}")
+          EOF
+
+      - name: Run the test suite
+        working-directory: ${{ runner.temp }}
+        run: python -m pytest "$GITHUB_WORKSPACE/tests"

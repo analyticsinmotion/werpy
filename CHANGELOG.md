@@ -42,6 +42,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - The punctuation translation table used by `normalize()` is now built once when the module is imported rather than on every call.
 
+- Added support for Python 3.14. The package builds and passes its test suite on CPython 3.14, wheels for CPython 3.14 are now built for Linux, macOS and Windows, and the `Programming Language :: Python :: 3.14` classifier was added to `pyproject.toml`.
+
 ## Version 3.3.0
 
 **Released:** December 19, 2025
