@@ -48,7 +48,7 @@ SPDX-License-Identifier = "BSD-3-Clause"
 # Apply BSD-3-Clause license to project-level configuration and metadata files in the root directory,
 # overriding any other annotations.
 [[annotations]]
-path = [".gitignore", ".pylintrc", "CITATION.cff", "meson.build", "pyproject.toml"]
+path = [".gitattributes", ".gitignore", ".pylintrc", "CITATION.cff", "meson.build", "meson.options", "pyproject.toml"]
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"
