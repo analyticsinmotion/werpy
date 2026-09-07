@@ -18,13 +18,13 @@ The following table provides an overview of the modules that can be used in werp
      - Calculate the overall Word Error Rate for the entire reference and hypothesis texts.
    * - wers(reference, hypothesis)
      - Calculates a list of the Word Error Rates for each of the reference and hypothesis texts.
-   * - werp(reference, hypothesis)
+   * - werp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
      - Calculates a weighted Word Error Rate for the entire reference and hypothesis texts.
-   * - werps(reference, hypothesis)
+   * - werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
      - Calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts.
    * - summary(reference, hypothesis)
      - Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors.
-   * - summaryp(reference, hypothesis)
+   * - summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
      - Delivers an in-depth breakdown of the results, covering metrics like WER, Levenshtein Distance, and a detailed account of insertion, deletion, and substitution errors, inclusive of the weighted WER.
 
 
