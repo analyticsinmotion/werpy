@@ -13,10 +13,10 @@ SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotio
 SPDX-License-Identifier = "BSD-3-Clause"
 
 # Apply BSD-3-Clause license to all YAML files used for configuration and CI/CD,
-# including .yaml files in the root and .yml files in .github/, .github/workflows/, and .circleci/,
+# including .yaml files in the root and .yml files in .github/ and .github/workflows/,
 # overriding any other annotations.
 [[annotations]]
-path = ["*.yaml", ".github/*.yml", ".github/workflows/*.yml", ".circleci/*.yml"]
+path = ["*.yaml", ".github/*.yml", ".github/workflows/*.yml"]
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Analytics in Motion <https://www.analyticsinmotion.com>"
 SPDX-License-Identifier = "BSD-3-Clause"

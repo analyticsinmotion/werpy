@@ -88,3 +88,6 @@ exclude = ['*.lib']
 [tool.mypy]
 files = ['werpy']
 strict = true
+
+[tool.coverage.paths]
+source = ['werpy', '*/site-packages/werpy']
