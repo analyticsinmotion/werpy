@@ -88,3 +88,53 @@ jobs:
       - name: Run the test suite
         working-directory: ${{ runner.temp }}
         run: python -m pytest "$GITHUB_WORKSPACE/tests"
+
+  coverage:
+    name: Coverage / ubuntu-latest / Python 3.13
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv and Python 3.13
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          python-version: "3.13"
+          activate-environment: true
+          venv-path: ${{ runner.temp }}/venv
+          enable-cache: true
+          cache-suffix: coverage
+
+      - name: Build the wheel
+        run: uv build --wheel --out-dir dist
+
+      - name: Install the wheel, pytest and pytest-cov
+        run: uv pip install dist/*.whl pytest pytest-cov
+
+      # The suite runs outside the repository so that the source tree cannot
+      # shadow the installed package. Coverage is measured on the installed
+      # Python modules; the compiled extension is not measured.
+      - name: Run the test suite with coverage
+        working-directory: ${{ runner.temp }}
+        run: python -m pytest "$GITHUB_WORKSPACE/tests" --cov=werpy --cov-report=
+
+      # The [tool.coverage.paths] table in pyproject.toml maps the installed
+      # package back to the source tree, so the report paths are repository paths.
+      - name: Write the coverage report
+        run: |
+          python -m coverage combine "$RUNNER_TEMP/.coverage"
+          python -m coverage xml
+
+      - name: Upload the coverage report to Codecov
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          disable_search: true
+          flags: unittests
+          fail_ci_if_error: true
