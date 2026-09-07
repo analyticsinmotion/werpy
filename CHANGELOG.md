@@ -48,6 +48,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Added type annotations to `normalize()`, `error_handler()`, `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()`. The `reference` and `hypothesis` parameters are annotated as `str`, `list[str]` or a NumPy array of strings, the types accepted by `error_handler()`. `wers()` and `werps()` declare a `float` return for a pair of strings and a `list[float]` return for a pair of lists or arrays, and `normalize()` declares a `str` return for a string and a `list[str]` return for a list, tuple or array.
 
+- Linux wheels are now built on the `manylinux_2_28` image and require glibc 2.28 or newer. Previously they were built on the `manylinux2014` image, which requires glibc 2.17.
+
 ## Version 3.3.0
 
 **Released:** December 19, 2025

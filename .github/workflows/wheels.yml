@@ -42,8 +42,6 @@ jobs:
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
           CIBW_ARCHS: auto64
           CIBW_SKIP: "*-win32 *-manylinux_i686"
-          # Build Linux wheels on the manylinux2014 image, which requires glibc 2.17
-          CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
           # Install every built wheel into a clean environment and run the test suite against it
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest {package}/tests
