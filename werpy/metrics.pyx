@@ -43,8 +43,10 @@ cnp.import_array()
 
 cimport cython
 from cpython.ref cimport PyObject
-from cpython.dict cimport PyDict_SetDefault
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
+
+cdef extern from "_dictcompat.h":
+    PyObject* werpy_dict_setdefault(object p, object key, object default) except NULL
 
 
 @cython.boundscheck(False)
@@ -67,10 +69,10 @@ cdef inline int _canonical_tokens(
 
     for k in range(len(reference_word)):
         word = reference_word[k]
-        ref_tok[k] = PyDict_SetDefault(canonical, word, word)
+        ref_tok[k] = werpy_dict_setdefault(canonical, word, word)
     for k in range(len(hypothesis_word)):
         word = hypothesis_word[k]
-        hyp_tok[k] = PyDict_SetDefault(canonical, word, word)
+        hyp_tok[k] = werpy_dict_setdefault(canonical, word, word)
     return 0
 
 

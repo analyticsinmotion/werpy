@@ -12,7 +12,7 @@ name = 'werpy'
 version = '3.4.0'
 description = 'A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER).'
 readme = 'README.md'
-requires-python = '>=3.10'
+requires-python = '>=3.11'
 license = {file = 'LICENSE'}
 authors = [
   {name = 'Ross Armstrong', email = 'ross.armstrong@analyticsinmotion.com'},
@@ -20,7 +20,6 @@ authors = [
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -81,6 +80,9 @@ benchmarks = [
     "universal-edit-distance>=0.4.3",
     "torchmetrics",
 ]
+
+[tool.meson-python]
+limited-api = true
 
 [tool.meson-python.wheel]
 exclude = ['*.lib']
