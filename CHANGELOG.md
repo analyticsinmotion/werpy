@@ -4,6 +4,20 @@
 This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 
+## Version 3.5.0
+
+**Released:** September 9, 2026
+
+### Breaking Changes
+
+- Python 3.10 is no longer supported. `requires-python` is now `>=3.11`, the `Programming Language :: Python :: 3.10` classifier was removed from `pyproject.toml`, and wheels are no longer built or tested for CPython 3.10.
+
+### Enhancements
+
+- The compiled `werpy.metrics` extension is now built against the CPython limited API at the 3.11 level, with `limited_api : '3.11'` in `meson.build` and `limited-api = true` in the `[tool.meson-python]` table of `pyproject.toml`. One `cp311-abi3` wheel is published per platform and installs on CPython 3.11 and every later version. `meson.build` now requires Meson 1.3.0 or newer.
+
+- Added `werpy/_dictcompat.h`. Under `Py_LIMITED_API` it defines `werpy_dict_setdefault()` with `PyDict_GetItemWithError()` and `PyDict_SetItem()`; otherwise `werpy_dict_setdefault()` is `PyDict_SetDefault()`. The canonical token mapping in `metrics.pyx` calls `werpy_dict_setdefault()` in place of `PyDict_SetDefault()`.
+
 ## Version 3.4.0
 
 **Released:** September 7, 2026

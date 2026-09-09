@@ -1,9 +1,9 @@
 project(
     'werpy',
     'c', 'cython',
-    version : '3.4.0',
+    version : '3.5.0',
     license : 'BSD-3-Clause',
-    meson_version : '>= 1.1.0',
+    meson_version : '>= 1.3.0',
     default_options : [
         'buildtype=release',
         'b_ndebug=if-release',
@@ -63,8 +63,10 @@ py.extension_module(
     'metrics',
     pyx_files,
     dependencies : [numpy_dep],
+    include_directories : include_directories('werpy'),
     cython_args : ext_cython_args,
     c_args : ext_c_args,
+    limited_api : '3.11',
     install : true,
     subdir : 'werpy'
 )
