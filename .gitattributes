@@ -6,3 +6,4 @@ docs export-ignore
 .gitignore export-ignore
 .pylintrc export-ignore
 .readthedocs.yaml export-ignore
+.codacy.yml export-ignore

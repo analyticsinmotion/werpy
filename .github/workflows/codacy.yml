@@ -60,6 +60,12 @@ jobs:
           # This will handover control about PR rejection to the GitHub side
           max-allowed-issues: 2147483647
 
+      # Temporary: list the runs in the SARIF so the duplicate can be identified
+      - name: Inspect the SARIF runs
+          run: |
+            echo "run count: $(jq '.runs | length' results.sarif)"
+            jq -r '.runs[] | [.tool.driver.name, .tool.driver.version // "-", .automationDetails.id // "-"] | @tsv' results.sarif
+
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
