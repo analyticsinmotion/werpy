@@ -62,9 +62,9 @@ jobs:
 
       # Temporary: list the runs in the SARIF so the duplicate can be identified
       - name: Inspect the SARIF runs
-          run: |
-            echo "run count: $(jq '.runs | length' results.sarif)"
-            jq -r '.runs[] | [.tool.driver.name, .tool.driver.version // "-", .automationDetails.id // "-"] | @tsv' results.sarif
+        run: |
+          echo "run count: $(jq '.runs | length' results.sarif)"
+          jq -r '.runs[] | [.tool.driver.name, .tool.driver.version // "-", .automationDetails.id // "-"] | @tsv' results.sarif
 
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file
