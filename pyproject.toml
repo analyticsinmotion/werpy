@@ -1,7 +1,7 @@
 [build-system]
 build-backend = 'mesonpy'
 requires = [
-    'meson-python==0.20.0',
+    'meson-python==0.21.1',
     'meson==1.12.0',
     'Cython==3.3.0',
     'numpy>=2.0,<3'
