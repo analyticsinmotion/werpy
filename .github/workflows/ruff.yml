@@ -1,5 +1,9 @@
 name: Ruff Analyzer
 
+# Set default permissions for all jobs in the workflow
+permissions:
+  contents: read
+
 #on: [ push, pull_request ]
 
 on:

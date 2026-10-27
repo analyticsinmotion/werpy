@@ -8,8 +8,10 @@ alabaster==0.7.16
     # via sphinx
 babel==2.13.1
     # via sphinx
-certifi==2024.7.4
-    # via requests
+certifi==2026.10.23
+    # via
+    #   -r requirements.in
+    #   requests
 charset-normalizer==3.3.2
     # via requests
 colorama==0.4.6
@@ -43,7 +45,7 @@ sphinx==9.1.0
     #   sphinxcontrib-applehelp
     #   sphinxcontrib-qthelp
     #   sphinxcontrib-serializinghtml
-sphinx-nefertiti==0.9.9
+sphinx-nefertiti==0.9.10
     # via -r requirements.in
 sphinxcontrib-applehelp==1.0.7
     # via sphinx

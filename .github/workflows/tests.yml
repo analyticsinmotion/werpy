@@ -61,9 +61,11 @@ jobs:
       - name: Install the wheel and pytest
         run: uv pip install dist/*.whl pytest
 
-      - name: Install NumPy ${{ matrix.numpy }}
+      # The wheel is installed again with NumPy pinned. The resolver selects the
+      # other dependencies for that NumPy version.
+      - name: Install the wheel with NumPy ${{ matrix.numpy }}
         if: matrix.numpy != 'default'
-        run: uv pip install "numpy==${{ matrix.numpy }}"
+        run: uv pip install dist/*.whl "numpy==${{ matrix.numpy }}"
 
       # The remaining steps run outside the repository so that the source tree
       # cannot shadow the installed package.
