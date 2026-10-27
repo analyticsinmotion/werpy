@@ -115,8 +115,8 @@ jobs:
       - name: Build the wheel
         run: uv build --wheel --out-dir dist
 
-      - name: Install the wheel, pytest and pytest-cov
-        run: uv pip install dist/*.whl pytest pytest-cov
+      - name: Install the wheel, pytest, pytest-cov and coverage
+        run: uv pip install dist/*.whl pytest pytest-cov coverage
 
       # The suite runs outside the repository so that the source tree cannot
       # shadow the installed package. Coverage is measured on the installed

@@ -53,7 +53,7 @@ keywords = [
 dependencies = [
   "numpy>=1.26.0; python_version<'3.12'",
   "numpy>=2.2.0; python_version>='3.12'",
-  "pandas>=2.0.0"
+  "pandas>=2.2.2"
 ]
 
 [project.urls]
@@ -64,8 +64,8 @@ dependencies = [
 
 [project.optional-dependencies]
 docs = [
-    "sphinx==9.1.0",
-    "sphinx-nefertiti==0.9.10",
+    'sphinx==9.1.0; python_version >= "3.12"',
+    'sphinx-nefertiti==0.9.10; python_version >= "3.12"',
 ]
 test = [
     "pytest>=7.0.0",
@@ -75,10 +75,6 @@ benchmarks = [
     "datasets>=4.4.1",
     "werx>=0.3.1",
     "jiwer>=4.0.0",
-    "pywer>=0.1.1",
-    "evaluate>=0.4.6",
-    "universal-edit-distance>=0.4.3",
-    "torchmetrics",
 ]
 
 [tool.meson-python]
