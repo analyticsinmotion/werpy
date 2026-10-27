@@ -45,13 +45,8 @@ install_data(
     install_dir: py.get_install_dir() / 'werpy'
 )
 
-# Find NumPy
-numpy_dep = dependency('numpy')
-
 # Compiler arguments for the Cython module.
-# NPY_TARGET_VERSION pins the NumPy C API level the extension is built against;
-# NPY_1_25_API_VERSION is the level provided by NumPy 1.26.
-ext_c_args = ['-DNPY_TARGET_VERSION=NPY_1_25_API_VERSION']
+ext_c_args = []
 ext_cython_args = []
 if get_option('linetrace')
     ext_cython_args += ['-X', 'linetrace=True']
@@ -62,7 +57,6 @@ endif
 py.extension_module(
     'metrics',
     pyx_files,
-    dependencies : [numpy_dep],
     include_directories : include_directories('werpy'),
     cython_args : ext_cython_args,
     c_args : ext_c_args,

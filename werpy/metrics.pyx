@@ -37,13 +37,11 @@ are called by the public werpy functions.
 """
 
 import numpy as np
-cimport numpy as cnp
-
-cnp.import_array()
 
 cimport cython
 from cpython.ref cimport PyObject
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
+from libc.stdint cimport int32_t
 
 cdef extern from "_dictcompat.h":
     PyObject* werpy_dict_setdefault(object p, object key, object default) except NULL
@@ -78,7 +76,7 @@ cdef inline int _canonical_tokens(
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef cnp.ndarray calculations(object reference, object hypothesis):
+cpdef object calculations(object reference, object hypothesis):
     cdef list reference_word = reference.split()
     cdef list hypothesis_word
 
@@ -114,13 +112,13 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
     # SAFETY: All cells are explicitly initialized below (row 0, col 0, then DP loop).
     # Allocate the (m+1) x (n+1) DP matrix without zero-initialization to avoid
     # redundant memory writes. Boundary conditions are initialized explicitly.
-    cdef cnp.int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
+    cdef int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
 
     # Initialize first column and first row (boundary conditions)
     for i in range(m + 1):
-        ldm[i, 0] = <cnp.int32_t>i
+        ldm[i, 0] = <int32_t>i
     for j in range(n + 1):
-        ldm[0, j] = <cnp.int32_t>j
+        ldm[0, j] = <int32_t>j
 
     ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
     if ref_tok == NULL:
@@ -185,7 +183,7 @@ cpdef cnp.ndarray calculations(object reference, object hypothesis):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef cnp.ndarray _metrics_batch(list references, list hypotheses):
+cdef object _metrics_batch(list references, list hypotheses):
     """
     Private batch processing function. Processes multiple reference-hypothesis
     pairs at C speed, eliminating np.vectorize overhead.
@@ -197,7 +195,7 @@ cdef cnp.ndarray _metrics_batch(list references, list hypotheses):
     cdef Py_ssize_t idx
 
     # Rows output, dtype=object because cols 6-8 are lists
-    cdef cnp.ndarray out = np.empty((n, 9), dtype=object)
+    cdef object out = np.empty((n, 9), dtype=object)
 
     cdef object r
     for idx in range(n):
@@ -227,7 +225,7 @@ cpdef object metrics(object reference, object hypothesis):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
+cpdef object calculations_fast(object reference, object hypothesis):
     """
     Fast path for WER/LD calculations without word tracking.
     Returns only numeric metrics (WER, LD, m, insertions, deletions, substitutions).
@@ -262,13 +260,13 @@ cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
     cdef PyObject** hyp_tok
 
     # Allocate the (m+1) x (n+1) DP matrix without zero-initialization
-    cdef cnp.int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
+    cdef int32_t[:, :] ldm = np.empty((m + 1, n + 1), dtype=np.int32)
 
     # Initialize first column and first row (boundary conditions)
     for i in range(m + 1):
-        ldm[i, 0] = <cnp.int32_t>i
+        ldm[i, 0] = <int32_t>i
     for j in range(n + 1):
-        ldm[0, j] = <cnp.int32_t>j
+        ldm[0, j] = <int32_t>j
 
     ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
     if ref_tok == NULL:
@@ -328,7 +326,7 @@ cpdef cnp.ndarray calculations_fast(object reference, object hypothesis):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef cnp.ndarray _metrics_batch_fast(list references, list hypotheses):
+cdef object _metrics_batch_fast(list references, list hypotheses):
     """
     Fast batch processing without word tracking.
 
@@ -338,9 +336,9 @@ cdef cnp.ndarray _metrics_batch_fast(list references, list hypotheses):
     cdef Py_ssize_t n = len(references)
     cdef Py_ssize_t idx
 
-    cdef cnp.ndarray out = np.empty((n, 6), dtype=np.float64)
+    cdef object out = np.empty((n, 6), dtype=np.float64)
 
-    cdef cnp.ndarray r
+    cdef object r
     for idx in range(n):
         r = calculations_fast(references[idx], hypotheses[idx])
         out[idx, :] = r
@@ -363,7 +361,7 @@ cpdef object metrics_fast(object reference, object hypothesis):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
+cpdef object calculations_wer_only(object reference, object hypothesis):
     """
     WER-only fast path - 2-row DP (O(n) memory), no backtrace.
     Returns only [wer, ld, m] without error counts or word tracking.
@@ -387,10 +385,10 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
     cdef PyObject** ref_tok
     cdef PyObject** hyp_tok
 
-    cdef cnp.ndarray prev_arr
-    cdef cnp.ndarray curr_arr
-    cdef cnp.int32_t[:] prev
-    cdef cnp.int32_t[:] curr
+    cdef object prev_arr
+    cdef object curr_arr
+    cdef int32_t[:] prev
+    cdef int32_t[:] curr
 
     # An identical pair has no edits, so the token mapping and the dynamic
     # programme are skipped. Only the reference word count is needed.
@@ -406,7 +404,7 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
     curr = curr_arr
 
     for j in range(n + 1):
-        prev[j] = <cnp.int32_t>j
+        prev[j] = <int32_t>j
 
     ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
     if ref_tok == NULL:
@@ -417,7 +415,7 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
         _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
 
         for i in range(1, m + 1):
-            curr[0] = <cnp.int32_t>i
+            curr[0] = <int32_t>i
             for j in range(1, n + 1):
                 cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
@@ -446,8 +444,8 @@ cpdef cnp.ndarray calculations_wer_only(object reference, object hypothesis):
 cdef struct _BatchBuffers:
     # Two dynamic programming rows and one token buffer shared across a batch.
     # Each is grown on demand and freed once when the batch is finished.
-    cnp.int32_t* prev
-    cnp.int32_t* curr
+    int32_t* prev
+    int32_t* curr
     Py_ssize_t row_capacity
     PyObject** tok
     Py_ssize_t tok_capacity
@@ -464,14 +462,14 @@ cdef inline int _ensure_batch_buffers(
     batch performs a bounded number of allocations however its lengths are ordered.
     """
     cdef Py_ssize_t capacity
-    cdef cnp.int32_t* row_mem
+    cdef int32_t* row_mem
     cdef PyObject** tok_mem
 
     if rows > buf.row_capacity:
         capacity = 2 * buf.row_capacity
         if capacity < rows:
             capacity = rows
-        row_mem = <cnp.int32_t*>PyMem_Realloc(buf.prev, 2 * capacity * sizeof(cnp.int32_t))
+        row_mem = <int32_t*>PyMem_Realloc(buf.prev, 2 * capacity * sizeof(int32_t))
         if row_mem == NULL:
             raise MemoryError()
         buf.prev = row_mem
@@ -515,9 +513,9 @@ cdef inline int _calculations_wer_only_reuse_ptr(
 
     cdef Py_ssize_t i, j
     cdef int cost, del_cost, ins_cost, sub_cost, best, ld
-    cdef cnp.int32_t* prev
-    cdef cnp.int32_t* curr
-    cdef cnp.int32_t* tmp
+    cdef int32_t* prev
+    cdef int32_t* curr
+    cdef int32_t* tmp
 
     # Canonical token pointers, reference tokens first, hypothesis tokens after them
     cdef PyObject** ref_tok
@@ -542,12 +540,12 @@ cdef inline int _calculations_wer_only_reuse_ptr(
 
     # Initialize base row: prev[j] = j for j=0..n
     for j in range(n + 1):
-        prev[j] = <cnp.int32_t>j
+        prev[j] = <int32_t>j
 
     _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
 
     for i in range(1, m + 1):
-        curr[0] = <cnp.int32_t>i
+        curr[0] = <int32_t>i
         for j in range(1, n + 1):
             cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
@@ -577,7 +575,7 @@ cdef inline int _calculations_wer_only_reuse_ptr(
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef cnp.ndarray _metrics_batch_wer_only(list references, list hypotheses):
+cdef object _metrics_batch_wer_only(list references, list hypotheses):
     """
     Fast batch processing for WER-only calculations with buffer reuse and pointer swapping.
 
@@ -592,8 +590,16 @@ cdef cnp.ndarray _metrics_batch_wer_only(list references, list hypotheses):
     cdef Py_ssize_t n_pairs = len(references)
     cdef Py_ssize_t idx
 
-    cdef cnp.ndarray out = np.empty((n_pairs, 3), dtype=np.float64)
-    cdef double* out_data = <double*>cnp.PyArray_DATA(out)
+    cdef object out = np.empty((n_pairs, 3), dtype=np.float64)
+    cdef double[:, ::1] out_view
+    cdef double* out_data
+
+    # An empty batch returns the empty output array without taking a view of it.
+    if n_pairs == 0:
+        return out
+
+    out_view = out
+    out_data = &out_view[0, 0]
 
     cdef _BatchBuffers buf
     buf.prev = NULL
