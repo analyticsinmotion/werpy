@@ -14,6 +14,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `pywer`, `evaluate`, `universal-edit-distance` and `torchmetrics` were removed from the `benchmarks` extra.
 
+- Building werpy no longer requires NumPy. `metrics.pyx` no longer uses the NumPy C API, and `numpy` was removed from the build requirements in `pyproject.toml` and from `meson.build`. NumPy remains a runtime dependency.
+
 ## Version 3.5.0
 
 **Released:** September 9, 2026

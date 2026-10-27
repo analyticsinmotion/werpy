@@ -32,8 +32,8 @@ jobs:
         # "default" keeps the version selected by the resolver.
         numpy: ["default"]
         include:
-          # The compiled extension targets the NumPy 1.25 C API (NPY_TARGET_VERSION in meson.build).
-          # This cell runs a wheel built against NumPy 2.x headers with NumPy 1.26 installed.
+          # This cell runs the wheel with NumPy 1.26, the lowest NumPy minor version
+          # that the runtime requirements allow on Python 3.11.
           - os: ubuntu-latest
             python-version: "3.11"
             numpy: "1.26.4"
