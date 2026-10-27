@@ -6,6 +6,10 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ## Unreleased
 
+### Bug Fixes
+
+- `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
+
 ### Enhancements
 
 - The pandas requirement in `pyproject.toml` is now `pandas>=2.2.2`.

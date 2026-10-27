@@ -181,6 +181,16 @@ cpdef object calculations(object reference, object hypothesis):
         [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words],
         dtype=object)
 
+
+cdef inline int _check_equal_lengths(list references, list hypotheses) except -1:
+    """
+    Raise a ValueError when references and hypotheses have different numbers of elements.
+    """
+    if len(references) != len(hypotheses):
+        raise ValueError("The Reference and Hypothesis input parameters must have the same number of elements.")
+    return 0
+
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef object _metrics_batch(list references, list hypotheses):
@@ -191,6 +201,9 @@ cdef object _metrics_batch(list references, list hypotheses):
     Returns (n, 9) object array where each row contains:
     [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words]
     """
+    # The loop below reads both lists at every index without bounds checks.
+    _check_equal_lengths(references, hypotheses)
+
     cdef Py_ssize_t n = len(references)
     cdef Py_ssize_t idx
 
@@ -333,6 +346,9 @@ cdef object _metrics_batch_fast(list references, list hypotheses):
     Returns (n, 6) float64 array where each row contains:
     [wer, ld, m, insertions, deletions, substitutions]
     """
+    # The loop below reads both lists at every index without bounds checks.
+    _check_equal_lengths(references, hypotheses)
+
     cdef Py_ssize_t n = len(references)
     cdef Py_ssize_t idx
 
@@ -587,6 +603,9 @@ cdef object _metrics_batch_wer_only(list references, list hypotheses):
     Returns (n, 3) float64 array where each row contains:
     [wer, ld, m]
     """
+    # The loop below reads both lists at every index without bounds checks.
+    _check_equal_lengths(references, hypotheses)
+
     cdef Py_ssize_t n_pairs = len(references)
     cdef Py_ssize_t idx
 
