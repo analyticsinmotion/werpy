@@ -34,8 +34,22 @@ jobs:
       actions: read
       contents: read
     steps:
-      - name: Perform Bandit Analysis
-        uses: PyCQA/bandit-action@67a458d90fa11fb1463e91e7f4c8f068b5863c7f # v1.0.1
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          # The default exclude list of the action, and the benchmarks directory
-          exclude: ".svn,CVS,.bzr,.hg,.git,__pycache__,.tox,.eggs,*.egg,./benchmarks"
+          python-version: '3.13'
+
+      - name: Install Bandit
+        run: pip install "bandit[sarif,toml]"
+
+      - name: Run Bandit
+        # Bandit's default exclude list, and the benchmarks directory
+        run: bandit -x ".svn,CVS,.bzr,.hg,.git,__pycache__,.tox,.eggs,*.egg,./benchmarks" -r . -f sarif -o results.sarif || true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: results.sarif

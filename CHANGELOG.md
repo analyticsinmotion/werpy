@@ -4,6 +4,16 @@
 This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 
+## Unreleased
+
+### Enhancements
+
+- The pandas requirement in `pyproject.toml` is now `pandas>=2.2.2`.
+
+- The `sphinx` and `sphinx-nefertiti` requirements of the `docs` extra now carry the environment marker `python_version >= "3.12"`. On Python 3.11 the `docs` extra adds no packages.
+
+- `pywer`, `evaluate`, `universal-edit-distance` and `torchmetrics` were removed from the `benchmarks` extra.
+
 ## Version 3.5.0
 
 **Released:** September 9, 2026
