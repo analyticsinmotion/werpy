@@ -20,7 +20,7 @@ To run the tests, execute this module as the main program.
 
 For more details on the 'summaryp' function and how to use it, please refer to the 'werpy' package documentation.
 
-Note: If the 'summaryp' module is not imported successfully, an ImportError is raised 
+Note: If the '_summaryp' module is not imported successfully, an ImportError is raised 
 to ensure that the required module is available for testing.
 """
 
@@ -28,7 +28,7 @@ import contextlib
 import io
 import unittest
 import pandas as pd
-from werpy.summaryp import summaryp
+from werpy._summaryp import summaryp
 
 
 class TestSummaryp(unittest.TestCase):
@@ -136,7 +136,7 @@ class TestSummaryp(unittest.TestCase):
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in wer module
+        # The actual return value is None from the try/except block in _wer module
         expected_result = None
 
         self.assertEqual(summaryp(ref, hyp, 0.5, 0.5, 1), expected_result)

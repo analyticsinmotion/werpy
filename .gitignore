@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-werpy/metrics.c
+werpy/_metrics.c
 
 # Distribution / packaging
 .Python

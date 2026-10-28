@@ -21,8 +21,8 @@ def error_handler(reference: object, hypothesis: object) -> bool:
     Validate inputs and raise consistent exceptions.
 
     This function does not compute metrics. Computation is handled by:
-    - metrics.metrics (router) for strings and batches
-    - metrics.calculations for a single pair
+    - _metrics.metrics (router) for strings and batches
+    - _metrics.calculations for a single pair
 
     Parameters
     ----------

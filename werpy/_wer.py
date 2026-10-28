@@ -11,8 +11,8 @@ This module defines the following function:
 """
 
 import numpy as np
-from .errorhandler import TextInput, error_handler
-from .metrics import metrics_wer_only
+from ._errorhandler import TextInput, error_handler
+from ._metrics import metrics_wer_only
 
 
 def wer(reference: TextInput, hypothesis: TextInput) -> float | None:

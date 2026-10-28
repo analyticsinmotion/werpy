@@ -12,8 +12,8 @@ This module defines the following function:
 from typing import cast, overload
 
 import numpy as np
-from .errorhandler import TextBatch, TextInput, error_handler
-from .metrics import metrics_fast
+from ._errorhandler import TextBatch, TextInput, error_handler
+from ._metrics import metrics_fast
 
 
 @overload

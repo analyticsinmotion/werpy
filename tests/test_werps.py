@@ -19,14 +19,14 @@ To run the tests, execute this module as the main program.
 
 For more details on the 'werps' function and how to use it, please refer to the 'werpy' package documentation.
 
-Note: If the 'werps' module is not imported successfully, an ImportError is raised 
+Note: If the '_werps' module is not imported successfully, an ImportError is raised 
 to ensure that the required module is available for testing.
 """
 
 import contextlib
 import io
 import unittest
-from werpy.werps import werps
+from werpy._werps import werps
 
 
 class TestWerps(unittest.TestCase):
@@ -172,7 +172,7 @@ class TestWerps(unittest.TestCase):
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in werps module
+        # The actual return value is None from the try/except block in _werps module
         expected_result = None
 
         self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)

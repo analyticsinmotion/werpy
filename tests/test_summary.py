@@ -18,7 +18,7 @@ To run the tests, execute this module as the main program.
 
 For more details on the 'summary' function and how to use it, please refer to the 'werpy' package documentation.
 
-Note: If the 'summary' module is not imported successfully, an ImportError is raised 
+Note: If the '_summary' module is not imported successfully, an ImportError is raised 
 to ensure that the required module is available for testing.
 """
 
@@ -27,7 +27,7 @@ import io
 import unittest
 import numpy as np
 import pandas as pd
-from werpy.summary import summary
+from werpy._summary import summary
 
 
 class TestSummary(unittest.TestCase):
@@ -96,7 +96,7 @@ class TestSummary(unittest.TestCase):
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in wer module
+        # The actual return value is None from the try/except block in _wer module
         expected_result = None
 
         self.assertEqual(summary(ref, hyp), expected_result)
