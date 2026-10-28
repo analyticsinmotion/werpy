@@ -10,8 +10,8 @@ This module defines the following function:
 """
 
 import numpy as np
-from .errorhandler import TextInput, error_handler
-from .metrics import metrics_fast
+from ._errorhandler import TextInput, error_handler
+from ._metrics import metrics_fast
 
 
 def werp(

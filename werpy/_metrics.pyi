@@ -4,7 +4,7 @@
 import numpy as np
 from numpy.typing import NDArray
 
-from .errorhandler import TextInput
+from ._errorhandler import TextInput
 
 def calculations(reference: str, hypothesis: str) -> NDArray[np.object_]: ...
 def metrics(reference: TextInput, hypothesis: TextInput) -> NDArray[np.object_]: ...

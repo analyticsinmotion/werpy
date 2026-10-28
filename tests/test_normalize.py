@@ -4,7 +4,7 @@
 """
 test_normalize.py
 
-This module contains unit tests for the 'normalize' function in the 'werpy.normalize' module. 
+This module contains unit tests for the 'normalize' function in the 'werpy._normalize' module. 
 The 'normalize' function is responsible for normalizing translations, 
 both reference and hypothesis, to facilitate word error rate (WER) calculations.
 
@@ -21,17 +21,17 @@ and raises an AssertionError if the actual output does not match the expected va
 
 To run the tests, execute this module as the main program.
 
-Note: If the 'normalize' module is not imported successfully, 
+Note: If the '_normalize' module is not imported successfully, 
 an ImportError is raised to ensure that the required module is available for testing.
 """
 
 import unittest
-from werpy.normalize import normalize
+from werpy._normalize import normalize
 
 
 class TestNormalize(unittest.TestCase):
     """
-    TestNormalize - Unit tests for the 'normalize' function in 'werpy.normalize'.
+    TestNormalize - Unit tests for the 'normalize' function in 'werpy._normalize'.
 
     This class defines test cases to verify the correctness of the 'normalize' function,
     which is responsible for normalizing translations, both reference and hypothesis,
@@ -56,7 +56,7 @@ class TestNormalize(unittest.TestCase):
 
     To run the tests, execute this class as part of the test suite in the main program.
 
-    Note: If the 'normalize' module is not imported successfully,
+    Note: If the '_normalize' module is not imported successfully,
     an ImportError is raised to ensure that the required module is available for testing.
     """
 

@@ -32,7 +32,7 @@ Before the edit distance is computed, every token of a pair is mapped to one can
 object per distinct word, so that the dynamic programming loops compare words by pointer
 equality rather than by string comparison.
 
-Input validation is performed by werpy.errorhandler.error_handler before these functions
+Input validation is performed by werpy._errorhandler.error_handler before these functions
 are called by the public werpy functions.
 """
 

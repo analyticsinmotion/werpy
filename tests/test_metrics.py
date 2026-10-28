@@ -5,7 +5,7 @@
 test_metrics.py
 
 This module contains a set of unit tests for the 'metrics', 'metrics_fast' and 'metrics_wer_only' functions
-of the compiled 'werpy.metrics' module in the 'werpy' package.
+of the compiled 'werpy._metrics' module in the 'werpy' package.
 
 Each of these functions accepts a pair of strings or a pair of lists or numpy arrays. For a pair of
 sequences it returns a two-dimensional array with one row per reference and hypothesis pair. The tests in
@@ -15,13 +15,13 @@ for the same input.
 
 To run the tests, execute this module as the main program.
 
-For more details on the 'werpy.metrics' module, please refer to the 'werpy' package documentation.
+For more details on the 'werpy._metrics' module, please refer to the 'werpy' package documentation.
 """
 
 import unittest
 import numpy as np
-from werpy.errorhandler import error_handler
-from werpy.metrics import metrics, metrics_fast, metrics_wer_only
+from werpy._errorhandler import error_handler
+from werpy._metrics import metrics, metrics_fast, metrics_wer_only  # pylint: disable=no-name-in-module
 
 
 LENGTH_MESSAGE = "The Reference and Hypothesis input parameters must have the same number of elements."

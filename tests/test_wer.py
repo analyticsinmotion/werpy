@@ -22,7 +22,7 @@ To run the tests, execute this module as the main program.
 
 For more details on the 'wer' function and how to use it, please refer to the 'werpy' package documentation.
 
-Note: If the 'wer' module is not imported successfully, an ImportError is raised 
+Note: If the '_wer' module is not imported successfully, an ImportError is raised 
 to ensure that the required module is available for testing.
 """
 
@@ -31,7 +31,7 @@ import io
 import unittest
 import numpy as np
 import werpy
-from werpy.wer import wer
+from werpy._wer import wer
 
 
 class TestWer(unittest.TestCase):
@@ -109,7 +109,7 @@ class TestWer(unittest.TestCase):
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in wer module
+        # The actual return value is None from the try/except block in _wer module
         expected_result = None
 
         self.assertEqual(wer(ref, hyp), expected_result)
@@ -124,7 +124,7 @@ class TestWer(unittest.TestCase):
         ref = [""]
         hyp = [""]
 
-        # The actual return value is None from the try/except block in wer module
+        # The actual return value is None from the try/except block in _wer module
         expected_result = None
 
         self.assertEqual(wer(ref, hyp), expected_result)
@@ -201,11 +201,14 @@ class TestWer(unittest.TestCase):
 
     def test_werpy_public_surface(self):
         """
-        Test that the names exported by the werpy package are exactly the documented public functions.
+        Test that the names exported by the werpy package are exactly the documented public functions, that
+        each function can be imported from the package by name, and that error_handler and metrics are not
+        attributes of the package.
         """
+        # pylint: disable=import-outside-toplevel,redefined-outer-name,reimported
+        from werpy import normalize, summary, summaryp, wer, werp, werps, wers
+
         expected_names = [
-            "error_handler",
-            "metrics",
             "normalize",
             "summary",
             "summaryp",
@@ -214,10 +217,25 @@ class TestWer(unittest.TestCase):
             "werps",
             "wers",
         ]
+        imported = [normalize, summary, summaryp, wer, werp, werps, wers]
 
         self.assertEqual(sorted(werpy.__all__), expected_names)
-        for name in expected_names:
+        for name, function in zip(expected_names, imported):
             self.assertTrue(callable(getattr(werpy, name)))
+            self.assertIs(function, getattr(werpy, name))
+        for name in ("error_handler", "metrics"):
+            self.assertFalse(hasattr(werpy, name), msg=name)
+
+    def test_werpy_implementation_modules_are_private(self):
+        """
+        Test that the modules that implement the public functions are private, so that an import of a module
+        path named after a function raises ModuleNotFoundError.
+        """
+        # pylint: disable=import-outside-toplevel,redefined-outer-name,reimported,unused-import
+        with self.assertRaises(ModuleNotFoundError):
+            import werpy.wer
+        with self.assertRaises(ModuleNotFoundError):
+            from werpy.wer import wer
 
 
 if __name__ == "__main__":  # pragma: no cover

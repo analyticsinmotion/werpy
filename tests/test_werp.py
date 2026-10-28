@@ -18,14 +18,14 @@ To run the tests, execute this module as the main program.
 
 For more details on the 'werp' function and how to use it, please refer to the 'werpy' package documentation.
 
-Note: If the 'werp' module is not imported successfully, an ImportError is raised 
+Note: If the '_werp' module is not imported successfully, an ImportError is raised 
 to ensure that the required module is available for testing.
 """
 
 import contextlib
 import io
 import unittest
-from werpy.werp import werp
+from werpy._werp import werp
 
 
 class TestWerp(unittest.TestCase):
@@ -140,7 +140,7 @@ class TestWerp(unittest.TestCase):
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in werp module
+        # The actual return value is None from the try/except block in _werp module
         expected_result = None
 
         self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)

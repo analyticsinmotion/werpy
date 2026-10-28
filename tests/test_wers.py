@@ -18,7 +18,7 @@ To run the tests, execute this module as the main program.
 
 For more details on the 'wers' function and how to use it, please refer to the 'werpy' package documentation.
 
-Note: If the 'wers' module is not imported successfully, an ImportError is raised 
+Note: If the '_wers' module is not imported successfully, an ImportError is raised 
 to ensure that the required module is available for testing.
 """
 
@@ -26,7 +26,7 @@ import contextlib
 import io
 import unittest
 import numpy as np
-from werpy.wers import wers
+from werpy._wers import wers
 
 
 class TestWers(unittest.TestCase):
@@ -129,7 +129,7 @@ class TestWers(unittest.TestCase):
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in wers module
+        # The actual return value is None from the try/except block in _wers module
         expected_result = None
 
         self.assertEqual(wers(ref, hyp), expected_result)

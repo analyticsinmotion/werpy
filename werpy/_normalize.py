@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
-The normalize module provides preprocessing methods for normalizing text input to be optimal for the Word Error Rate
+The _normalize module provides preprocessing methods for normalizing text input to be optimal for the Word Error Rate
 (WER) function. The class contains methods for removing punctuation, converting text to lowercase, and removing all
 whitespace such as leading/trailing spaces and multiple in-text spaces. 
 

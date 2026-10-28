@@ -6,6 +6,14 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ## Unreleased
 
+### Breaking Changes
+
+- The public API is the seven functions that the `werpy` package exports: `normalize()`, `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()`. `werpy.__all__` lists exactly these seven names.
+
+- The modules that implement these functions are private, and their names start with an underscore. Import each function from the package, for example `from werpy import wer`, or call it through the package after `import werpy`, for example `werpy.wer()`. An import from a module path such as `from werpy.wer import wer` raises `ModuleNotFoundError`.
+
+- `error_handler()` and `metrics()` are internal functions. They are not in `werpy.__all__`, and they are not attributes of the `werpy` package.
+
 ### Bug Fixes
 
 - `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.

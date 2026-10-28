@@ -20,7 +20,7 @@ documentation.
 
 import unittest
 import numpy as np
-from werpy.errorhandler import error_handler
+from werpy._errorhandler import error_handler
 
 
 TYPE_MESSAGE = (

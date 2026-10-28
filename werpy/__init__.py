@@ -7,20 +7,16 @@ The werpy package provides tools for calculating word error rates (WERs) and rel
 
 __version__ = "3.5.0"
 
-from .errorhandler import error_handler
-from .normalize import normalize
-from .metrics import metrics
-from .wer import wer
-from .wers import wers
-from .werp import werp
-from .werps import werps
-from .summary import summary
-from .summaryp import summaryp
+from ._normalize import normalize
+from ._wer import wer
+from ._wers import wers
+from ._werp import werp
+from ._werps import werps
+from ._summary import summary
+from ._summaryp import summaryp
 
 __all__ = [
-    "error_handler",
     "normalize",
-    "metrics",
     "wer",
     "wers",
     "werp",

@@ -16,20 +16,20 @@ project(
 py = import('python').find_installation(pure: false)
 
 # Cython files
-pyx_files = files('werpy/metrics.pyx')
+pyx_files = files('werpy/_metrics.pyx')
 
 # Python Source files
 py_files = files(
     'werpy/__init__.py',
-    'werpy/errorhandler.py',
-    'werpy/metrics.pyi',
-    'werpy/normalize.py',
-    'werpy/summary.py',
-    'werpy/summaryp.py',
-    'werpy/wer.py',
-    'werpy/werp.py',
-    'werpy/werps.py',
-    'werpy/wers.py'
+    'werpy/_errorhandler.py',
+    'werpy/_metrics.pyi',
+    'werpy/_normalize.py',
+    'werpy/_summary.py',
+    'werpy/_summaryp.py',
+    'werpy/_wer.py',
+    'werpy/_werp.py',
+    'werpy/_werps.py',
+    'werpy/_wers.py'
 )
 
 # Install Python sources
@@ -55,7 +55,7 @@ endif
 
 # Cython module
 py.extension_module(
-    'metrics',
+    '_metrics',
     pyx_files,
     include_directories : include_directories('werpy'),
     cython_args : ext_cython_args,
