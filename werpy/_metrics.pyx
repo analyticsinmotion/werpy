@@ -267,6 +267,7 @@ cpdef object calculations_fast(object reference, object hypothesis):
     cdef double wer
 
     cdef int cost, del_cost, ins_cost, sub_cost, best
+    cdef int left, diag, up
 
     # Canonical token pointers, reference tokens first, hypothesis tokens after them
     cdef PyObject** ref_tok
@@ -291,12 +292,15 @@ cpdef object calculations_fast(object reference, object hypothesis):
 
         # Fill the Levenshtein distance matrix
         for i in range(1, m + 1):
+            left = ldm[i, 0]
+            diag = ldm[i - 1, 0]
             for j in range(1, n + 1):
                 cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-                del_cost = ldm[i - 1, j] + 1
-                ins_cost = ldm[i, j - 1] + 1
-                sub_cost = ldm[i - 1, j - 1] + cost
+                up = ldm[i - 1, j]
+                del_cost = up + 1
+                ins_cost = left + 1
+                sub_cost = diag + cost
 
                 best = del_cost
                 if ins_cost < best:
@@ -305,6 +309,8 @@ cpdef object calculations_fast(object reference, object hypothesis):
                     best = sub_cost
 
                 ldm[i, j] = best
+                left = best
+                diag = up
 
         ld = ldm[m, n]
         wer = (<double>ld) / m if m > 0 else 0.0
@@ -529,6 +535,7 @@ cdef inline int _calculations_wer_only_reuse_ptr(
 
     cdef Py_ssize_t i, j
     cdef int cost, del_cost, ins_cost, sub_cost, best, ld
+    cdef int left, diag, up
     cdef int32_t* prev
     cdef int32_t* curr
     cdef int32_t* tmp
@@ -562,12 +569,15 @@ cdef inline int _calculations_wer_only_reuse_ptr(
 
     for i in range(1, m + 1):
         curr[0] = <int32_t>i
+        left = <int>i
+        diag = prev[0]
         for j in range(1, n + 1):
             cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-            del_cost = prev[j] + 1
-            ins_cost = curr[j - 1] + 1
-            sub_cost = prev[j - 1] + cost
+            up = prev[j]
+            del_cost = up + 1
+            ins_cost = left + 1
+            sub_cost = diag + cost
 
             best = del_cost
             if ins_cost < best:
@@ -576,6 +586,8 @@ cdef inline int _calculations_wer_only_reuse_ptr(
                 best = sub_cost
 
             curr[j] = best
+            left = best
+            diag = up
 
         # Swap prev and curr pointers (zero-cost operation)
         tmp = prev
