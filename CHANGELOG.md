@@ -14,6 +14,12 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `error_handler()` and `metrics()` are internal functions. They are not in `werpy.__all__`, and they are not attributes of the `werpy` package.
 
+- `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` raise an exception when the input is not valid. They do not print a message, and they do not return `None`.
+
+- The six functions raise `werpy.exceptions.WerpyTypeError` when the reference or the hypothesis has the wrong type or kind, and `werpy.exceptions.WerpyValueError` when a reference is blank or when the reference and hypothesis sequences have different numbers of elements. `WerpyTypeError` derives from `WerpyError`, `TypeError` and `AttributeError`. `WerpyValueError` derives from `WerpyError`, `ValueError` and `ZeroDivisionError`.
+
+- `wers()` and `werps()` return a list for a pair of strings, with one Word Error Rate in it. For example, `werpy.wers('i love cold pizza', 'i love pizza')` returns `[0.25]`.
+
 ### Bug Fixes
 
 - `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
@@ -29,6 +35,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 - Building werpy no longer requires NumPy. `metrics.pyx` no longer uses the NumPy C API, and `numpy` was removed from the build requirements in `pyproject.toml` and from `meson.build`. NumPy remains a runtime dependency.
 
 - The dynamic programming loops of `calculations_fast()` and `_calculations_wer_only_reuse_ptr()` in `_metrics.pyx` now keep the neighboring cell values in local variables. The results are unchanged.
+
+- Added the public `werpy.exceptions` module. It defines `WerpyError`, the base class of the exceptions that werpy raises when an input is not valid, and its subclasses `WerpyTypeError` and `WerpyValueError`. Import the classes from the module, for example `from werpy.exceptions import WerpyError`. They are not in `werpy.__all__`.
 
 ## Version 3.5.0
 

@@ -20,7 +20,7 @@ def werp(
     insertions_weight: float = 1,
     deletions_weight: float = 1,
     substitutions_weight: float = 1,
-) -> float | None:
+) -> float:
     """
     This function calculates a weighted Word Error Rate for the entire reference and hypothesis texts. It allows the
     insertion, deletion and substitution errors to be penalized or weighted at different rates.
@@ -38,11 +38,30 @@ def werp(
     substitutions_weight: int or float, optional
         The weight multiplier for a substitution error
 
+    Raises
+    ------
+    werpy.exceptions.WerpyTypeError
+        If the reference or the hypothesis is not a string, a list or a numpy array, or if one of them is a string
+        and the other is a list or a numpy array.
+    werpy.exceptions.WerpyValueError
+        If a reference is blank, either as a single string or as an element of a list or numpy array, or if the
+        reference and hypothesis lists or arrays do not contain the same number of elements.
+    TypeError
+        If the reference or the hypothesis is a 0-dimensional numpy array, if a weight cannot be multiplied by a
+        float, for example None, a string or a Decimal, or if a weight is a list or numpy array and the reference
+        and hypothesis are strings.
+    ValueError
+        If a weight is a list or numpy array whose length differs from the number of elements of the reference and
+        hypothesis lists or arrays.
+    OverflowError
+        If a weight is an int that is too large to convert to a float.
+    AttributeError
+        If an element of the reference or hypothesis list or array is not a string, for example a number or None.
+
     Returns
     -------
-    float or None
+    float
         This function will return a single weighted Word Error Rate.
-        If the input is invalid, the function prints a message describing the problem and returns None.
 
     Examples
     --------
@@ -65,12 +84,8 @@ def werp(
     >>> print(werp_example_4)
     0.25
     """
-    try:
-        error_handler(reference, hypothesis)
-        result = metrics_fast(reference, hypothesis)
-    except (ValueError, AttributeError, ZeroDivisionError) as err:
-        print(f"{type(err).__name__}: {str(err)}")
-        return None
+    error_handler(reference, hypothesis)
+    result = metrics_fast(reference, hypothesis)
 
     # Batch: (n, 6) float64
     if isinstance(result, np.ndarray) and result.ndim == 2:

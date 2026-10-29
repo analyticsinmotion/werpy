@@ -22,7 +22,7 @@ def summaryp(
     insertions_weight: float = 1,
     deletions_weight: float = 1,
     substitutions_weight: float = 1,
-) -> pd.DataFrame | None:
+) -> pd.DataFrame:
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, weighted
     WER, Levenshtein Distance and all the insertion, deletion and substitution errors.
@@ -40,9 +40,29 @@ def summaryp(
     substitutions_weight: int or float, optional
         The weight multiplier for a substitution error
 
+    Raises
+    ------
+    werpy.exceptions.WerpyTypeError
+        If the reference or the hypothesis is not a string, a list or a numpy array, or if one of them is a string
+        and the other is a list or a numpy array.
+    werpy.exceptions.WerpyValueError
+        If a reference is blank, either as a single string or as an element of a list or numpy array, or if the
+        reference and hypothesis lists or arrays do not contain the same number of elements.
+    TypeError
+        If the reference or the hypothesis is a 0-dimensional numpy array, if a weight is None, a string or a
+        complex number, or if a weight is a list or numpy array and the reference and hypothesis are strings.
+    ValueError
+        If a weight is a list or numpy array whose length differs from the number of elements of the reference and
+        hypothesis lists or arrays.
+    OverflowError
+        If a weight is an int that is too large to convert to a float and the reference and hypothesis are lists
+        or arrays.
+    AttributeError
+        If an element of the reference or hypothesis list or array is not a string, for example a number or None.
+
     Returns
     -------
-    pandas.core.frame.DataFrame or None
+    pandas.core.frame.DataFrame
         Returns a dataframe containing the following ten columns:
             wer - The Word Error Rate
             werp - The weighted Word Error Rate
@@ -55,14 +75,9 @@ def summaryp(
             deleted_words - list of deleted words
             substituted_words - list of substitutions. Each substitution will be shown as a tuple with the reference
             word and the hypothesis word. For example: [(cited, sighted), (abnormally, normally)]
-        If the input is invalid, the function prints a message describing the problem and returns None.
     """
-    try:
-        error_handler(reference, hypothesis)
-        result = metrics(reference, hypothesis)
-    except (ValueError, AttributeError, ZeroDivisionError) as err:
-        print(f"{type(err).__name__}: {str(err)}")
-        return None
+    error_handler(reference, hypothesis)
+    result = metrics(reference, hypothesis)
 
     # Batch rows (n, 9)
     if isinstance(result, np.ndarray) and result.ndim == 2:

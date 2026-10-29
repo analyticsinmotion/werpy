@@ -29,6 +29,7 @@ import io
 import unittest
 import pandas as pd
 from werpy._summaryp import summaryp
+from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
 
 
 class TestSummaryp(unittest.TestCase):
@@ -131,15 +132,21 @@ class TestSummaryp(unittest.TestCase):
         Test the summaryp function with numerical reference and hypothesis inputs.
 
         This test evaluates the SUMMARYP function with numerical reference and hypothesis inputs.
-        It verifies that the numerical input will raise an AttributeError.
+        It verifies that the numerical elements raise an AttributeError with the message of the failed split, and
+        that nothing is printed.
 
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in _wer module
-        expected_result = None
 
-        self.assertEqual(summaryp(ref, hyp, 0.5, 0.5, 1), expected_result)
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            with self.assertRaises(AttributeError) as context:
+                summaryp(ref, hyp, 0.5, 0.5, 1)
+
+        self.assertIs(type(context.exception), AttributeError)
+        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_summaryp_insertion_only(self):
         """
@@ -197,17 +204,20 @@ class TestSummaryp(unittest.TestCase):
         """
         Test the summaryp function with a list containing a blank reference.
 
-        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        It verifies that the function raises a WerpyValueError whose message names the index of the blank reference,
+        and that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
-            result = summaryp(["", "a"], ["x", "a"])
+            with self.assertRaises(WerpyValueError) as context:
+                summaryp(["", "a"], ["x", "a"])
 
-        self.assertIsNone(result)
+        self.assertIs(type(context.exception), WerpyValueError)
         self.assertEqual(
-            buffer.getvalue().strip(),
-            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 0.",
+            str(context.exception),
+            "Invalid input: reference must not be blank. A blank reference was found at index 0.",
         )
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_summaryp_empty_sequences(self):
         """
@@ -232,6 +242,43 @@ class TestSummaryp(unittest.TestCase):
 
         self.assertEqual(list(actual_result.columns), expected_columns)
         self.assertEqual(len(actual_result), 0)
+
+    def test_summaryp_raises_werpy_exceptions(self):
+        """
+        Test the summaryp function with a string reference and a list hypothesis, and with lists of different lengths.
+
+        It verifies that the function raises a WerpyTypeError and a WerpyValueError with the messages of the input
+        validation, that each exception is a WerpyError and an instance of the type that werpy 3.x raised for the
+        same input, and that nothing is printed.
+        """
+        cases = [
+            (
+                "i love pizza",
+                ["i love pizza"],
+                WerpyTypeError,
+                AttributeError,
+                "Reference and hypothesis must both be strings, or both be lists/arrays.",
+            ),
+            (
+                ["i love pizza"],
+                ["i love pizza", "a b"],
+                WerpyValueError,
+                ValueError,
+                "The Reference and Hypothesis input parameters must have the same number of elements.",
+            ),
+        ]
+        for ref, hyp, error, legacy_error, message in cases:
+            with self.subTest(error=error.__name__):
+                buffer = io.StringIO()
+                with contextlib.redirect_stdout(buffer):
+                    with self.assertRaises(error) as context:
+                        summaryp(ref, hyp, 0.5, 0.5, 1)
+
+                self.assertIs(type(context.exception), error)
+                self.assertIsInstance(context.exception, WerpyError)
+                self.assertIsInstance(context.exception, legacy_error)
+                self.assertEqual(str(context.exception), message)
+                self.assertEqual(buffer.getvalue(), "")
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -10,6 +10,8 @@ from typing import TypeAlias
 import numpy as np
 from numpy.typing import NDArray
 
+from .exceptions import WerpyTypeError, WerpyValueError
+
 # The sequence types accepted as a batch of texts, and the full set of accepted inputs.
 # These are the types checked by error_handler below.
 TextBatch: TypeAlias = list[str] | NDArray[np.str_] | NDArray[np.object_]
@@ -49,7 +51,7 @@ def error_handler(reference: object, hypothesis: object) -> bool:
     valid_types = (str, list, np.ndarray)
 
     if not isinstance(reference, valid_types) or not isinstance(hypothesis, valid_types):
-        raise AttributeError(
+        raise WerpyTypeError(
             "All text should be in a string format. Please check your input does not include any "
             "Numeric data types."
         )
@@ -58,18 +60,18 @@ def error_handler(reference: object, hypothesis: object) -> bool:
     hyp_is_seq = isinstance(hypothesis, (list, np.ndarray))
 
     if ref_is_seq != hyp_is_seq:
-        raise AttributeError(
+        raise WerpyTypeError(
             "Reference and hypothesis must both be strings, or both be lists/arrays."
         )
 
     if ref_is_seq and hyp_is_seq:
         if len(reference) != len(hypothesis):
-            raise ValueError(
+            raise WerpyValueError(
                 "The Reference and Hypothesis input parameters must have the same number of elements."
             )
         for index, item in enumerate(reference):
             if str(item).strip() == "":
-                raise ZeroDivisionError(
+                raise WerpyValueError(
                     f"Invalid input: reference must not be blank. A blank reference was found at index {index}."
                 )
         return True
@@ -79,11 +81,11 @@ def error_handler(reference: object, hypothesis: object) -> bool:
     hyp_s = str(hypothesis).strip()
 
     if ref_s == "" and hyp_s == "":
-        raise ZeroDivisionError(
+        raise WerpyValueError(
             "Invalid input: reference must not be blank, and reference and hypothesis cannot both be empty."
         )
     if ref_s == "":
-        raise ZeroDivisionError(
+        raise WerpyValueError(
             "Invalid input: reference must not be blank, and reference and hypothesis cannot both be empty."
         )
 
