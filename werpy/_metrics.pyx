@@ -102,6 +102,7 @@ cpdef object calculations(object reference, object hypothesis):
 
     # Variables for optimized DP loop
     cdef int cost, del_cost, ins_cost, sub_cost, best
+    cdef int left, diag, up
 
     # Canonical token pointers, reference tokens first, hypothesis tokens after them
     cdef PyObject** ref_tok
@@ -133,12 +134,15 @@ cpdef object calculations(object reference, object hypothesis):
         # selection to keep all operations at C level and minimize per-cell overhead.
         # No boundary condition branches in the hot loop, manual min selection.
         for i in range(1, m + 1):
+            left = ldm[i, 0]
+            diag = ldm[i - 1, 0]
             for j in range(1, n + 1):
                 cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-                del_cost = ldm[i - 1, j] + 1
-                ins_cost = ldm[i, j - 1] + 1
-                sub_cost = ldm[i - 1, j - 1] + cost
+                up = ldm[i - 1, j]
+                del_cost = up + 1
+                ins_cost = left + 1
+                sub_cost = diag + cost
 
                 best = del_cost
                 if ins_cost < best:
@@ -147,6 +151,8 @@ cpdef object calculations(object reference, object hypothesis):
                     best = sub_cost
 
                 ldm[i, j] = best
+                left = best
+                diag = up
 
         ld = ldm[m, n]
         wer = (<double>ld) / m if m > 0 else 0.0
@@ -401,6 +407,7 @@ cpdef object calculations_wer_only(object reference, object hypothesis):
 
     cdef Py_ssize_t i, j
     cdef int cost, del_cost, ins_cost, sub_cost, best, ld
+    cdef int left, diag, up
     cdef double wer
 
     # Canonical token pointers, reference tokens first, hypothesis tokens after them
@@ -438,12 +445,15 @@ cpdef object calculations_wer_only(object reference, object hypothesis):
 
         for i in range(1, m + 1):
             curr[0] = <int32_t>i
+            left = <int>i
+            diag = prev[0]
             for j in range(1, n + 1):
                 cost = 0 if ref_tok[i - 1] == hyp_tok[j - 1] else 1
 
-                del_cost = prev[j] + 1
-                ins_cost = curr[j - 1] + 1
-                sub_cost = prev[j - 1] + cost
+                up = prev[j]
+                del_cost = up + 1
+                ins_cost = left + 1
+                sub_cost = diag + cost
 
                 best = del_cost
                 if ins_cost < best:
@@ -452,6 +462,8 @@ cpdef object calculations_wer_only(object reference, object hypothesis):
                     best = sub_cost
 
                 curr[j] = best
+                left = best
+                diag = up
 
             prev, curr = curr, prev
     finally:

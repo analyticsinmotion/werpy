@@ -34,7 +34,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Building werpy no longer requires NumPy. `metrics.pyx` no longer uses the NumPy C API, and `numpy` was removed from the build requirements in `pyproject.toml` and from `meson.build`. NumPy remains a runtime dependency.
 
-- The dynamic programming loops of `calculations_fast()` and `_calculations_wer_only_reuse_ptr()` in `_metrics.pyx` now keep the neighboring cell values in local variables. The results are unchanged.
+- The dynamic programming loops of `calculations()`, `calculations_fast()`, `calculations_wer_only()` and `_calculations_wer_only_reuse_ptr()` in `_metrics.pyx` now keep the neighboring cell values in local variables. The results are unchanged.
 
 - Added the public `werpy.exceptions` module. It defines `WerpyError`, the base class of the exceptions that werpy raises when an input is not valid, and its subclasses `WerpyTypeError` and `WerpyValueError`. Import the classes from the module, for example `from werpy.exceptions import WerpyError`. They are not in `werpy.__all__`.
 
