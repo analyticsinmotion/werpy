@@ -32,6 +32,7 @@ import unittest
 import numpy as np
 import werpy
 from werpy._wer import wer
+from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
 
 
 class TestWer(unittest.TestCase):
@@ -104,46 +105,63 @@ class TestWer(unittest.TestCase):
         Test the wer function with numerical reference and hypothesis inputs.
 
         This test evaluates the WER function with numerical reference and hypothesis inputs.
-        It verifies that the numerical input will raise an AttributeError.
+        It verifies that the numerical elements raise an AttributeError with the message of the failed split, and
+        that nothing is printed.
 
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in _wer module
-        expected_result = None
 
-        self.assertEqual(wer(ref, hyp), expected_result)
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            with self.assertRaises(AttributeError) as context:
+                wer(ref, hyp)
+
+        self.assertIs(type(context.exception), AttributeError)
+        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_wer_blank_input(self):
         """
         Test the wer function with empty reference and hypothesis sequences.
 
         This test evaluates the WER function with empty reference and hypothesis text sequences.
-        It verifies that blank input will raise a ZeroDivisionError.
+        It verifies that the blank reference raises a WerpyValueError that names its index, and that nothing is
+        printed.
         """
         ref = [""]
         hyp = [""]
 
-        # The actual return value is None from the try/except block in _wer module
-        expected_result = None
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            with self.assertRaises(WerpyValueError) as context:
+                wer(ref, hyp)
 
-        self.assertEqual(wer(ref, hyp), expected_result)
+        self.assertIs(type(context.exception), WerpyValueError)
+        self.assertEqual(
+            str(context.exception),
+            "Invalid input: reference must not be blank. A blank reference was found at index 0.",
+        )
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_wer_blank_reference_in_list(self):
         """
         Test the wer function with a list containing a blank reference.
 
-        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        It verifies that the function raises a WerpyValueError whose message names the index of the blank reference,
+        and that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
-            result = wer([""], ["x y"])
+            with self.assertRaises(WerpyValueError) as context:
+                wer([""], ["x y"])
 
-        self.assertIsNone(result)
+        self.assertIs(type(context.exception), WerpyValueError)
         self.assertEqual(
-            buffer.getvalue().strip(),
-            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 0.",
+            str(context.exception),
+            "Invalid input: reference must not be blank. A blank reference was found at index 0.",
         )
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_wer_blank_hypothesis(self):
         """
@@ -166,18 +184,57 @@ class TestWer(unittest.TestCase):
         """
         Test the wer function with None as the reference.
 
-        It verifies that the function prints a message and returns None.
+        It verifies that the function raises a WerpyTypeError and that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
-            result = wer(None, "i love pizza")
+            with self.assertRaises(WerpyTypeError) as context:
+                wer(None, "i love pizza")
 
-        self.assertIsNone(result)
+        self.assertIs(type(context.exception), WerpyTypeError)
         self.assertEqual(
-            buffer.getvalue().strip(),
-            "AttributeError: All text should be in a string format. Please check your input does not include any "
+            str(context.exception),
+            "All text should be in a string format. Please check your input does not include any "
             "Numeric data types.",
         )
+        self.assertEqual(buffer.getvalue(), "")
+
+    def test_wer_raises_werpy_exceptions(self):
+        """
+        Test the wer function with a string reference and a list hypothesis, and with lists of different lengths.
+
+        It verifies that the function raises a WerpyTypeError and a WerpyValueError with the messages of the input
+        validation, that each exception is a WerpyError and an instance of the type that werpy 3.x raised for the
+        same input, and that nothing is printed.
+        """
+        cases = [
+            (
+                "i love pizza",
+                ["i love pizza"],
+                WerpyTypeError,
+                AttributeError,
+                "Reference and hypothesis must both be strings, or both be lists/arrays.",
+            ),
+            (
+                ["i love pizza"],
+                ["i love pizza", "a b"],
+                WerpyValueError,
+                ValueError,
+                "The Reference and Hypothesis input parameters must have the same number of elements.",
+            ),
+        ]
+        for ref, hyp, error, legacy_error, message in cases:
+            with self.subTest(error=error.__name__):
+                buffer = io.StringIO()
+                with contextlib.redirect_stdout(buffer):
+                    with self.assertRaises(error) as context:
+                        wer(ref, hyp)
+
+                self.assertIs(type(context.exception), error)
+                self.assertIsInstance(context.exception, WerpyError)
+                self.assertIsInstance(context.exception, legacy_error)
+                self.assertEqual(str(context.exception), message)
+                self.assertEqual(buffer.getvalue(), "")
 
     def test_wer_numpy_string_array(self):
         """

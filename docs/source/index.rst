@@ -53,5 +53,6 @@ Start with these documents to get you up and running with werpy:
 
    installation
    modules
+   exceptions
    usage/index
    

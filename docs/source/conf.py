@@ -50,6 +50,10 @@ html_theme_options = {
             "link": "modules",
         },
         {
+            "text": "Exceptions",
+            "link": "exceptions",
+        },
+        {
             "text": "Usage",
             "dropdown": [
                 {

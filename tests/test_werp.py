@@ -26,6 +26,7 @@ import contextlib
 import io
 import unittest
 from werpy._werp import werp
+from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
 
 
 class TestWerp(unittest.TestCase):
@@ -135,31 +136,40 @@ class TestWerp(unittest.TestCase):
         Test the werp function with numerical reference and hypothesis inputs.
 
         This test evaluates the WERP function with numerical reference and hypothesis inputs.
-        It verifies that the numerical input will raise an AttributeError.
+        It verifies that the numerical elements raise an AttributeError with the message of the failed split, and
+        that nothing is printed.
 
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in _werp module
-        expected_result = None
 
-        self.assertEqual(werp(ref, hyp, 0.5, 0.5, 1), expected_result)
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            with self.assertRaises(AttributeError) as context:
+                werp(ref, hyp, 0.5, 0.5, 1)
+
+        self.assertIs(type(context.exception), AttributeError)
+        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_werp_blank_reference_in_list(self):
         """
         Test the werp function with a list containing a whitespace-only reference.
 
-        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        It verifies that the function raises a WerpyValueError whose message names the index of the blank reference,
+        and that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
-            result = werp(["i love pizza", "   "], ["i love pizza", "a b"], 0.5, 0.5, 1)
+            with self.assertRaises(WerpyValueError) as context:
+                werp(["i love pizza", "   "], ["i love pizza", "a b"], 0.5, 0.5, 1)
 
-        self.assertIsNone(result)
+        self.assertIs(type(context.exception), WerpyValueError)
         self.assertEqual(
-            buffer.getvalue().strip(),
-            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 1.",
+            str(context.exception),
+            "Invalid input: reference must not be blank. A blank reference was found at index 1.",
         )
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_werp_empty_sequences(self):
         """
@@ -173,14 +183,54 @@ class TestWerp(unittest.TestCase):
         """
         Test the werp function with reference and hypothesis given as lists of lists.
 
-        It verifies that the function prints a message and returns None.
+        It verifies that the nested lists raise an AttributeError with the message of the failed split, and that
+        nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
-            result = werp([["i love pizza"]], [["i love pizza"]], 0.5, 0.5, 1)
+            with self.assertRaises(AttributeError) as context:
+                werp([["i love pizza"]], [["i love pizza"]], 0.5, 0.5, 1)
 
-        self.assertIsNone(result)
-        self.assertEqual(buffer.getvalue().strip(), "AttributeError: 'list' object has no attribute 'split'")
+        self.assertIs(type(context.exception), AttributeError)
+        self.assertEqual(str(context.exception), "'list' object has no attribute 'split'")
+        self.assertEqual(buffer.getvalue(), "")
+
+    def test_werp_raises_werpy_exceptions(self):
+        """
+        Test the werp function with a string reference and a list hypothesis, and with lists of different lengths.
+
+        It verifies that the function raises a WerpyTypeError and a WerpyValueError with the messages of the input
+        validation, that each exception is a WerpyError and an instance of the type that werpy 3.x raised for the
+        same input, and that nothing is printed.
+        """
+        cases = [
+            (
+                "i love pizza",
+                ["i love pizza"],
+                WerpyTypeError,
+                AttributeError,
+                "Reference and hypothesis must both be strings, or both be lists/arrays.",
+            ),
+            (
+                ["i love pizza"],
+                ["i love pizza", "a b"],
+                WerpyValueError,
+                ValueError,
+                "The Reference and Hypothesis input parameters must have the same number of elements.",
+            ),
+        ]
+        for ref, hyp, error, legacy_error, message in cases:
+            with self.subTest(error=error.__name__):
+                buffer = io.StringIO()
+                with contextlib.redirect_stdout(buffer):
+                    with self.assertRaises(error) as context:
+                        werp(ref, hyp, 0.5, 0.5, 1)
+
+                self.assertIs(type(context.exception), error)
+                self.assertIsInstance(context.exception, WerpyError)
+                self.assertIsInstance(context.exception, legacy_error)
+                self.assertEqual(str(context.exception), message)
+                self.assertEqual(buffer.getvalue(), "")
 
 
 if __name__ == "__main__":  # pragma: no cover

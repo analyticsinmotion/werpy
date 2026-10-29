@@ -9,31 +9,11 @@ This module defines the following function:
     - werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
 """
 
-from typing import cast, overload
+from typing import cast
 
 import numpy as np
-from ._errorhandler import TextBatch, TextInput, error_handler
+from ._errorhandler import TextInput, error_handler
 from ._metrics import metrics_fast
-
-
-@overload
-def werps(
-    reference: str,
-    hypothesis: str,
-    insertions_weight: float = ...,
-    deletions_weight: float = ...,
-    substitutions_weight: float = ...,
-) -> float | None: ...
-
-
-@overload
-def werps(
-    reference: TextBatch,
-    hypothesis: TextBatch,
-    insertions_weight: float = ...,
-    deletions_weight: float = ...,
-    substitutions_weight: float = ...,
-) -> list[float] | None: ...
 
 
 def werps(
@@ -42,7 +22,7 @@ def werps(
     insertions_weight: float = 1,
     deletions_weight: float = 1,
     substitutions_weight: float = 1,
-) -> float | list[float] | None:
+) -> list[float]:
     """
     This function calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts. It
     allows the insertion, deletion and substitution errors to be penalized or weighted at different rates.
@@ -60,13 +40,31 @@ def werps(
     substitutions_weight: int or float, optional
         The weight multiplier for a substitution error
 
+    Raises
+    ------
+    werpy.exceptions.WerpyTypeError
+        If the reference or the hypothesis is not a string, a list or a numpy array, or if one of them is a string
+        and the other is a list or a numpy array.
+    werpy.exceptions.WerpyValueError
+        If a reference is blank, either as a single string or as an element of a list or numpy array, or if the
+        reference and hypothesis lists or arrays do not contain the same number of elements.
+    TypeError
+        If the reference or the hypothesis is a 0-dimensional numpy array, if a weight cannot be multiplied by a
+        float, for example None, a string or a Decimal, or if a weight is a list or numpy array and the reference
+        and hypothesis are strings.
+    ValueError
+        If a weight is a list or numpy array whose length differs from the number of elements of the reference and
+        hypothesis lists or arrays.
+    OverflowError
+        If a weight is an int that is too large to convert to a float.
+    AttributeError
+        If an element of the reference or hypothesis list or array is not a string, for example a number or None.
+
     Returns
     -------
-    float, list, or None
-        This function will return either a single weighted Word Error Rate (if the input is a pair of strings) or a
-        list of weighted Word Error Rates (if the input is a pair of lists) for each of the reference and hypothesis
-        texts.
-        If the input is invalid, the function prints a message describing the problem and returns None.
+    list
+        This function will return a list of weighted Word Error Rates, one for each pair of reference and hypothesis
+        texts. A pair of strings gives a list that holds one weighted Word Error Rate.
 
     Examples
     --------
@@ -80,13 +78,13 @@ def werps(
     >>> werps_example_2 = werps(ref, hyp, insertions_weight = 0.5, deletions_weight = 0.5, substitutions_weight = 1)
     >>> print(werps_example_2)
     [0.21428571428571427, 0.2777777777777778]
+
+    >>> werps_example_3 = werps('i love cold pizza', 'i love pizza', 0.5, 0.5, 1)
+    >>> print(werps_example_3)
+    [0.125]
     """
-    try:
-        error_handler(reference, hypothesis)
-        result = metrics_fast(reference, hypothesis)
-    except (ValueError, AttributeError, ZeroDivisionError) as err:
-        print(f"{type(err).__name__}: {str(err)}")
-        return None
+    error_handler(reference, hypothesis)
+    result = metrics_fast(reference, hypothesis)
 
     # Batch: (n, 6) float64
     if isinstance(result, np.ndarray) and result.ndim == 2:
@@ -106,4 +104,4 @@ def werps(
     weighted_substitutions = result[5] * substitutions_weight
     m = result[2]
     weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-    return float(weighted_errors / m) if m else 0.0
+    return [float(weighted_errors / m) if m else 0.0]

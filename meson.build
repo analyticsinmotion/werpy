@@ -29,7 +29,8 @@ py_files = files(
     'werpy/_wer.py',
     'werpy/_werp.py',
     'werpy/_werps.py',
-    'werpy/_wers.py'
+    'werpy/_wers.py',
+    'werpy/exceptions.py'
 )
 
 # Install Python sources

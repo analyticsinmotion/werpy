@@ -27,6 +27,7 @@ import contextlib
 import io
 import unittest
 from werpy._werps import werps
+from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
 
 
 class TestWerps(unittest.TestCase):
@@ -40,9 +41,9 @@ class TestWerps(unittest.TestCase):
         Test the werps function with a simple example.
 
         This test checks the WERPS function with a basic example of reference and hypothesis strings
-        and ensures that the calculated WERPS matches the expected result.
+        and ensures that the calculated WERPS, returned in a list, matches the expected result.
         """
-        self.assertEqual(werps("i love cold pizza", "i love pizza", 0.5, 0.5, 1), 0.125)
+        self.assertEqual(werps("i love cold pizza", "i love pizza", 0.5, 0.5, 1), [0.125])
 
     def test_werps_example_2(self):
         """
@@ -167,31 +168,40 @@ class TestWerps(unittest.TestCase):
         Test the werps function with numerical reference and hypothesis inputs.
 
         This test evaluates the WERPS function with numerical reference and hypothesis inputs.
-        It verifies that the numerical input will raise an AttributeError.
+        It verifies that the numerical elements raise an AttributeError with the message of the failed split, and
+        that nothing is printed.
 
         """
         ref = [1, 2, 3, 4]
         hyp = [2, 3, 3, 3]
-        # The actual return value is None from the try/except block in _werps module
-        expected_result = None
 
-        self.assertEqual(werps(ref, hyp, 0.5, 0.5, 1), expected_result)
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            with self.assertRaises(AttributeError) as context:
+                werps(ref, hyp, 0.5, 0.5, 1)
+
+        self.assertIs(type(context.exception), AttributeError)
+        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_werps_blank_reference_in_list(self):
         """
         Test the werps function with a list containing a blank reference.
 
-        It verifies that the function prints a message naming the index of the blank reference and returns None.
+        It verifies that the function raises a WerpyValueError whose message names the index of the blank reference,
+        and that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
-            result = werps(["i love pizza", ""], ["i love pizza", "a b"], 0.5, 0.5, 1)
+            with self.assertRaises(WerpyValueError) as context:
+                werps(["i love pizza", ""], ["i love pizza", "a b"], 0.5, 0.5, 1)
 
-        self.assertIsNone(result)
+        self.assertIs(type(context.exception), WerpyValueError)
         self.assertEqual(
-            buffer.getvalue().strip(),
-            "ZeroDivisionError: Invalid input: reference must not be blank. A blank reference was found at index 1.",
+            str(context.exception),
+            "Invalid input: reference must not be blank. A blank reference was found at index 1.",
         )
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_werps_empty_sequences(self):
         """
@@ -205,14 +215,68 @@ class TestWerps(unittest.TestCase):
         """
         Test the werps function with reference and hypothesis given as lists of integers.
 
-        It verifies that the function prints a message and returns None.
+        It verifies that the integer elements raise an AttributeError with the message of the failed split, and that
+        nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
-            result = werps([1, 2], [1, 2], 0.5, 0.5, 1)
+            with self.assertRaises(AttributeError) as context:
+                werps([1, 2], [1, 2], 0.5, 0.5, 1)
 
-        self.assertIsNone(result)
-        self.assertEqual(buffer.getvalue().strip(), "AttributeError: 'int' object has no attribute 'split'")
+        self.assertIs(type(context.exception), AttributeError)
+        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertEqual(buffer.getvalue(), "")
+
+    def test_werps_string_pair_returns_list(self):
+        """
+        Test the werps function with a pair of strings.
+
+        It verifies that the function returns a list that holds one float, equal to the result for the same pair
+        given as two one-element lists.
+        """
+        result = werps("i love cold pizza", "i love pizza", 0.5, 0.5, 1)
+
+        self.assertIsInstance(result, list)
+        self.assertEqual(len(result), 1)
+        self.assertIs(type(result[0]), float)
+        self.assertEqual(result, werps(["i love cold pizza"], ["i love pizza"], 0.5, 0.5, 1))
+
+    def test_werps_raises_werpy_exceptions(self):
+        """
+        Test the werps function with a string reference and a list hypothesis, and with lists of different lengths.
+
+        It verifies that the function raises a WerpyTypeError and a WerpyValueError with the messages of the input
+        validation, that each exception is a WerpyError and an instance of the type that werpy 3.x raised for the
+        same input, and that nothing is printed.
+        """
+        cases = [
+            (
+                "i love pizza",
+                ["i love pizza"],
+                WerpyTypeError,
+                AttributeError,
+                "Reference and hypothesis must both be strings, or both be lists/arrays.",
+            ),
+            (
+                ["i love pizza"],
+                ["i love pizza", "a b"],
+                WerpyValueError,
+                ValueError,
+                "The Reference and Hypothesis input parameters must have the same number of elements.",
+            ),
+        ]
+        for ref, hyp, error, legacy_error, message in cases:
+            with self.subTest(error=error.__name__):
+                buffer = io.StringIO()
+                with contextlib.redirect_stdout(buffer):
+                    with self.assertRaises(error) as context:
+                        werps(ref, hyp, 0.5, 0.5, 1)
+
+                self.assertIs(type(context.exception), error)
+                self.assertIsInstance(context.exception, WerpyError)
+                self.assertIsInstance(context.exception, legacy_error)
+                self.assertEqual(str(context.exception), message)
+                self.assertEqual(buffer.getvalue(), "")
 
 
 if __name__ == "__main__":  # pragma: no cover
