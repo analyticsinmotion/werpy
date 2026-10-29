@@ -28,6 +28,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - Building werpy no longer requires NumPy. `metrics.pyx` no longer uses the NumPy C API, and `numpy` was removed from the build requirements in `pyproject.toml` and from `meson.build`. NumPy remains a runtime dependency.
 
+- The dynamic programming loops of `calculations_fast()` and `_calculations_wer_only_reuse_ptr()` in `_metrics.pyx` now keep the neighboring cell values in local variables. The results are unchanged.
+
 ## Version 3.5.0
 
 **Released:** September 9, 2026
