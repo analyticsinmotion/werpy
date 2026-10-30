@@ -8,6 +8,7 @@ Input validation and consistent exceptions for werpy public functions.
 import math
 import numbers
 import sys
+from fractions import Fraction
 from typing import TypeAlias
 
 import numpy as np
@@ -209,3 +210,32 @@ def check_weight(name: str, weight: object) -> float:
     if not 0.0 <= number <= _FLOAT_MAX:
         raise WerpyValueError(f"{name} must be a finite number of at least 0.")
     return number
+
+
+
+def substitution_order(insertions_weight: float, deletions_weight: float, substitutions_weight: float) -> int:
+    """
+    Return how the weights of werp, werps and summaryp rank the alignments that have the fewest edits.
+
+    Among those alignments, the weighted cost changes with the number of substitutions only. The result is 1 when a
+    substitution weighs more than the mean of an insertion and a deletion, so that the alignment with the fewest
+    substitutions has the lowest weighted cost, and -1 when it weighs less, so that the alignment with the most
+    substitutions has the lowest weighted cost. The result is 0 when a substitution weighs exactly that mean, so that
+    all these alignments have the same weighted cost. Each weight is compared as its float value, and the comparison is
+    exact.
+    """
+    if insertions_weight == deletions_weight == substitutions_weight:
+        return 0
+    insertions, deletions = float(insertions_weight), float(deletions_weight)
+    double = 2.0 * substitutions_weight
+    total = insertions + deletions
+    if double != total:
+        # double is exact and rounding is monotonic, so the rounded sum is ordered as the exact sum.
+        return 1 if double > total else -1
+    if total == math.inf:
+        exact = 2 * Fraction(float(substitutions_weight)) - Fraction(insertions) - Fraction(deletions)
+        return (exact > 0) - (exact < 0)
+    # error is the exact rounding error of total (TwoSum), so that the exact sum is total + error.
+    part = total - insertions
+    error = (insertions - (total - part)) + (deletions - part)
+    return (error < 0) - (error > 0)

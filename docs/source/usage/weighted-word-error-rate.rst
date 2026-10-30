@@ -79,6 +79,42 @@ Apply the following weights/penalties to the errors:
 - Insertions and Deletions are considered to have half the penalty of substitutions. Substitutions are given a weight of 1, suggesting they are weighted at their full value.
 
 
+How the errors are counted
+--------------------------
+
+werpy counts the errors on an alignment of the reference and hypothesis words with the fewest edits, as for the Word Error Rate.
+Some pairs of texts have more than one such alignment, for example when two words are swapped.
+werp(), werps() and summaryp() then use the alignment with the lowest weighted cost: the one with the fewest substitutions when a substitution weighs more than the mean of an insertion and a deletion, and the one with the most substitutions when it weighs less.
+
+*Python Code*
+
+.. code-block:: python
+
+   import werpy
+
+   ref = 'please call me back tomorrow'
+   hyp = 'please call back me tomorrow'
+   print(werpy.werp(ref, hyp, insertions_weight=0.5, deletions_weight=0.5, substitutions_weight=1))
+   print(werpy.werp(ref, hyp, insertions_weight=2.5, deletions_weight=0.75, substitutions_weight=1.3))
+
+*Results Output*
+
+.. code-block:: python
+
+   0.2
+   0.52
+
+*Result Interpretation*
+
+- Two alignments have two edits each. One substitutes 'back' for 'me' and 'me' for 'back'. The other deletes 'me' and inserts 'me' after 'back'.
+
+- With the weights 0.5, 0.5 and 1, the two substitutions cost 2 and the deletion and the insertion cost 1. werp() uses the deletion and the insertion, and the weighted WER is 1 / 5 = 0.2.
+
+- With the weights 2.5, 0.75 and 1.3, the two substitutions cost 2.6 and the deletion and the insertion cost 3.25. werp() uses the two substitutions, and the weighted WER is 2.6 / 5 = 0.52.
+
+- When a substitution weighs exactly the mean of an insertion and a deletion, for example when the three weights are equal, every alignment with the fewest edits has the same weighted cost. werp(), werps() and summaryp() then use the alignment of summary(), and summaryp() gives the same counts and word lists as summary().
+
+
 Summary
 -------
 

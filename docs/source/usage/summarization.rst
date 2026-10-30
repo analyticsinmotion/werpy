@@ -6,6 +6,8 @@ This module delivers detailed data summaries for each sequence, encompassing cru
 The Summary Modules provides users with a granular understanding of system performance, facilitating quick and detailed error analysis. 
 Its detailed insights empower users to swiftly identify and address errors, contributing to a more comprehensive evaluation of the system's strengths and areas for improvement.
 
+summary() counts the insertions, deletions and substitutions on an alignment of the reference and hypothesis words with the fewest edits. When several such alignments exist, it reads the texts from the last word back to the first and takes, at each step, the first move that keeps the fewest edits: a match, a substitution, an insertion, then a deletion. summaryp() uses the same alignment when a substitution weighs exactly the mean of an insertion and a deletion, for example when the three weights are equal. For other weights, summaryp() uses the alignment with the lowest weighted cost, so its counts and word lists can differ from those of summary().
+
 Summary Analysis
 ----------------
 

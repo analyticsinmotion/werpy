@@ -20,6 +20,11 @@ def summary(reference: TextInput, hypothesis: TextInput) -> pd.DataFrame:
     This function provides a comprehensive breakdown of the calculated results including the WER, Levenshtein
     Distance and all the insertion, deletion and substitution errors.
 
+    The counts and the word lists come from an alignment of the reference and hypothesis words with the fewest edits.
+    When several such alignments exist, summary() reads the texts from the last word back to the first and takes, at
+    each step, the first of these moves that keeps the fewest edits: a match, a substitution, an insertion, then a
+    deletion.
+
     Parameters
     ----------
     reference : str, list, tuple or numpy array
@@ -44,9 +49,9 @@ def summary(reference: TextInput, hypothesis: TextInput) -> pd.DataFrame:
             wer - The Word Error Rate
             ld - The Levenshtein distance
             m - The number of words in the reference sequence
-            insertions - count of words that are present in the hypothesis sequence but not in the reference
-            deletions - count of words that are present in the reference sequence but not in the hypothesis
-            substitutions - count of words needing to be transformed so the hypothesis matches the reference
+            insertions - the number of hypothesis words that the alignment pairs with no reference word
+            deletions - the number of reference words that the alignment pairs with no hypothesis word
+            substitutions - the number of reference words that the alignment pairs with a different hypothesis word
             inserted_words - list of inserted words
             deleted_words - list of deleted words
             substituted_words - list of substitutions. Each substitution will be shown as a tuple with the reference

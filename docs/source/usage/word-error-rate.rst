@@ -5,6 +5,7 @@ The Word Error Rate (WER) is an evaluation metric commonly used in automatic spe
 It quantifies the dissimilarity between a system-generated transcript (hypothesis) and a reference transcript. 
 
 WER is calculated by measuring the minimum number of insertions, deletions, and substitutions required to transform the hypothesis into the reference, normalized by the total number of words in the reference. 
+When several alignments of the two texts have this minimum number of edits, the Word Error Rate is the same for each of them.
 A lower WER indicates better accuracy, reflecting the system's ability to transcribe spoken or written language more closely to the provided reference. 
 
 
