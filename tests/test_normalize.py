@@ -27,6 +27,7 @@ an ImportError is raised to ensure that the required module is available for tes
 
 import unittest
 from werpy._normalize import normalize
+from werpy.exceptions import WerpyTypeError
 
 
 class TestNormalize(unittest.TestCase):
@@ -141,12 +142,18 @@ class TestNormalize(unittest.TestCase):
         Test the normalize function with numerical reference and hypothesis inputs.
 
         This test evaluates the NORMALIZE function with numerical reference and hypothesis inputs.
-        It verifies that the numerical input will raise an TypeError.
+        It verifies that the numerical elements raise a WerpyTypeError, which is also a TypeError, with the message
+        that names the type of the first element and its index.
 
         """
         ref = [1, 2, 3, 4]
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TypeError) as context:
             normalize(ref)
+
+        self.assertIs(type(context.exception), WerpyTypeError)
+        self.assertEqual(
+            str(context.exception), "Every element of text must be a str. An element of type int was found at index 0."
+        )
 
     def test_normalize_invalid_types(self):
         """
@@ -162,7 +169,8 @@ class TestNormalize(unittest.TestCase):
            - bytearray
            - complex
 
-        It verifies that the function raises a TypeError for these inputs.
+        It verifies that the function raises a WerpyTypeError, which is also a TypeError, for these inputs, with
+        the message that names the type of the input.
         """
         invalid_inputs = [
             42,  # int
@@ -176,8 +184,15 @@ class TestNormalize(unittest.TestCase):
         ]
 
         for invalid_input in invalid_inputs:
-            with self.assertRaises(TypeError):
+            with self.assertRaises(TypeError) as context:
                 normalize(invalid_input)
+
+            self.assertIs(type(context.exception), WerpyTypeError)
+            self.assertEqual(
+                str(context.exception),
+                "text must be a str, or a list, tuple or one-dimensional numpy array of str, not "
+                f"{type(invalid_input).__name__}.",
+            )
 
 
 if __name__ == "__main__":  # pragma: no cover

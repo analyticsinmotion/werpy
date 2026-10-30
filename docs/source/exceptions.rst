@@ -17,9 +17,9 @@ The following table provides an overview of the exceptions that werpy raises:
    * - WerpyError
      - The base class of every exception that werpy raises when an input is not valid. werpy does not raise WerpyError directly, and an except clause for WerpyError catches both of the exceptions below.
    * - WerpyTypeError
-     - Raised when the reference or the hypothesis is not a string, a list or a NumPy array, or when one of them is a string and the other is a list or a NumPy array. It derives from WerpyError, TypeError and AttributeError.
+     - Raised when a reference, hypothesis or text is not a string, a list, a tuple or a NumPy array, when a NumPy array does not have exactly one dimension, when one of the reference and the hypothesis is a string and the other is a list, a tuple or a NumPy array, when an element of a list, tuple or NumPy array is not a string, or when a weight is not a real number. It derives from WerpyError, TypeError and AttributeError.
    * - WerpyValueError
-     - Raised when a reference is blank, either as a single string or as an element of a list or NumPy array, or when the reference and hypothesis lists or arrays do not contain the same number of elements. It derives from WerpyError, ValueError and ZeroDivisionError.
+     - Raised when a reference is blank, either as a single string or as an element of a list, tuple or NumPy array, when the reference and hypothesis lists, tuples or arrays do not contain the same number of elements, when wer() or werp() gets empty lists, tuples or arrays, or when a weight is negative, NaN, infinite or too large for a float. It derives from WerpyError, ValueError and ZeroDivisionError.
 
 Code written for werpy 3.x that catches AttributeError or ZeroDivisionError continues to catch these exceptions.
 

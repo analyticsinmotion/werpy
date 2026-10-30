@@ -168,8 +168,8 @@ class TestWerps(unittest.TestCase):
         Test the werps function with numerical reference and hypothesis inputs.
 
         This test evaluates the WERPS function with numerical reference and hypothesis inputs.
-        It verifies that the numerical elements raise an AttributeError with the message of the failed split, and
-        that nothing is printed.
+        It verifies that the numerical elements raise a WerpyTypeError, which is also an AttributeError, with the
+        message that names the reference, the type of the first element and its index, and that nothing is printed.
 
         """
         ref = [1, 2, 3, 4]
@@ -180,8 +180,11 @@ class TestWerps(unittest.TestCase):
             with self.assertRaises(AttributeError) as context:
                 werps(ref, hyp, 0.5, 0.5, 1)
 
-        self.assertIs(type(context.exception), AttributeError)
-        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertIs(type(context.exception), WerpyTypeError)
+        self.assertEqual(
+            str(context.exception),
+            "Every element of reference must be a str. An element of type int was found at index 0.",
+        )
         self.assertEqual(buffer.getvalue(), "")
 
     def test_werps_blank_reference_in_list(self):
@@ -215,16 +218,19 @@ class TestWerps(unittest.TestCase):
         """
         Test the werps function with reference and hypothesis given as lists of integers.
 
-        It verifies that the integer elements raise an AttributeError with the message of the failed split, and that
-        nothing is printed.
+        It verifies that the integer elements raise a WerpyTypeError, which is also an AttributeError, with the message
+        that names the reference, the type of the first element and its index, and that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
             with self.assertRaises(AttributeError) as context:
                 werps([1, 2], [1, 2], 0.5, 0.5, 1)
 
-        self.assertIs(type(context.exception), AttributeError)
-        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertIs(type(context.exception), WerpyTypeError)
+        self.assertEqual(
+            str(context.exception),
+            "Every element of reference must be a str. An element of type int was found at index 0.",
+        )
         self.assertEqual(buffer.getvalue(), "")
 
     def test_werps_string_pair_returns_list(self):
@@ -255,7 +261,7 @@ class TestWerps(unittest.TestCase):
                 ["i love pizza"],
                 WerpyTypeError,
                 AttributeError,
-                "Reference and hypothesis must both be strings, or both be lists/arrays.",
+                "Reference and hypothesis must both be strings, or both be lists, tuples or numpy arrays.",
             ),
             (
                 ["i love pizza"],

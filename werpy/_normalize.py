@@ -15,6 +15,8 @@ from __future__ import annotations
 import string
 from typing import TYPE_CHECKING, overload
 
+from ._errorhandler import check_text_input, element_error
+
 if TYPE_CHECKING:
     import numpy as np
     from numpy.typing import NDArray
@@ -55,10 +57,11 @@ def normalize(
 
     Raises
     ------
-    TypeError
-        If the input is not a valid data type such as (int, float, bool, range, dict,
-        bytes, bytearray, complex) or if the input contains nested data (e.g., a list of
-        lists), the function raises a TypeError.
+    werpy.exceptions.WerpyTypeError
+        If the input is not a string, a list, a tuple or a numpy array, if a numpy
+        array does not have exactly one dimension, or if an element of a list, tuple
+        or numpy array is not a string. Other iterables, for example a pandas Series,
+        a set or a generator, raise this exception.
 
     Returns
     -------
@@ -82,8 +85,7 @@ def normalize(
     >>> reference
     ['its very popular in antarctica', 'the sugar bear character']
     """
-    if isinstance(text, (int, float, bool, range, dict, bytes, bytearray, complex)):
-        raise TypeError("Input must be String, List, Tuple, or NumPy Array.")
+    check_text_input("text", text)
 
     if isinstance(text, str):
         is_string_flag = True
@@ -91,15 +93,12 @@ def normalize(
     else:
         is_string_flag = False
 
-    normalized_text = []
+    normalized_text: list[str] = []
 
     for sentence in text:
         if not isinstance(sentence, str):
-            raise TypeError(
-                "Input must be String, List, Tuple, or NumPy Array. "
-                "All data types should be flat, have a depth of 1 and "
-                "contain no nested elements."
-            )
+            # The texts before this element are normalized, so their number is its index.
+            raise element_error("text", sentence, len(normalized_text))
         cleaned_sentence = sentence.encode().translate(_PUNCTUATION_TRANSLATE_TABLE).decode().lower()
         cleaned_sentence = cleaned_sentence.rstrip("\x00").replace("\x00", "")
         cleaned_sentence = " ".join(cleaned_sentence.split())

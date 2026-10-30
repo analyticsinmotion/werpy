@@ -92,8 +92,8 @@ class TestSummary(unittest.TestCase):
         Test the summary function with numerical reference and hypothesis inputs.
 
         This test evaluates the SUMMARY function with numerical reference and hypothesis inputs.
-        It verifies that the numerical elements raise an AttributeError with the message of the failed split, and
-        that nothing is printed.
+        It verifies that the numerical elements raise a WerpyTypeError, which is also an AttributeError, with the
+        message that names the reference, the type of the first element and its index, and that nothing is printed.
 
         """
         ref = [1, 2, 3, 4]
@@ -104,8 +104,11 @@ class TestSummary(unittest.TestCase):
             with self.assertRaises(AttributeError) as context:
                 summary(ref, hyp)
 
-        self.assertIs(type(context.exception), AttributeError)
-        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertIs(type(context.exception), WerpyTypeError)
+        self.assertEqual(
+            str(context.exception),
+            "Every element of reference must be a str. An element of type int was found at index 0.",
+        )
         self.assertEqual(buffer.getvalue(), "")
 
     def test_summary_single_sequence(self):
@@ -277,16 +280,19 @@ class TestSummary(unittest.TestCase):
         """
         Test the summary function with reference and hypothesis given as lists of lists.
 
-        It verifies that the nested lists raise an AttributeError with the message of the failed split, and that
-        nothing is printed.
+        It verifies that the nested lists raise a WerpyTypeError, which is also an AttributeError, with the message
+        that names the reference, the type of the first element and its index, and that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
             with self.assertRaises(AttributeError) as context:
                 summary([["this is a test"]], [["this is the test"]])
 
-        self.assertIs(type(context.exception), AttributeError)
-        self.assertEqual(str(context.exception), "'list' object has no attribute 'split'")
+        self.assertIs(type(context.exception), WerpyTypeError)
+        self.assertEqual(
+            str(context.exception),
+            "Every element of reference must be a str. An element of type list was found at index 0.",
+        )
         self.assertEqual(buffer.getvalue(), "")
 
     def test_summary_raises_werpy_exceptions(self):
@@ -303,7 +309,7 @@ class TestSummary(unittest.TestCase):
                 ["i love pizza"],
                 WerpyTypeError,
                 AttributeError,
-                "Reference and hypothesis must both be strings, or both be lists/arrays.",
+                "Reference and hypothesis must both be strings, or both be lists, tuples or numpy arrays.",
             ),
             (
                 ["i love pizza"],

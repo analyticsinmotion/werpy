@@ -20,6 +20,23 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `wers()` and `werps()` return a list for a pair of strings, with one Word Error Rate in it. For example, `werpy.wers('i love cold pizza', 'i love pizza')` returns `[0.25]`.
 
+- Every element of a reference or hypothesis list, tuple or numpy array must be a string. `wer()`, `wers()`, `werp()`, `werps()`, `summary()`, `summaryp()` and `normalize()` raise `werpy.exceptions.WerpyTypeError` for an element of any other type, for example `None`, a number, `bytes` or a nested list. The message names the argument, the type of the element and its index.
+
+- A numpy array must have one dimension. A numpy array with no dimensions, or with two or more dimensions, raises `WerpyTypeError`.
+
+- `wer()` and `werp()` raise `werpy.exceptions.WerpyValueError` when the reference and hypothesis are empty lists, tuples or arrays. `wers()`, `werps()`, `summary()` and `summaryp()` return an empty result for this input.
+
+- The weights of `werp()`, `werps()` and `summaryp()` must be real numbers that are finite and at least 0. A weight that is not a real number, for example a string, `None`, a `bool`, a list or a numpy array, raises `WerpyTypeError`. A negative, NaN or infinite weight raises `WerpyValueError`. A list or array of weights is not applied row by row.
+
+- `normalize()` raises `WerpyTypeError` instead of `TypeError` for an input that is not valid. It accepts a string, or a list, tuple or one-dimensional numpy array of strings. A pandas `Series`, a set, a generator or a `dict` view raises `WerpyTypeError`. Convert such an input to a list first, for example `normalize(df["text"].tolist())` for a column of a pandas `DataFrame` and `normalize(list(d.values()))` for the values of a dictionary. For the lines of a file, pass a list of the lines:
+
+  ```python
+  with open("transcripts.txt", encoding="utf-8") as f:
+      texts = werpy.normalize([line.rstrip("\n") for line in f])
+  ```
+
+- The message for a reference, hypothesis or text of the wrong type names the argument and its type. The message for a string paired with a list, tuple or array names tuples.
+
 ### Bug Fixes
 
 - `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
@@ -37,6 +54,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 - The dynamic programming loops of `calculations()`, `calculations_fast()`, `calculations_wer_only()` and `_calculations_wer_only_reuse_ptr()` in `_metrics.pyx` now keep the neighboring cell values in local variables. The results are unchanged.
 
 - Added the public `werpy.exceptions` module. It defines `WerpyError`, the base class of the exceptions that werpy raises when an input is not valid, and its subclasses `WerpyTypeError` and `WerpyValueError`. Import the classes from the module, for example `from werpy.exceptions import WerpyError`. They are not in `werpy.__all__`.
+
+- `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` accept tuples of strings in the same way as lists.
 
 ## Version 3.5.0
 
