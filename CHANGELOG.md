@@ -37,6 +37,10 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - The message for a reference, hypothesis or text of the wrong type names the argument and its type. The message for a string paired with a list, tuple or array names tuples.
 
+- `werp()`, `werps()` and `summaryp()` count the errors on the alignment with the lowest weighted cost among the alignments with the fewest edits. When a substitution weighs more than the mean of an insertion and a deletion, this is the alignment with the fewest substitutions. When it weighs less, it is the alignment with the most substitutions. For equal weights, and when a substitution weighs exactly the mean, it is the alignment that `summary()` uses.
+
+- For a reference and a hypothesis that have more than one alignment with the fewest edits, the weighted Word Error Rate of `werp()`, `werps()` and `summaryp()` is the lowest weighted cost of these alignments divided by the number of reference words. The insertion, deletion and substitution counts and word lists of `summaryp()` can then differ from those of `summary()`.
+
 ### Bug Fixes
 
 - `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
@@ -56,6 +60,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 - Added the public `werpy.exceptions` module. It defines `WerpyError`, the base class of the exceptions that werpy raises when an input is not valid, and its subclasses `WerpyTypeError` and `WerpyValueError`. Import the classes from the module, for example `from werpy.exceptions import WerpyError`. They are not in `werpy.__all__`.
 
 - `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` accept tuples of strings in the same way as lists.
+
+- The docstrings of `summary()`, `summaryp()`, `werp()` and `werps()`, the weighted Word Error Rate page and the summarization page state which alignment the counts come from.
 
 ## Version 3.5.0
 

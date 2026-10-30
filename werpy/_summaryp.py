@@ -12,8 +12,9 @@ This module defines the following function:
 
 import numpy as np
 import pandas as pd
-from ._errorhandler import TextInput, check_weights, error_handler
+from ._errorhandler import TextInput, check_weights, error_handler, substitution_order
 from ._metrics import metrics
+from ._weighted import metrics_weighted
 
 
 def summaryp(
@@ -26,6 +27,14 @@ def summaryp(
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, weighted
     WER, Levenshtein Distance and all the insertion, deletion and substitution errors.
+
+    The counts, the word lists and the werp column come from an alignment of the reference and hypothesis words with the
+    fewest edits, as for the Word Error Rate. When several such alignments exist, the one with the lowest weighted cost
+    is used. This is the alignment with the fewest substitutions when a substitution weighs more than the mean of an
+    insertion and a deletion, and the alignment with the most substitutions when it weighs less. When a substitution
+    weighs exactly that mean, for example when the three weights are equal, summaryp() uses the alignment of summary()
+    and gives the same counts and word lists. For other weights, its counts and word lists can differ from those of
+    summary().
 
     Parameters
     ----------
@@ -60,9 +69,9 @@ def summaryp(
             werp - The weighted Word Error Rate
             ld - The Levenshtein distance
             m - The number of words in the reference sequence
-            insertions - count of words that are present in the hypothesis sequence but not in the reference
-            deletions - count of words that are present in the reference sequence but not in the hypothesis
-            substitutions - count of words needing to be transformed so the hypothesis matches the reference
+            insertions - the number of hypothesis words that the alignment pairs with no reference word
+            deletions - the number of reference words that the alignment pairs with no hypothesis word
+            substitutions - the number of reference words that the alignment pairs with a different hypothesis word
             inserted_words - list of inserted words
             deleted_words - list of deleted words
             substituted_words - list of substitutions. Each substitution will be shown as a tuple with the reference
@@ -72,7 +81,11 @@ def summaryp(
     insertions_weight, deletions_weight, substitutions_weight = check_weights(
         insertions_weight, deletions_weight, substitutions_weight
     )
-    result = metrics(reference, hypothesis)
+    order = substitution_order(insertions_weight, deletions_weight, substitutions_weight)
+    if order:
+        result = metrics_weighted(reference, hypothesis, order)
+    else:
+        result = metrics(reference, hypothesis)
 
     # Batch rows (n, 9)
     if isinstance(result, np.ndarray) and result.ndim == 2:

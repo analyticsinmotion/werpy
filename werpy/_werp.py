@@ -10,8 +10,9 @@ This module defines the following function:
 """
 
 import numpy as np
-from ._errorhandler import TextInput, check_weights, error_handler
+from ._errorhandler import TextInput, check_weights, error_handler, substitution_order
 from ._metrics import metrics_fast
+from ._weighted import metrics_fast_weighted
 
 
 def werp(
@@ -24,6 +25,13 @@ def werp(
     """
     This function calculates a weighted Word Error Rate for the entire reference and hypothesis texts. It allows the
     insertion, deletion and substitution errors to be penalized or weighted at different rates.
+
+    The errors are counted on an alignment of the reference and hypothesis words with the fewest edits, as for the Word
+    Error Rate. When several such alignments exist, the one with the lowest weighted cost is used. This is the alignment
+    with the fewest substitutions when a substitution weighs more than the mean of an insertion and a deletion, and the
+    alignment with the most substitutions when it weighs less. When a substitution weighs exactly that mean, for example
+    when the three weights are equal, all these alignments have the same weighted cost, and the alignment of summary()
+    is used.
 
     Parameters
     ----------
@@ -80,7 +88,11 @@ def werp(
     insertions_weight, deletions_weight, substitutions_weight = check_weights(
         insertions_weight, deletions_weight, substitutions_weight
     )
-    result = metrics_fast(reference, hypothesis)
+    order = substitution_order(insertions_weight, deletions_weight, substitutions_weight)
+    if order:
+        result = metrics_fast_weighted(reference, hypothesis, order)
+    else:
+        result = metrics_fast(reference, hypothesis)
 
     # Batch: (n, 6) float64
     if isinstance(result, np.ndarray) and result.ndim == 2:
