@@ -136,8 +136,8 @@ class TestWerp(unittest.TestCase):
         Test the werp function with numerical reference and hypothesis inputs.
 
         This test evaluates the WERP function with numerical reference and hypothesis inputs.
-        It verifies that the numerical elements raise an AttributeError with the message of the failed split, and
-        that nothing is printed.
+        It verifies that the numerical elements raise a WerpyTypeError, which is also an AttributeError, with the
+        message that names the reference, the type of the first element and its index, and that nothing is printed.
 
         """
         ref = [1, 2, 3, 4]
@@ -148,8 +148,11 @@ class TestWerp(unittest.TestCase):
             with self.assertRaises(AttributeError) as context:
                 werp(ref, hyp, 0.5, 0.5, 1)
 
-        self.assertIs(type(context.exception), AttributeError)
-        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertIs(type(context.exception), WerpyTypeError)
+        self.assertEqual(
+            str(context.exception),
+            "Every element of reference must be a str. An element of type int was found at index 0.",
+        )
         self.assertEqual(buffer.getvalue(), "")
 
     def test_werp_blank_reference_in_list(self):
@@ -175,24 +178,38 @@ class TestWerp(unittest.TestCase):
         """
         Test the werp function with two empty lists.
 
-        It verifies that two empty lists yield a weighted Word Error Rate of 0.0.
+        It verifies that two empty lists raise a WerpyValueError with the message that the Word Error Rate is not
+        defined for empty sequences, and that nothing is printed.
         """
-        self.assertEqual(werp([], [], 0.5, 0.5, 1), 0.0)
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            with self.assertRaises(WerpyValueError) as context:
+                werp([], [], 0.5, 0.5, 1)
+
+        self.assertIs(type(context.exception), WerpyValueError)
+        self.assertEqual(
+            str(context.exception),
+            "Reference and hypothesis must not be empty. The Word Error Rate is not defined for empty sequences.",
+        )
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_werp_nested_list_input(self):
         """
         Test the werp function with reference and hypothesis given as lists of lists.
 
-        It verifies that the nested lists raise an AttributeError with the message of the failed split, and that
-        nothing is printed.
+        It verifies that the nested lists raise a WerpyTypeError, which is also an AttributeError, with the message
+        that names the reference, the type of the first element and its index, and that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
             with self.assertRaises(AttributeError) as context:
                 werp([["i love pizza"]], [["i love pizza"]], 0.5, 0.5, 1)
 
-        self.assertIs(type(context.exception), AttributeError)
-        self.assertEqual(str(context.exception), "'list' object has no attribute 'split'")
+        self.assertIs(type(context.exception), WerpyTypeError)
+        self.assertEqual(
+            str(context.exception),
+            "Every element of reference must be a str. An element of type list was found at index 0.",
+        )
         self.assertEqual(buffer.getvalue(), "")
 
     def test_werp_raises_werpy_exceptions(self):
@@ -209,7 +226,7 @@ class TestWerp(unittest.TestCase):
                 ["i love pizza"],
                 WerpyTypeError,
                 AttributeError,
-                "Reference and hypothesis must both be strings, or both be lists/arrays.",
+                "Reference and hypothesis must both be strings, or both be lists, tuples or numpy arrays.",
             ),
             (
                 ["i love pizza"],

@@ -105,8 +105,8 @@ class TestWer(unittest.TestCase):
         Test the wer function with numerical reference and hypothesis inputs.
 
         This test evaluates the WER function with numerical reference and hypothesis inputs.
-        It verifies that the numerical elements raise an AttributeError with the message of the failed split, and
-        that nothing is printed.
+        It verifies that the numerical elements raise a WerpyTypeError, which is also an AttributeError, with the
+        message that names the reference, the type of the first element and its index, and that nothing is printed.
 
         """
         ref = [1, 2, 3, 4]
@@ -117,8 +117,11 @@ class TestWer(unittest.TestCase):
             with self.assertRaises(AttributeError) as context:
                 wer(ref, hyp)
 
-        self.assertIs(type(context.exception), AttributeError)
-        self.assertEqual(str(context.exception), "'int' object has no attribute 'split'")
+        self.assertIs(type(context.exception), WerpyTypeError)
+        self.assertEqual(
+            str(context.exception),
+            "Every element of reference must be a str. An element of type int was found at index 0.",
+        )
         self.assertEqual(buffer.getvalue(), "")
 
     def test_wer_blank_input(self):
@@ -176,15 +179,27 @@ class TestWer(unittest.TestCase):
         """
         Test the wer function with two empty lists.
 
-        It verifies that two empty lists yield a Word Error Rate of 0.0.
+        It verifies that two empty lists raise a WerpyValueError with the message that the Word Error Rate is not
+        defined for empty sequences, and that nothing is printed.
         """
-        self.assertEqual(wer([], []), 0.0)
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            with self.assertRaises(WerpyValueError) as context:
+                wer([], [])
+
+        self.assertIs(type(context.exception), WerpyValueError)
+        self.assertEqual(
+            str(context.exception),
+            "Reference and hypothesis must not be empty. The Word Error Rate is not defined for empty sequences.",
+        )
+        self.assertEqual(buffer.getvalue(), "")
 
     def test_wer_none_input(self):
         """
         Test the wer function with None as the reference.
 
-        It verifies that the function raises a WerpyTypeError and that nothing is printed.
+        It verifies that the function raises a WerpyTypeError whose message names the reference and its type, and
+        that nothing is printed.
         """
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
@@ -194,8 +209,7 @@ class TestWer(unittest.TestCase):
         self.assertIs(type(context.exception), WerpyTypeError)
         self.assertEqual(
             str(context.exception),
-            "All text should be in a string format. Please check your input does not include any "
-            "Numeric data types.",
+            "reference must be a str, or a list, tuple or one-dimensional numpy array of str, not NoneType.",
         )
         self.assertEqual(buffer.getvalue(), "")
 
@@ -213,7 +227,7 @@ class TestWer(unittest.TestCase):
                 ["i love pizza"],
                 WerpyTypeError,
                 AttributeError,
-                "Reference and hypothesis must both be strings, or both be lists/arrays.",
+                "Reference and hypothesis must both be strings, or both be lists, tuples or numpy arrays.",
             ),
             (
                 ["i love pizza"],

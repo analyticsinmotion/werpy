@@ -7,10 +7,12 @@ test_errorhandler.py
 This module contains a set of unit tests for the 'error_handler' function in the 'werpy' package.
 
 The 'error_handler' function validates the reference and hypothesis inputs before any metric is
-calculated. It raises an AttributeError when an input is not a string, list or numpy array, or when
-the two inputs are not of the same kind, a ValueError when two sequences differ in length, and a
-ZeroDivisionError when a reference is blank. The tests in this module call the function directly so
-that each exception is observed as raised.
+calculated, and returns them, with a tuple as a list. It raises a WerpyTypeError, which is also an
+AttributeError, when an input is not a string, list, tuple or one-dimensional numpy array, when the two
+inputs are not of the same kind, or when an element of a list, tuple or numpy array is not a string. It
+raises a WerpyValueError, which is also a ValueError and a ZeroDivisionError, when two sequences differ
+in length, when two empty sequences are not allowed, or when a reference is blank. The tests in this
+module call the function directly so that each exception is observed as raised.
 
 To run the tests, execute this module as the main program.
 
@@ -23,11 +25,11 @@ import numpy as np
 from werpy._errorhandler import error_handler
 
 
-TYPE_MESSAGE = (
-    "All text should be in a string format. Please check your input does not include any Numeric data types."
-)
-KIND_MESSAGE = "Reference and hypothesis must both be strings, or both be lists/arrays."
+KIND_MESSAGE = "Reference and hypothesis must both be strings, or both be lists, tuples or numpy arrays."
 LENGTH_MESSAGE = "The Reference and Hypothesis input parameters must have the same number of elements."
+EMPTY_MESSAGE = (
+    "Reference and hypothesis must not be empty. The Word Error Rate is not defined for empty sequences."
+)
 BLANK_STRING_MESSAGE = (
     "Invalid input: reference must not be blank, and reference and hypothesis cannot both be empty."
 )
@@ -38,6 +40,16 @@ def blank_sequence_message(index):
     return f"Invalid input: reference must not be blank. A blank reference was found at index {index}."
 
 
+def type_message(name, type_name):
+    """Return the message raised for a reference or hypothesis of the wrong type."""
+    return f"{name} must be a str, or a list, tuple or one-dimensional numpy array of str, not {type_name}."
+
+
+def element_message(name, type_name, index):
+    """Return the message raised for an element of a sequence that is not a string."""
+    return f"Every element of {name} must be a str. An element of type {type_name} was found at index {index}."
+
+
 class TestErrorHandler(unittest.TestCase):
     """
     This class contains unit tests for the 'error_handler' function, which validates the reference and
@@ -46,29 +58,40 @@ class TestErrorHandler(unittest.TestCase):
 
     def test_error_handler_valid_strings(self):
         """
-        Test that a pair of non-blank strings passes validation.
+        Test that a pair of non-blank strings passes validation and is returned unchanged.
         """
-        self.assertTrue(error_handler("i love cold pizza", "i love pizza"))
+        self.assertEqual(error_handler("i love cold pizza", "i love pizza"), ("i love cold pizza", "i love pizza"))
 
     def test_error_handler_valid_sequences(self):
         """
-        Test that a pair of lists and a pair of numpy arrays of equal length pass validation.
+        Test that a pair of lists and a pair of numpy arrays of equal length pass validation and are returned
+        unchanged, as the same objects.
         """
-        self.assertTrue(error_handler(["a b", "c d"], ["a b", "c e"]))
-        self.assertTrue(error_handler(np.array(["a b", "c d"]), np.array(["a b", "c e"])))
+        for reference, hypothesis in (
+            (["a b", "c d"], ["a b", "c e"]),
+            (np.array(["a b", "c d"]), np.array(["a b", "c e"])),
+        ):
+            returned_reference, returned_hypothesis = error_handler(reference, hypothesis)
+            self.assertIs(returned_reference, reference)
+            self.assertIs(returned_hypothesis, hypothesis)
 
     def test_error_handler_blank_hypothesis_is_valid(self):
         """
-        Test that a blank hypothesis passes validation on both the string and the sequence path.
+        Test that a blank hypothesis passes validation on both the string and the sequence path, and that the
+        inputs are returned.
         """
-        self.assertTrue(error_handler("a b", ""))
-        self.assertTrue(error_handler(["a b"], [""]))
+        self.assertEqual(error_handler("a b", ""), ("a b", ""))
+        self.assertEqual(error_handler(["a b"], [""]), (["a b"], [""]))
 
     def test_error_handler_empty_sequences(self):
         """
-        Test that two empty sequences pass validation.
+        Test that two empty sequences pass validation and are returned, and that they raise a ValueError when
+        empty sequences are not allowed.
         """
-        self.assertTrue(error_handler([], []))
+        self.assertEqual(error_handler([], []), ([], []))
+        with self.assertRaises(ValueError) as context:
+            error_handler([], [], allow_empty=False)
+        self.assertEqual(str(context.exception), EMPTY_MESSAGE)
 
     def test_error_handler_numeric_reference(self):
         """
@@ -76,7 +99,7 @@ class TestErrorHandler(unittest.TestCase):
         """
         with self.assertRaises(AttributeError) as context:
             error_handler(1, "a b")
-        self.assertEqual(str(context.exception), TYPE_MESSAGE)
+        self.assertEqual(str(context.exception), type_message("reference", "int"))
 
     def test_error_handler_numeric_hypothesis(self):
         """
@@ -84,7 +107,7 @@ class TestErrorHandler(unittest.TestCase):
         """
         with self.assertRaises(AttributeError) as context:
             error_handler("a b", 2.5)
-        self.assertEqual(str(context.exception), TYPE_MESSAGE)
+        self.assertEqual(str(context.exception), type_message("hypothesis", "float"))
 
     def test_error_handler_none_input(self):
         """
@@ -92,18 +115,19 @@ class TestErrorHandler(unittest.TestCase):
         """
         with self.assertRaises(AttributeError) as context:
             error_handler(None, "a b")
-        self.assertEqual(str(context.exception), TYPE_MESSAGE)
+        self.assertEqual(str(context.exception), type_message("reference", "NoneType"))
         with self.assertRaises(AttributeError) as context:
             error_handler("a b", None)
-        self.assertEqual(str(context.exception), TYPE_MESSAGE)
+        self.assertEqual(str(context.exception), type_message("hypothesis", "NoneType"))
 
     def test_error_handler_tuple_input(self):
         """
-        Test that a tuple is not accepted as a sequence and raises an AttributeError.
+        Test that tuples are accepted as sequences and are returned as lists.
         """
-        with self.assertRaises(AttributeError) as context:
-            error_handler(("a b",), ("a b",))
-        self.assertEqual(str(context.exception), TYPE_MESSAGE)
+        reference, hypothesis = error_handler(("a b",), ("a c",))
+        self.assertIs(type(reference), list)
+        self.assertIs(type(hypothesis), list)
+        self.assertEqual((reference, hypothesis), (["a b"], ["a c"]))
 
     def test_error_handler_string_reference_with_list_hypothesis(self):
         """
@@ -182,17 +206,21 @@ class TestErrorHandler(unittest.TestCase):
 
     def test_error_handler_nested_sequence(self):
         """
-        Test that a list of lists passes validation. The metric functions raise an AttributeError for this
-        input when the elements are split into words.
+        Test that a list of lists raises an AttributeError whose message names the first element that is not a
+        string.
         """
-        self.assertTrue(error_handler([["a b"]], [["a b"]]))
+        with self.assertRaises(AttributeError) as context:
+            error_handler([["a b"]], [["a b"]])
+        self.assertEqual(str(context.exception), element_message("reference", "list", 0))
 
     def test_error_handler_sequence_of_integers(self):
         """
-        Test that a list of integers passes validation. The metric functions raise an AttributeError for this
-        input when the elements are split into words.
+        Test that a list of integers raises an AttributeError whose message names the first element that is not
+        a string.
         """
-        self.assertTrue(error_handler([1, 2], [1, 2]))
+        with self.assertRaises(AttributeError) as context:
+            error_handler([1, 2], [1, 2])
+        self.assertEqual(str(context.exception), element_message("reference", "int", 0))
 
 
 if __name__ == "__main__":  # pragma: no cover

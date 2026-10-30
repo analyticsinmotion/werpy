@@ -28,8 +28,10 @@ class WerpyError(Exception):
 
 class WerpyTypeError(WerpyError, TypeError, AttributeError):
     """
-    Raised when the reference or the hypothesis has the wrong type or kind: when it is not a string, a list or a
-    numpy array, or when one of them is a string and the other is a list or a numpy array.
+    Raised when an input has the wrong type or kind: when a reference, hypothesis or text is not a string, a list, a
+    tuple or a numpy array, when a numpy array does not have exactly one dimension, when one of the reference and the
+    hypothesis is a string and the other is a list, a tuple or a numpy array, when an element of a list, tuple or
+    numpy array is not a string, or when a weight of werp(), werps() or summaryp() is not a real number.
 
     WerpyTypeError also derives from AttributeError, so that code written for werpy 3.x that catches
     AttributeError continues to catch it.
@@ -38,9 +40,10 @@ class WerpyTypeError(WerpyError, TypeError, AttributeError):
 
 class WerpyValueError(WerpyError, ValueError, ZeroDivisionError):
     """
-    Raised when the reference or the hypothesis has a value that is not valid: when a reference is blank, either as
-    a single string or as an element of a list or numpy array, or when the reference and hypothesis lists or arrays
-    do not contain the same number of elements.
+    Raised when an input has a value that is not valid: when a reference is blank, either as a single string or as
+    an element of a list, tuple or numpy array, when the reference and hypothesis lists, tuples or arrays do not
+    contain the same number of elements, when wer() or werp() gets empty lists, tuples or arrays, or when a weight of
+    werp(), werps() or summaryp() is negative, NaN, infinite or too large for a float.
 
     WerpyValueError also derives from ZeroDivisionError, so that code written for werpy 3.x that catches
     ZeroDivisionError continues to catch it.

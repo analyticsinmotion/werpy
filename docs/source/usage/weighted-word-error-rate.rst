@@ -5,6 +5,10 @@ werpy offers a feature for customizing the impact of different types of errors o
 This is a useful capability as it recognizes that not all errors have the same significance or impact on the overall performance of the system. 
 By allowing users to assign weights to different types of errors, werpy enables a more nuanced evaluation that aligns with the specific priorities and challenges of the given task or syntax being tested.
 
+.. note::
+
+   Each weight is a real number, such as an int or a float, that is finite and at least 0. All three weights may be 0, and the weighted Word Error Rate is then 0.0.
+
 
 Cumulative Weighted Word Error Rate
 -----------------------------------
