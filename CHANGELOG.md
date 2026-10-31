@@ -45,6 +45,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
 
+- The `linetrace` Meson build option compiles `_metrics.pyx` and `_weighted.pyx` with Cython line tracing when the build also sets `-Dpython.allow_limited_api=false`, for example `uv build --wheel -Csetup-args=-Dlinetrace=true -Csetup-args=-Dpython.allow_limited_api=false`. This wheel is built for the ABI of the build interpreter and is not an `abi3` wheel. When the limited API is allowed, `meson setup` stops with an error message that names `-Dpython.allow_limited_api=false`, because Cython does not support line tracing in the Python limited API. Before this change, a build with `-Dlinetrace=true` did not compile. The default build does not change.
+
 ### Enhancements
 
 - The pandas requirement in `pyproject.toml` is now `pandas>=2.2.2`.
