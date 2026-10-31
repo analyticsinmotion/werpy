@@ -31,6 +31,7 @@ import io
 import unittest
 import numpy as np
 import werpy
+from werpy._metrics import calculations_wer_only  # pylint: disable=no-name-in-module
 from werpy._wer import wer
 from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
 
@@ -269,6 +270,22 @@ class TestWer(unittest.TestCase):
         expected_result = 0.2
 
         self.assertEqual(wer(ref, hyp), expected_result)
+
+    def test_wer_identical_pair(self):
+        """
+        Test the wer and wers functions and the compiled calculations_wer_only function with an identical pair of
+        strings.
+
+        An identical pair has no edits. It verifies that wer returns 0.0, that wers returns [0.0], and that
+        calculations_wer_only returns a Word Error Rate of 0.0, an edit distance of 0.0 and the number of words in
+        the reference, 4.0.
+        """
+        reference = "i love cold pizza"
+        hypothesis = "i love cold pizza"
+
+        self.assertEqual(wer(reference, hypothesis), 0.0)
+        self.assertEqual(werpy.wers(reference, hypothesis), [0.0])
+        self.assertEqual(calculations_wer_only(reference, hypothesis).tolist(), [0.0, 0.0, 4.0])
 
     def test_werpy_public_surface(self):
         """

@@ -123,7 +123,7 @@ cpdef object calculations(object reference, object hypothesis):
 
     ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
     if ref_tok == NULL:
-        raise MemoryError()
+        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
     hyp_tok = ref_tok + m
 
     try:
@@ -219,11 +219,6 @@ cdef object _metrics_batch(list references, list hypotheses):
     cdef object r
     for idx in range(n):
         r = calculations(references[idx], hypotheses[idx])
-
-        # Safety: unwrap 0-D wrappers if they ever occur
-        if isinstance(r, np.ndarray) and r.ndim == 0:
-            r = r.item()
-
         out[idx, :] = r
 
     return out
@@ -290,7 +285,7 @@ cpdef object calculations_fast(object reference, object hypothesis):
 
     ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
     if ref_tok == NULL:
-        raise MemoryError()
+        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
     hyp_tok = ref_tok + m
 
     try:
@@ -437,7 +432,7 @@ cpdef object calculations_wer_only(object reference, object hypothesis):
 
     ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
     if ref_tok == NULL:
-        raise MemoryError()
+        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
     hyp_tok = ref_tok + m
 
     try:
@@ -505,7 +500,7 @@ cdef inline int _ensure_batch_buffers(
             capacity = rows
         row_mem = <int32_t*>PyMem_Realloc(buf.prev, 2 * capacity * sizeof(int32_t))
         if row_mem == NULL:
-            raise MemoryError()
+            raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
         buf.prev = row_mem
         buf.curr = row_mem + capacity
         buf.row_capacity = capacity
@@ -516,7 +511,7 @@ cdef inline int _ensure_batch_buffers(
             capacity = tokens
         tok_mem = <PyObject**>PyMem_Realloc(buf.tok, capacity * sizeof(PyObject*))
         if tok_mem == NULL:
-            raise MemoryError()
+            raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
         buf.tok = tok_mem
         buf.tok_capacity = capacity
 
