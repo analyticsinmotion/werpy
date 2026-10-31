@@ -51,6 +51,11 @@ install_data(
 ext_c_args = []
 ext_cython_args = []
 if get_option('linetrace')
+    # Cython does not support line tracing in the Python limited API, so a
+    # line-trace build uses the ABI of the build interpreter.
+    if get_option('python.allow_limited_api')
+        error('The linetrace option needs -Dpython.allow_limited_api=false. Cython does not support line tracing in the Python limited API.')
+    endif
     ext_cython_args += ['-X', 'linetrace=True']
     ext_c_args += ['-DCYTHON_TRACE=1', '-DCYTHON_TRACE_NOGIL=1', '-DCYTHON_USE_SYS_MONITORING=0']
 endif

@@ -2,5 +2,5 @@ option(
     'linetrace',
     type : 'boolean',
     value : false,
-    description : 'Build _metrics.pyx with Cython line tracing for coverage measurement'
+    description : 'Build _metrics.pyx and _weighted.pyx with Cython line tracing for coverage measurement. Needs python.allow_limited_api=false'
 )
