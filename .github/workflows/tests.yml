@@ -112,25 +112,84 @@ jobs:
           enable-cache: true
           cache-suffix: coverage
 
-      - name: Build the wheel
-        run: uv build --wheel --out-dir dist
+      # The line-trace build compiles _metrics.pyx and _weighted.pyx with the
+      # Cython line tracing hooks. Cython does not support line tracing in the
+      # Python limited API, so this wheel is built for the ABI of Python 3.13.
+      # Only this job uses the wheel. It is never uploaded.
+      - name: Build the line-trace wheel
+        run: |
+          uv build --wheel --out-dir dist -Cbuild-dir=build/linetrace \
+            -Csetup-args=-Dlinetrace=true -Csetup-args=-Dpython.allow_limited_api=false
 
-      - name: Install the wheel, pytest, pytest-cov and coverage
-        run: uv pip install dist/*.whl pytest pytest-cov coverage
+      # The Cython.Coverage plugin of Cython measures the .pyx files. The
+      # version is the Cython build requirement in pyproject.toml.
+      - name: Install the wheel, pytest, pytest-cov, coverage and Cython
+        run: uv pip install dist/*.whl pytest pytest-cov coverage cython==3.3.0
+
+      # The plugin reads the C file that Cython generated for each module, as
+      # <module>.c beside <module>.pyx: beside the installed modules while the
+      # tests run, and in the source tree while the report is written.
+      - name: Copy the Cython sources and the generated C files
+        run: |
+          site_werpy="$(python -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])')/werpy"
+          for module in _metrics _weighted; do
+            c_files=(build/linetrace/"$module".*.p/"$module".pyx.c)
+            if [ "${#c_files[@]}" -ne 1 ] || [ ! -f "${c_files[0]}" ]; then
+              echo "Expected one generated C file of $module, found: ${c_files[*]}" >&2
+              exit 1
+            fi
+            cp "werpy/$module.pyx" "$site_werpy/"
+            cp "${c_files[0]}" "$site_werpy/$module.c"
+            cp "${c_files[0]}" "werpy/$module.c"
+          done
+
+      # The coverage settings of this job. The plugin needs the ctrace core of
+      # coverage.py. On Python 3.14 the default core does not run file tracer
+      # plugins, and it drops the .pyx files from the report without an error.
+      # The paths table is a copy of the [tool.coverage.paths] table in
+      # pyproject.toml.
+      - name: Write the coverage settings
+        run: |
+          cat > "$RUNNER_TEMP/coverage-linetrace.toml" <<'EOF'
+          [tool.coverage.run]
+          plugins = ["Cython.Coverage"]
+          core = "ctrace"
+
+          [tool.coverage.paths]
+          source = ['werpy', '*/site-packages/werpy']
+          EOF
 
       # The suite runs outside the repository so that the source tree cannot
       # shadow the installed package. Coverage is measured on the installed
-      # Python modules; the compiled extension is not measured.
+      # Python modules and, through the plugin, on the two Cython modules.
       - name: Run the test suite with coverage
         working-directory: ${{ runner.temp }}
-        run: python -m pytest "$GITHUB_WORKSPACE/tests" --cov=werpy --cov-report=
+        run: |
+          python -m pytest "$GITHUB_WORKSPACE/tests" --cov=werpy --cov-report= \
+            --cov-config="$RUNNER_TEMP/coverage-linetrace.toml"
 
-      # The [tool.coverage.paths] table in pyproject.toml maps the installed
-      # package back to the source tree, so the report paths are repository paths.
+      # The paths table maps the installed package back to the source tree, so
+      # the report paths are repository paths.
       - name: Write the coverage report
         run: |
-          python -m coverage combine "$RUNNER_TEMP/.coverage"
-          python -m coverage xml
+          python -m coverage combine --rcfile="$RUNNER_TEMP/coverage-linetrace.toml" "$RUNNER_TEMP/.coverage"
+          python -m coverage xml --rcfile="$RUNNER_TEMP/coverage-linetrace.toml"
+
+      # A coverage.py setting that does not run the plugin drops the .pyx files
+      # from the report without an error. This step fails the job unless
+      # coverage.xml measures the lines of both Cython modules.
+      - name: Check that the report measures both Cython modules
+        run: |
+          python - <<'EOF'
+          import xml.etree.ElementTree as ET
+
+          classes = {c.get("filename"): c for c in ET.parse("coverage.xml").iter("class")}
+          for name in ("werpy/_metrics.pyx", "werpy/_weighted.pyx"):
+              lines = classes[name].findall("lines/line") if name in classes else []
+              if not lines:
+                  raise SystemExit(f"coverage.xml does not measure {name}")
+              print(f"{name}: {len(lines)} lines measured")
+          EOF
 
       - name: Upload the coverage report to Codecov
         if: github.actor != 'dependabot[bot]'
@@ -139,5 +198,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           disable_search: true
+          plugins: noop
           flags: unittests
           fail_ci_if_error: true

@@ -376,6 +376,23 @@ class TestWeightedAlignment(unittest.TestCase):
             self.assertEqual(str(caught.exception),
                              "The Reference and Hypothesis input parameters must have the same number of elements.")
 
+    def test_key_matrix_too_large_raises_memory_error(self):
+        """
+        Test that werpy raises MemoryError instead of crashing when a table cannot be allocated. For two different
+        texts of 2**23 one-letter words, the key matrix of calculations_weighted needs about 2**49 bytes. The size
+        check lets this size through, because it fits in size_t, and the allocation fails, because it is larger than
+        the address space of a 64-bit process. calculations_weighted and metrics_weighted raise MemoryError for the
+        orders 1 and -1.
+        """
+        words = 2**23
+        reference = " ".join(["a"] * words)
+        hypothesis = " ".join(["b"] * words)
+        for function in (KERNELS.calculations_weighted, KERNELS.metrics_weighted):
+            for order in (1, -1):
+                with self.subTest(function=function.__name__, order=order):
+                    with self.assertRaises(MemoryError):
+                        function(reference, hypothesis, order)
+
     def test_copied_helpers_agree(self):
         """
         Test that werpy._weighted's copies of the token mapping and of the length check give the results of the ones

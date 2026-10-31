@@ -65,6 +65,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - The docstrings of `summary()`, `summaryp()`, `werp()` and `werps()`, the weighted Word Error Rate page and the summarization page state which alignment the counts come from.
 
+- The batch path of `metrics()` in `_metrics.pyx` no longer checks whether a row is a zero-dimensional array. `calculations()` always returns a one-dimensional array of nine elements, so the check was never true. The results are unchanged.
+
 ## Version 3.5.0
 
 **Released:** September 9, 2026

@@ -145,14 +145,14 @@ cpdef object calculations_weighted(object reference, object hypothesis, int orde
 
     # The (m+1) x (n+1) key matrix, row by row. A size that cannot be addressed raises MemoryError.
     if <size_t>(m + 1) > SIZE_MAX // sizeof(int64_t) // <size_t>width:
-        raise MemoryError()
+        raise MemoryError()  # pragma: no cover - only a key matrix larger than SIZE_MAX bytes reaches this line
     keys = <int64_t*>PyMem_Malloc(<size_t>(m + 1) * <size_t>width * sizeof(int64_t))
     if keys == NULL:
         raise MemoryError()
     ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
     if ref_tok == NULL:
-        PyMem_Free(keys)
-        raise MemoryError()
+        PyMem_Free(keys)  # pragma: no cover - only an allocator failure reaches this line
+        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
     hyp_tok = ref_tok + m
 
     try:
@@ -204,7 +204,7 @@ cpdef object calculations_weighted(object reference, object hypothesis, int orde
                 deleted_words.append(reference_word[i - 1])
                 i -= 1
             else:
-                raise AssertionError("No move keeps the key optimal.")
+                raise AssertionError("No move keeps the key optimal.")  # pragma: no cover - a move above keeps the key
     finally:
         PyMem_Free(ref_tok)
         PyMem_Free(keys)
@@ -306,11 +306,11 @@ cpdef object calculations_fast_weighted(object reference, object hypothesis, int
 
     rows = <int64_t*>PyMem_Malloc(2 * (n + 1) * sizeof(int64_t))
     if rows == NULL:
-        raise MemoryError()
+        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
     ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
     if ref_tok == NULL:
-        PyMem_Free(rows)
-        raise MemoryError()
+        PyMem_Free(rows)  # pragma: no cover - only an allocator failure reaches this line
+        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
     hyp_tok = ref_tok + m
     prev = rows
     curr = rows + n + 1
