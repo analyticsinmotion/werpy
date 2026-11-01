@@ -33,6 +33,9 @@ def werp(
     when the three weights are equal, all these alignments have the same weighted cost, and the alignment of summary()
     is used.
 
+    The memory that werp() uses grows with the number of words in the reference and the hypothesis, so it can compare
+    long transcripts. The time grows with the product of the two numbers of words.
+
     Parameters
     ----------
     reference : str, list, tuple or numpy array
