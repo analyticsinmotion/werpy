@@ -20,6 +20,9 @@ def wer(reference: TextInput, hypothesis: TextInput) -> float:
     This function will calculate the overall Word Error Rate for the entire reference and hypothesis texts 
     (i.e., the full corpus).
 
+    werpy compares words exactly as they are written. Words that differ in case, punctuation or the way a character
+    is stored count as different words. To compare texts from different sources, pass both through normalize() first.
+
     Parameters
     ----------
     reference : str, list, tuple or numpy array

@@ -13,7 +13,7 @@ The following table provides an overview of the modules that can be used in werp
    * - Module
      - Description
    * - normalize(text)
-     - Preprocess input text to remove punctuation, remove duplicated spaces, leading/trailing blanks and convert all words to lowercase.
+     - Preprocess input text to put it into Unicode Normalization Form C, remove ASCII and Unicode punctuation, remove duplicated spaces, leading/trailing blanks and convert all words to lowercase.
    * - wer(reference, hypothesis) 
      - Calculate the overall Word Error Rate for the entire reference and hypothesis texts.
    * - wers(reference, hypothesis)

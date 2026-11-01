@@ -41,11 +41,15 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - For a reference and a hypothesis that have more than one alignment with the fewest edits, the weighted Word Error Rate of `werp()`, `werps()` and `summaryp()` is the lowest weighted cost of these alignments divided by the number of reference words. The insertion, deletion and substitution counts and word lists of `summaryp()` can then differ from those of `summary()`.
 
+- `normalize()` applies a new rule by default. It puts each text into Unicode Normalization Form C (NFC), removes every character of the Unicode general category for punctuation as well as the ASCII punctuation characters, converts the text to lowercase and puts it into NFC again. Its result changes for texts that hold punctuation outside ASCII, and can change for texts that are not in NFC and for texts whose earlier result was not in NFC, and so can the Word Error Rate of texts normalized with it. The result of every other text, every ASCII text among them, does not change.
+
 ### Bug Fixes
 
 - `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
 
 - The `linetrace` Meson build option compiles `_metrics.pyx` and `_weighted.pyx` with Cython line tracing when the build also sets `-Dpython.allow_limited_api=false`, for example `uv build --wheel -Csetup-args=-Dlinetrace=true -Csetup-args=-Dpython.allow_limited_api=false`. This wheel is built for the ABI of the build interpreter and is not an `abi3` wheel. When the limited API is allowed, `meson setup` stops with an error message that names `-Dpython.allow_limited_api=false`, because Cython does not support line tracing in the Python limited API. Before this change, a build with `-Dlinetrace=true` did not compile. The default build does not change.
+
+- `normalize()` keeps a lone surrogate in a text instead of raising `UnicodeEncodeError`.
 
 ### Enhancements
 
@@ -68,6 +72,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 - The batch path of `metrics()` in `_metrics.pyx` no longer checks whether a row is a zero-dimensional array. `calculations()` always returns a one-dimensional array of nine elements, so the check was never true. The results are unchanged.
 
 - `summary()` and `summaryp()` align a reference and a hypothesis in memory that grows with the number of words in the two texts, so long transcripts can be compared. So do `werp()` and `werps()` with equal weights, and with any weights where a substitution weighs exactly the mean of an insertion and a deletion. The counts, the word lists and their order do not change.
+
+- The docstring of `normalize()` and the normalization page state the rule of `normalize()`, with a table of what happens to each kind of character, and say that the rule uses the Unicode database of the running Python. The normalization page no longer says that `normalize()` handles word contractions. The docstrings of `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` and the pages of these functions say that werpy compares words exactly as they are written, and that texts from different sources can be passed through `normalize()` first.
 
 ## Version 3.5.0
 

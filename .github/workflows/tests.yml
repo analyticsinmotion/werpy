@@ -112,9 +112,10 @@ jobs:
           enable-cache: true
           cache-suffix: coverage
 
-      # The line-trace build compiles _metrics.pyx and _weighted.pyx with the
-      # Cython line tracing hooks. Cython does not support line tracing in the
-      # Python limited API, so this wheel is built for the ABI of Python 3.13.
+      # The line-trace build compiles _metrics.pyx, _weighted.pyx and
+      # _normalize_kernel.pyx with the Cython line tracing hooks. Cython does
+      # not support line tracing in the Python limited API, so this wheel is
+      # built for the ABI of Python 3.13.
       # Only this job uses the wheel. It is never uploaded.
       - name: Build the line-trace wheel
         run: |
@@ -132,7 +133,7 @@ jobs:
       - name: Copy the Cython sources and the generated C files
         run: |
           site_werpy="$(python -c 'import sysconfig; print(sysconfig.get_paths()["platlib"])')/werpy"
-          for module in _metrics _weighted; do
+          for module in _metrics _weighted _normalize_kernel; do
             c_files=(build/linetrace/"$module".*.p/"$module".pyx.c)
             if [ "${#c_files[@]}" -ne 1 ] || [ ! -f "${c_files[0]}" ]; then
               echo "Expected one generated C file of $module, found: ${c_files[*]}" >&2
@@ -161,7 +162,7 @@ jobs:
 
       # The suite runs outside the repository so that the source tree cannot
       # shadow the installed package. Coverage is measured on the installed
-      # Python modules and, through the plugin, on the two Cython modules.
+      # Python modules and, through the plugin, on the three Cython modules.
       - name: Run the test suite with coverage
         working-directory: ${{ runner.temp }}
         run: |
@@ -177,14 +178,14 @@ jobs:
 
       # A coverage.py setting that does not run the plugin drops the .pyx files
       # from the report without an error. This step fails the job unless
-      # coverage.xml measures the lines of both Cython modules.
-      - name: Check that the report measures both Cython modules
+      # coverage.xml measures the lines of the three Cython modules.
+      - name: Check that the report measures the three Cython modules
         run: |
           python - <<'EOF'
           import xml.etree.ElementTree as ET
 
           classes = {c.get("filename"): c for c in ET.parse("coverage.xml").iter("class")}
-          for name in ("werpy/_metrics.pyx", "werpy/_weighted.pyx"):
+          for name in ("werpy/_metrics.pyx", "werpy/_weighted.pyx", "werpy/_normalize_kernel.pyx"):
               lines = classes[name].findall("lines/line") if name in classes else []
               if not lines:
                   raise SystemExit(f"coverage.xml does not measure {name}")
