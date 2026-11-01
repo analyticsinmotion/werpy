@@ -9,6 +9,10 @@ By allowing users to assign weights to different types of errors, werpy enables 
 
    Each weight is a real number, such as an int or a float, that is finite and at least 0. All three weights may be 0, and the weighted Word Error Rate is then 0.0.
 
+.. note::
+
+   werpy compares words exactly as they are written. Words that differ in case, punctuation or the way a character is stored count as different words. To compare texts from different sources, pass both through normalize() first.
+
 
 Cumulative Weighted Word Error Rate
 -----------------------------------

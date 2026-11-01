@@ -54,7 +54,7 @@ The following table provides an overview of the functions that can be used in we
 
 | Function  | Description | 
 | ------------- | ------------- |
-| normalize(text)  | Preprocess input text to remove punctuation, remove duplicated spaces, leading/trailing blanks and convert all words to lowercase. |
+| normalize(text)  | Preprocess input text to put it into Unicode Normalization Form C, remove ASCII and Unicode punctuation, remove duplicated spaces, leading/trailing blanks and convert all words to lowercase. |
 | wer(reference, hypothesis)  | Calculate the overall Word Error Rate for the entire reference and hypothesis texts. |
 | wers(reference, hypothesis)  | Calculates a list of the Word Error Rates for each of the reference and hypothesis texts. |
 | werp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)  | Calculates a weighted Word Error Rate for the entire reference and hypothesis texts. |

@@ -20,6 +20,9 @@ def wers(reference: TextInput, hypothesis: TextInput) -> list[float]:
     """
     This function calculates a list of the Word Error Rates for each of the reference and hypothesis texts.
 
+    werpy compares words exactly as they are written. Words that differ in case, punctuation or the way a character
+    is stored count as different words. To compare texts from different sources, pass both through normalize() first.
+
     Parameters
     ----------
     reference : str, list, tuple or numpy array

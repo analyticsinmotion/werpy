@@ -38,6 +38,9 @@ def werps(
     The memory that werps() uses grows with the number of words in the reference and the hypothesis, so it can compare
     long transcripts. The time grows with the product of the two numbers of words.
 
+    werpy compares words exactly as they are written. Words that differ in case, punctuation or the way a character
+    is stored count as different words. To compare texts from different sources, pass both through normalize() first.
+
     Parameters
     ----------
     reference : str, list, tuple or numpy array

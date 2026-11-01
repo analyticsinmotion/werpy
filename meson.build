@@ -24,6 +24,7 @@ py_files = files(
     'werpy/_errorhandler.py',
     'werpy/_metrics.pyi',
     'werpy/_normalize.py',
+    'werpy/_normalize_kernel.pyi',
     'werpy/_summary.py',
     'werpy/_summaryp.py',
     'werpy/_weighted.pyi',
@@ -76,6 +77,18 @@ py.extension_module(
 py.extension_module(
     '_weighted',
     files('werpy/_weighted.pyx'),
+    include_directories : include_directories('werpy'),
+    cython_args : ext_cython_args,
+    c_args : ext_c_args,
+    limited_api : '3.11',
+    install : true,
+    subdir : 'werpy'
+)
+
+# Cython module of the normalization of werpy.normalize
+py.extension_module(
+    '_normalize_kernel',
+    files('werpy/_normalize_kernel.pyx'),
     include_directories : include_directories('werpy'),
     cython_args : ext_cython_args,
     c_args : ext_c_args,
