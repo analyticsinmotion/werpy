@@ -67,6 +67,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - The batch path of `metrics()` in `_metrics.pyx` no longer checks whether a row is a zero-dimensional array. `calculations()` always returns a one-dimensional array of nine elements, so the check was never true. The results are unchanged.
 
+- `summary()` and `summaryp()` align a reference and a hypothesis in memory that grows with the number of words in the two texts, so long transcripts can be compared. So do `werp()` and `werps()` with equal weights, and with any weights where a substitution weighs exactly the mean of an insertion and a deletion. The counts, the word lists and their order do not change.
+
 ## Version 3.5.0
 
 **Released:** September 9, 2026

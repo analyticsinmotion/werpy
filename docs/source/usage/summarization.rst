@@ -56,6 +56,12 @@ Apply the following weights/penalties to the errors:
    :align: center
 
 
+Long texts
+----------
+
+summary(), summaryp(), werp() and werps() can compare long texts, such as the transcripts of a whole meeting. The memory that they use grows with the number of words in the two texts. The time grows with the product of the two numbers of words, so one pair of long texts takes longer than many short pairs with the same number of words.
+
+
 Overall
 -------
 

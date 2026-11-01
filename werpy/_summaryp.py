@@ -36,6 +36,9 @@ def summaryp(
     and gives the same counts and word lists. For other weights, its counts and word lists can differ from those of
     summary().
 
+    The memory that summaryp() uses grows with the number of words in the reference and the hypothesis, so it can
+    compare long transcripts. The time grows with the product of the two numbers of words.
+
     Parameters
     ----------
     reference : str, list, tuple or numpy array
