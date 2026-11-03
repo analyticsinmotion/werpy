@@ -26,9 +26,15 @@ import contextlib
 import io
 import unittest
 import numpy as np
-import pandas as pd
 from werpy._summary import summary
 from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
+
+try:
+    import pandas as pd
+except ImportError:  # pandas is an optional dependency of werpy
+    pd = None
+
+PANDAS = unittest.skipIf(pd is None, "pandas is not installed")
 
 
 class TestSummary(unittest.TestCase):
@@ -37,6 +43,7 @@ class TestSummary(unittest.TestCase):
     between reference and hypothesis text sequences, displaying the summary results as a dataframe.
     """
 
+    @PANDAS
     def test_summary_example_1(self):
         """
         Test the summary function with multiple reference and hypothesis strings.
@@ -111,6 +118,7 @@ class TestSummary(unittest.TestCase):
         )
         self.assertEqual(buffer.getvalue(), "")
 
+    @PANDAS
     def test_summary_single_sequence(self):
         """
         Test the summary function with a single reference and hypothesis sequence.
@@ -136,6 +144,7 @@ class TestSummary(unittest.TestCase):
 
         pd.testing.assert_frame_equal(expected_result, actual_result)
 
+    @PANDAS
     def test_summary_insertion_only(self):
         """
         Test the summary function with a hypothesis that adds one word to the reference.
@@ -160,6 +169,7 @@ class TestSummary(unittest.TestCase):
 
         pd.testing.assert_frame_equal(expected_result, actual_result)
 
+    @PANDAS
     def test_summary_deletion_only(self):
         """
         Test the summary function with a hypothesis that omits one word of the reference.
@@ -184,6 +194,7 @@ class TestSummary(unittest.TestCase):
 
         pd.testing.assert_frame_equal(expected_result, actual_result)
 
+    @PANDAS
     def test_summary_numpy_string_array(self):
         """
         Test the summary function with reference and hypothesis given as numpy arrays of string dtype.
@@ -209,6 +220,7 @@ class TestSummary(unittest.TestCase):
 
         pd.testing.assert_frame_equal(expected_result, actual_result)
 
+    @PANDAS
     def test_summary_numpy_object_array(self):
         """
         Test the summary function with reference and hypothesis given as numpy arrays of object dtype.
@@ -253,6 +265,7 @@ class TestSummary(unittest.TestCase):
         )
         self.assertEqual(buffer.getvalue(), "")
 
+    @PANDAS
     def test_summary_empty_sequences(self):
         """
         Test the summary function with two empty lists.

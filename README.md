@@ -59,8 +59,8 @@ The following table provides an overview of the functions that can be used in we
 | wers(reference, hypothesis)  | Calculates a list of the Word Error Rates for each of the reference and hypothesis texts. |
 | werp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)  | Calculates a weighted Word Error Rate for the entire reference and hypothesis texts. |
 | werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)  | Calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts. |
-| summary(reference, hypothesis)  | Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors. |
-| summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)  | Delivers an in-depth breakdown of the results, covering metrics like WER, Levenshtein Distance, and a detailed account of insertion, deletion, and substitution errors, inclusive of the weighted WER. |
+| summary(reference, hypothesis, *, output="pandas")  | Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors. Returns a pandas DataFrame, a polars DataFrame with output="polars", or a list of dictionaries with output="records". |
+| summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1, *, output="pandas")  | Delivers an in-depth breakdown of the results, covering metrics like WER, Levenshtein Distance, and a detailed account of insertion, deletion, and substitution errors, inclusive of the weighted WER. Returns a pandas DataFrame, a polars DataFrame with output="polars", or a list of dictionaries with output="records". |
 
 
 ## Installation
@@ -70,6 +70,18 @@ You can install the latest **werpy** release with Python's pip package manager:
 # Install werpy from PyPi
 pip install werpy
 ```
+
+summary() and summaryp() return their results as a pandas DataFrame, a polars DataFrame or a list of dictionaries. To install pandas or polars with werpy, use its extra:
+
+```python
+# Install werpy and pandas from PyPi
+pip install "werpy[pandas]"
+
+# Install werpy and polars from PyPi
+pip install "werpy[polars]"
+```
+
+With a plain pip install werpy, output="records" returns the results as a list of dictionaries.
 
 
 ## Usage
@@ -209,15 +221,57 @@ print(weighted_summary)
 
 <br />
 
+**Example 9 - Get the complete breakdown as a list of dictionaries**
+
+*Python Code:*
+```python
+ref = ['it was beautiful and sunny today']
+hyp = ['it was a beautiful and sunny day']
+records = werpy.summary(ref, hyp, output="records")
+print(records)
+```
+
+*Results Output:*
+```
+[{'wer': 0.3333333333333333, 'ld': 2, 'm': 6, 'insertions': 1, 'deletions': 0, 'substitutions': 1, 'inserted_words': ['a'], 'deleted_words': [], 'substituted_words': [('today', 'day')]}]
+```
+
+**Example 10 - Get the complete breakdown as a polars DataFrame**
+
+*Python Code:*
+```python
+ref = ['it was beautiful and sunny today', 'she cited multiple reasons why']
+hyp = ['it was a beautiful and sunny day', 'she sighted multiple reasons why']
+summary = werpy.summary(ref, hyp, output="polars")
+print(summary.select("wer", "ld", "inserted_words", "substituted_words"))
+```
+
+*Results Output:*
+```
+shape: (2, 4)
+┌──────────┬─────┬────────────────┬───────────────────────┐
+│ wer      ┆ ld  ┆ inserted_words ┆ substituted_words     │
+│ ---      ┆ --- ┆ ---            ┆ ---                   │
+│ f64      ┆ i64 ┆ list[str]      ┆ list[struct[2]]       │
+╞══════════╪═════╪════════════════╪═══════════════════════╡
+│ 0.333333 ┆ 2   ┆ ["a"]          ┆ [{"today","day"}]     │
+│ 0.2      ┆ 1   ┆ []             ┆ [{"cited","sighted"}] │
+└──────────┴─────┴────────────────┴───────────────────────┘
+```
+
 ## Dependencies
 - <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
-- <a href="https://pandas.pydata.org/">Pandas</a> - Powerful data structures for data analysis, time series, and statistics
+
+## Optional dependencies
+- <a href="https://pandas.pydata.org/">Pandas</a> - Powerful data structures for data analysis, time series, and statistics. The pandas extra installs it, pip install "werpy[pandas]", for the pandas DataFrame of summary() and summaryp().
+- <a href="https://pola.rs/">Polars</a> - A DataFrame library. The polars extra installs it, pip install "werpy[polars]", for the polars DataFrame of summary() and summaryp() with output="polars".
 
 ## Licensing
 
 ``werpy`` is released under the terms of the BSD 3-Clause License. Please refer to the <a href="https://github.com/analyticsinmotion/werpy/blob/main/LICENSE">LICENSE</a> file for full details.
 
-This project uses standard scientific Python libraries including NumPy and Pandas. For license details, please refer to their official repositories:
+This project uses standard scientific Python libraries: NumPy, with pandas and polars as optional dependencies. For license details, please refer to their official repositories:
 
 - NumPy - <a href="https://github.com/numpy/numpy">https://github.com/numpy/numpy</a>
 - Pandas - <a href="https://github.com/pandas-dev/pandas">https://github.com/pandas-dev/pandas</a>
+- Polars - <a href="https://github.com/pola-rs/polars">https://github.com/pola-rs/polars</a>

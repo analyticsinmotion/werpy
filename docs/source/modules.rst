@@ -22,10 +22,10 @@ The following table provides an overview of the modules that can be used in werp
      - Calculates a weighted Word Error Rate for the entire reference and hypothesis texts.
    * - werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
      - Calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts.
-   * - summary(reference, hypothesis)
-     - Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors.
-   * - summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
-     - Delivers an in-depth breakdown of the results, covering metrics like WER, Levenshtein Distance, and a detailed account of insertion, deletion, and substitution errors, inclusive of the weighted WER.
+   * - summary(reference, hypothesis, \*, output=\"pandas\")
+     - Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors. Returns a pandas DataFrame, a polars DataFrame with output=\"polars\", or a list of dictionaries with output=\"records\".
+   * - summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1, \*, output=\"pandas\")
+     - Delivers an in-depth breakdown of the results, covering metrics like WER, Levenshtein Distance, and a detailed account of insertion, deletion, and substitution errors, inclusive of the weighted WER. Returns a pandas DataFrame, a polars DataFrame with output=\"polars\", or a list of dictionaries with output=\"records\".
 
 
 

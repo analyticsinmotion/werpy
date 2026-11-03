@@ -2,28 +2,75 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 """
-This module provides a summary function to display a complete breakdown of the calculated results, returned in a 
-DataFrame. It differs from the summary function in that it also calculates a weighted WER and returns it in the
-dataframe.
+This module provides a summary function to display a complete breakdown of the calculated results, returned in a
+pandas DataFrame or, with output="polars", in a polars DataFrame or, with output="records", in a list of dictionaries.
+It differs from the summary function in that it also calculates a weighted WER and returns it in the dataframe.
 
 This module defines the following function:
-    - summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
+    - summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1, *,
+      output="pandas")
 """
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Literal, cast, overload
+
 import numpy as np
-import pandas as pd
 from ._errorhandler import TextInput, check_weights, error_handler, substitution_order
 from ._metrics import metrics
+from ._output import SummarypRecord, check_output, dataframe, polars_dataframe
 from ._weighted import metrics_weighted
 
+if TYPE_CHECKING:
+    import pandas as pd
+    import polars as pl
 
-def summaryp(
+
+@overload
+def summaryp(  # pylint: disable=too-many-arguments
     reference: TextInput,
     hypothesis: TextInput,
     insertions_weight: float = 1,
     deletions_weight: float = 1,
     substitutions_weight: float = 1,
-) -> pd.DataFrame:
+    *,
+    output: Literal["pandas"] = ...,
+) -> pd.DataFrame: ...
+
+
+@overload
+def summaryp(  # pylint: disable=too-many-arguments
+    reference: TextInput,
+    hypothesis: TextInput,
+    insertions_weight: float = 1,
+    deletions_weight: float = 1,
+    substitutions_weight: float = 1,
+    *,
+    output: Literal["polars"],
+) -> pl.DataFrame: ...
+
+
+@overload
+def summaryp(  # pylint: disable=too-many-arguments
+    reference: TextInput,
+    hypothesis: TextInput,
+    insertions_weight: float = 1,
+    deletions_weight: float = 1,
+    substitutions_weight: float = 1,
+    *,
+    output: Literal["records"],
+) -> list[SummarypRecord]: ...
+
+
+def summaryp(  # pylint: disable=too-many-arguments
+    reference: TextInput,
+    hypothesis: TextInput,
+    insertions_weight: float = 1,
+    deletions_weight: float = 1,
+    substitutions_weight: float = 1,
+    *,
+    output: Literal["pandas", "polars", "records"] = "pandas",
+) -> pd.DataFrame | pl.DataFrame | list[SummarypRecord]:
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, weighted
     WER, Levenshtein Distance and all the insertion, deletion and substitution errors.
@@ -42,6 +89,10 @@ def summaryp(
     werpy compares words exactly as they are written. Words that differ in case, punctuation or the way a character
     is stored count as different words. To compare texts from different sources, pass both through normalize() first.
 
+    The pandas DataFrame needs pandas, which the pandas extra of werpy installs: pip install "werpy[pandas]". The
+    polars DataFrame of output="polars" needs polars, which the polars extra installs: pip install "werpy[polars]".
+    The list of dictionaries of output="records" works with a plain install of werpy.
+
     Parameters
     ----------
     reference : str, list, tuple or numpy array
@@ -54,23 +105,31 @@ def summaryp(
         The weight multiplier for a deletion error. A finite real number of at least 0.
     substitutions_weight: int or float, optional
         The weight multiplier for a substitution error. A finite real number of at least 0.
+    output : str, optional
+        The form of the results, given by keyword only: "pandas", the default, for a pandas DataFrame, "polars" for a
+        polars DataFrame, or "records" for a list of dictionaries.
 
     Raises
     ------
     werpy.exceptions.WerpyTypeError
         If the reference or the hypothesis is not a string, a list, a tuple or a numpy array, if a numpy array does
         not have exactly one dimension, if one of them is a string and the other is a list, a tuple or a numpy array,
-        if an element of a list, tuple or numpy array is not a string, for example a number or None, or if a weight
-        is not a real number, for example a string, None, a bool, a list or a numpy array.
+        if an element of a list, tuple or numpy array is not a string, for example a number or None, if a weight
+        is not a real number, for example a string, None, a bool, a list or a numpy array, or if output is not a
+        string.
     werpy.exceptions.WerpyValueError
         If a reference is blank, either as a single string or as an element of a list, tuple or numpy array, if the
-        reference and hypothesis lists, tuples or arrays do not contain the same number of elements, or if a weight
-        is negative, NaN, infinite or too large for a float.
+        reference and hypothesis lists, tuples or arrays do not contain the same number of elements, if a weight
+        is negative, NaN, infinite or too large for a float, or if output is a string other than "pandas", "polars"
+        and "records".
+    ImportError
+        If output is "pandas" and pandas cannot be imported, or if output is "polars" and polars cannot be imported.
+        The reference, the hypothesis, the weights and output are checked first.
 
     Returns
     -------
-    pandas.core.frame.DataFrame
-        Returns a dataframe containing the following ten columns:
+    pandas.core.frame.DataFrame, polars.DataFrame or list
+        With output="pandas", returns a dataframe containing the following ten columns:
             wer - The Word Error Rate
             werp - The weighted Word Error Rate
             ld - The Levenshtein distance
@@ -82,11 +141,19 @@ def summaryp(
             deleted_words - list of deleted words
             substituted_words - list of substitutions. Each substitution will be shown as a tuple with the reference
             word and the hypothesis word. For example: [(cited, sighted), (abnormally, normally)]
+        With output="polars", returns a polars DataFrame with the same ten columns in the same order. wer and werp
+        are Float64, the counts are Int64, and inserted_words and deleted_words are lists of String.
+        substituted_words is a list of Struct values, each with the fields reference and hypothesis. Empty lists give
+        a DataFrame with no rows and these types.
+        With output="records", returns a list with one dictionary for each pair of texts, in the same order. The keys
+        of each dictionary are the ten columns, in the same order. wer and werp are floats, the counts are ints and
+        the word lists are lists. A pair of strings gives a list that holds one dictionary.
     """
     reference, hypothesis = error_handler(reference, hypothesis)
     insertions_weight, deletions_weight, substitutions_weight = check_weights(
         insertions_weight, deletions_weight, substitutions_weight
     )
+    form = check_output("summaryp", output)
     order = substitution_order(insertions_weight, deletions_weight, substitutions_weight)
     if order:
         result = metrics_weighted(reference, hypothesis, order)
@@ -126,20 +193,25 @@ def summaryp(
         "deleted_words",
         "substituted_words",
     ]
-    df = pd.DataFrame(word_error_rate_breakdown, columns=columns)
-    df["werp"] = werps_result
-    df = df[
-        [
-            "wer",
-            "werp",
-            "ld",
-            "m",
-            "insertions",
-            "deletions",
-            "substitutions",
-            "inserted_words",
-            "deleted_words",
-            "substituted_words",
-        ]
+    ordered_columns = [
+        "wer",
+        "werp",
+        "ld",
+        "m",
+        "insertions",
+        "deletions",
+        "substitutions",
+        "inserted_words",
+        "deleted_words",
+        "substituted_words",
     ]
+    if form != "pandas":
+        werps_rows = werps_result if isinstance(werps_result, list) else [werps_result]
+        rows = [[row[0], werp, *row[1:]] for row, werp in zip(word_error_rate_breakdown, werps_rows)]
+        if form == "polars":
+            return polars_dataframe(rows, ordered_columns)
+        return cast(list[SummarypRecord], [dict(zip(ordered_columns, row)) for row in rows])
+    df = dataframe(word_error_rate_breakdown, columns)
+    df["werp"] = werps_result
+    df = df[ordered_columns]
     return df

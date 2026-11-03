@@ -25,6 +25,7 @@ py_files = files(
     'werpy/_metrics.pyi',
     'werpy/_normalize.py',
     'werpy/_normalize_kernel.pyi',
+    'werpy/_output.py',
     'werpy/_summary.py',
     'werpy/_summaryp.py',
     'werpy/_weighted.pyi',

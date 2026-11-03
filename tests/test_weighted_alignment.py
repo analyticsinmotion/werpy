@@ -21,6 +21,7 @@ To run the tests, execute this module as the main program.
 """
 
 import importlib
+import importlib.util
 import itertools
 import random
 import sys
@@ -33,6 +34,8 @@ from werpy._errorhandler import substitution_order
 
 KERNELS = importlib.import_module("werpy._weighted")
 METRICS = importlib.import_module("werpy._metrics")
+# The tests that read the DataFrames of summary and summaryp need pandas, an optional dependency of werpy.
+PANDAS = unittest.skipIf(importlib.util.find_spec("pandas") is None, "pandas is not installed")
 # One weight set of each direction: a substitution heavier than the mean, lighter than the mean, and exactly the mean.
 DIRECTION_WEIGHTS = {1: (0.5, 0.5, 1), -1: (2.5, 0.75, 1.3), 0: (1, 3, 2)}
 EQUAL_MEAN_WEIGHTS = ((1, 1, 1), (2, 2, 2), (0, 0, 0), (1, 3, 2), (0.5, 0.5, 0.5))
@@ -145,6 +148,7 @@ class TestWeightedAlignment(unittest.TestCase):
     This class contains unit tests for the alignment of the 'werp', 'werps' and 'summaryp' functions.
     """
 
+    @PANDAS
     def test_matches_exhaustive_search(self):
         """
         Test that werp, werps and summaryp equal the exhaustive search on every pair of texts over three words with 0
@@ -165,6 +169,7 @@ class TestWeightedAlignment(unittest.TestCase):
                     failures.append((ref_text, hyp_text, weights, got, want))
         self.assertEqual(failures, [])
 
+    @PANDAS
     def test_swapped_words(self):
         """
         Test two swapped words. With the weights 0.5, 0.5 and 1, one deletion and one insertion cost less than two
@@ -185,6 +190,7 @@ class TestWeightedAlignment(unittest.TestCase):
         self.assertEqual(summary_counts(werpy.summaryp("a b", "b a", 2.5, 0.75, 1.3)),
                          [0, 0, 2, [], [], [("a", "b"), ("b", "a")]])
 
+    @PANDAS
     def test_most_substitutions_when_substitution_is_lighter(self):
         """
         Test that a substitution that weighs less than the mean of an insertion and a deletion gives the alignment
@@ -198,6 +204,7 @@ class TestWeightedAlignment(unittest.TestCase):
         self.assertEqual(row[4:7], [0, 1, 2])
         self.assertEqual(row, expected_row(ref, hyp, (2.5, 0.75, 1.3)))
 
+    @PANDAS
     def test_equal_mean_weights_keep_summary_alignment(self):
         """
         Test that summaryp gives the counts and word lists of summary when a substitution weighs exactly the mean of an
@@ -213,6 +220,7 @@ class TestWeightedAlignment(unittest.TestCase):
                                      summary_counts(werpy.summary(ref, hyp)))
                     self.assertEqual(summary_counts(batch_summaryp, index), summary_counts(batch_summary, index))
 
+    @PANDAS
     def test_counts_add_up_to_edit_distance(self):
         """
         Test every summaryp row for every weight set: the insertions, deletions and substitutions add up to ld, wer is
@@ -231,6 +239,7 @@ class TestWeightedAlignment(unittest.TestCase):
                     failures.append((ref, hyp, weights, summaryp_row(frame, index)))
         self.assertEqual(failures, [])
 
+    @PANDAS
     def test_not_above_summary_alignment(self):
         """
         Test that the weighted cost of the alignment of werp, werps and summaryp is never above the weighted cost of
@@ -250,6 +259,7 @@ class TestWeightedAlignment(unittest.TestCase):
                     failures.append((ref, hyp, weights, chosen, today))
         self.assertEqual(failures, [])
 
+    @PANDAS
     def test_batches_equal_pairs(self):
         """
         Test that the rows of werps and summaryp on a batch equal their results on each pair, for lists and numpy
@@ -277,6 +287,7 @@ class TestWeightedAlignment(unittest.TestCase):
                     frame = werpy.summaryp(batch_refs, batch_hyps, *weights)
                     self.assertEqual([summaryp_row(frame, index) for index in range(len(pairs))], single_rows)
 
+    @PANDAS
     def test_unweighted_results_unchanged(self):
         """
         Test that wer, wers and summary are unchanged on pairs with tied alignments: wer is the number of edits divided
@@ -410,6 +421,7 @@ class TestWeightedAlignment(unittest.TestCase):
                 want = (ValueError, LENGTH_MESSAGE) if len(refs) != len(hyps) else None
                 self.assertEqual(outcomes, [want] * 7)
 
+    @PANDAS
     def test_documented_examples_unchanged(self):
         """
         Test that the weighted examples of the README, the documentation and the docstrings print as documented.
@@ -456,6 +468,7 @@ class TestWeightedAlignment(unittest.TestCase):
             [2, 10, 1, 0, 1, ["balen"], [], [("ballinalee", "alley")]],
         ])
 
+    @PANDAS
     def test_weights_compared_as_floats(self):
         """
         Test that the weights are compared as their float values, the values that the arithmetic of werp and werps

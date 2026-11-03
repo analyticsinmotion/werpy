@@ -43,6 +43,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `normalize()` applies a new rule by default. It puts each text into Unicode Normalization Form C (NFC), removes every character of the Unicode general category for punctuation as well as the ASCII punctuation characters, converts the text to lowercase and puts it into NFC again. Its result changes for texts that hold punctuation outside ASCII, and can change for texts that are not in NFC and for texts whose earlier result was not in NFC, and so can the Word Error Rate of texts normalized with it. The result of every other text, every ASCII text among them, does not change.
 
+- pandas is an optional dependency of werpy. `pip install werpy` installs werpy and NumPy, and `pip install "werpy[pandas]"` also installs pandas. `summary()` and `summaryp()` return a pandas DataFrame by default, as before. When pandas cannot be imported, they raise `ImportError` for the default output, and its message names the `pandas` extra and the other values of `output`. Code that uses pandas because werpy installed it must install pandas itself.
+
 ### Bug Fixes
 
 - `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
@@ -53,7 +55,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ### Enhancements
 
-- The pandas requirement in `pyproject.toml` is now `pandas>=2.2.2`.
+- The `pandas` extra requires `pandas>=2.2.2`, and the `polars` extra requires `polars>=1.0.0`.
 
 - The `sphinx` and `sphinx-nefertiti` requirements of the `docs` extra now carry the environment marker `python_version >= "3.12"`. On Python 3.11 the `docs` extra adds no packages.
 
@@ -74,6 +76,14 @@ It is organized by version and release date followed by a list of Enhancements, 
 - `summary()` and `summaryp()` align a reference and a hypothesis in memory that grows with the number of words in the two texts, so long transcripts can be compared. So do `werp()` and `werps()` with equal weights, and with any weights where a substitution weighs exactly the mean of an insertion and a deletion. The counts, the word lists and their order do not change.
 
 - The docstring of `normalize()` and the normalization page state the rule of `normalize()`, with a table of what happens to each kind of character, and say that the rule uses the Unicode database of the running Python. The normalization page no longer says that `normalize()` handles word contractions. The docstrings of `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` and the pages of these functions say that werpy compares words exactly as they are written, and that texts from different sources can be passed through `normalize()` first.
+
+- `summary()` and `summaryp()` take the keyword-only argument `output`, which selects the form of the results. `output="pandas"`, the default, returns the pandas DataFrame. `output="polars"` returns a polars DataFrame with the same columns in the same order. `output="records"` returns a list with one dictionary for each pair of texts, whose keys are the columns in the same order, and works with a plain install of werpy. An `output` that is not a string raises `WerpyTypeError`, and any other string raises `WerpyValueError`.
+
+- The polars DataFrame of `output="polars"` has typed columns. `wer` and `werp` are `Float64`, the counts are `Int64`, `inserted_words` and `deleted_words` are lists of `String`, and each element of `substituted_words` is a `Struct` with the fields `reference` and `hypothesis`. Empty lists, tuples or arrays give a DataFrame with no rows and these types.
+
+- The `polars` extra installs polars, `pip install "werpy[polars]"`. When polars cannot be imported, `output="polars"` raises `ImportError`, and its message names the `polars` extra and `output="records"`.
+
+- The Tests workflow installs the wheel with its `pandas` and `polars` extras, and one cell runs the test suite without them. The coverage job installs pandas and polars, and the type check installs polars.
 
 ## Version 3.5.0
 

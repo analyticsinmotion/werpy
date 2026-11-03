@@ -22,6 +22,7 @@ To run the tests, execute this module as the main program.
 
 import contextlib
 import importlib
+import importlib.util
 import itertools
 import random
 import tracemalloc
@@ -32,6 +33,8 @@ import werpy
 
 METRICS = importlib.import_module("werpy._metrics")
 KERNELS = importlib.import_module("werpy._weighted")
+# The tests that read the DataFrames of summary and summaryp need pandas, an optional dependency of werpy.
+PANDAS = unittest.skipIf(importlib.util.find_spec("pandas") is None, "pandas is not installed")
 # Sizes in bytes of the whole table and of the moves: pieces down to one reference word; the moves of pieces of 1 and 5
 # reference words with up to 32 hypothesis words; the moves of the whole pair in one pass; and small whole tables with
 # small moves, so that the pairs of one batch take different ways.
@@ -204,6 +207,7 @@ class TestAlignmentMemory(unittest.TestCase):
                 self.assertEqual(got_batches, want_batches)
         self.assertEqual((METRICS.table_budget(), KERNELS.table_budget()), defaults)
 
+    @PANDAS
     def test_moves_and_pieces_match_exhaustive_search(self):
         """
         Test that summary, summaryp with a weight set of each direction, werp and werps with equal weights, and the
