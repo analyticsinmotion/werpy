@@ -31,7 +31,8 @@ class WerpyTypeError(WerpyError, TypeError, AttributeError):
     Raised when an input has the wrong type or kind: when a reference, hypothesis or text is not a string, a list, a
     tuple or a numpy array, when a numpy array does not have exactly one dimension, when one of the reference and the
     hypothesis is a string and the other is a list, a tuple or a numpy array, when an element of a list, tuple or
-    numpy array is not a string, or when a weight of werp(), werps() or summaryp() is not a real number.
+    numpy array is not a string, when a weight of werp(), werps() or summaryp() is not a real number, or when the
+    output argument of summary() or summaryp() is not a string.
 
     WerpyTypeError also derives from AttributeError, so that code written for werpy 3.x that catches
     AttributeError continues to catch it.
@@ -42,8 +43,9 @@ class WerpyValueError(WerpyError, ValueError, ZeroDivisionError):
     """
     Raised when an input has a value that is not valid: when a reference is blank, either as a single string or as
     an element of a list, tuple or numpy array, when the reference and hypothesis lists, tuples or arrays do not
-    contain the same number of elements, when wer() or werp() gets empty lists, tuples or arrays, or when a weight of
-    werp(), werps() or summaryp() is negative, NaN, infinite or too large for a float.
+    contain the same number of elements, when wer() or werp() gets empty lists, tuples or arrays, when a weight of
+    werp(), werps() or summaryp() is negative, NaN, infinite or too large for a float, or when the output argument of
+    summary() or summaryp() is a string other than "pandas", "polars" and "records".
 
     WerpyValueError also derives from ZeroDivisionError, so that code written for werpy 3.x that catches
     ZeroDivisionError continues to catch it.

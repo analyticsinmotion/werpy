@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   test:
-    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}${{ matrix.numpy != 'default' && format(' / NumPy {0}', matrix.numpy) || '' }}
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}${{ matrix.numpy != 'default' && format(' / NumPy {0}', matrix.numpy) || '' }}${{ matrix.extras == 'none' && ' / without pandas and polars' || '' }}${{ matrix.libraries == 'lowest' && ' / lowest pandas and polars' || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -31,12 +31,34 @@ jobs:
         # The NumPy version installed after the package has been built and installed.
         # "default" keeps the version selected by the resolver.
         numpy: ["default"]
+        # "pandas,polars" installs the wheel with its pandas and polars extras. "none"
+        # runs the wheel without pandas and polars, the optional dependencies of
+        # summary() and summaryp().
+        extras: ["pandas,polars"]
+        # "latest" lets the resolver select the versions of pandas and polars.
+        # "lowest" installs pandas 2.2.2 and polars 1.0.0, the lowest versions that
+        # the pandas and polars extras allow.
+        libraries: ["latest"]
         include:
           # This cell runs the wheel with NumPy 1.26, the lowest NumPy minor version
           # that the runtime requirements allow on Python 3.11.
           - os: ubuntu-latest
             python-version: "3.11"
             numpy: "1.26.4"
+            extras: "pandas,polars"
+          # This cell runs the wheel without pandas and polars. The tests that need them
+          # are skipped.
+          - os: ubuntu-latest
+            python-version: "3.14"
+            numpy: "default"
+            extras: "none"
+          # This cell runs the wheel with the lowest versions of pandas and polars that
+          # the extras allow. The resolver selects NumPy for that pandas.
+          - os: ubuntu-latest
+            python-version: "3.11"
+            numpy: "default"
+            extras: "pandas,polars"
+            libraries: "lowest"
 
     defaults:
       run:
@@ -59,20 +81,39 @@ jobs:
         run: uv build --wheel --out-dir dist
 
       - name: Install the wheel and pytest
-        run: uv pip install dist/*.whl pytest
+        env:
+          EXTRAS: ${{ matrix.extras }}
+          LIBRARIES: ${{ matrix.libraries }}
+        run: |
+          wheel=(dist/*.whl)
+          if [ "$EXTRAS" = "none" ]; then
+            uv pip install "${wheel[0]}" pytest
+          elif [ "$LIBRARIES" = "lowest" ]; then
+            uv pip install "${wheel[0]}[$EXTRAS]" pytest "pandas==2.2.2" "polars==1.0.0"
+          else
+            uv pip install "${wheel[0]}[$EXTRAS]" pytest
+          fi
 
-      # The wheel is installed again with NumPy pinned. The resolver selects the
-      # other dependencies for that NumPy version.
+      # The wheel is installed again with NumPy pinned, with the extras of the cell.
+      # The resolver selects pandas and the other dependencies for that NumPy version.
       - name: Install the wheel with NumPy ${{ matrix.numpy }}
         if: matrix.numpy != 'default'
-        run: uv pip install dist/*.whl "numpy==${{ matrix.numpy }}"
+        env:
+          EXTRAS: ${{ matrix.extras }}
+        run: |
+          wheel=(dist/*.whl)
+          uv pip install "${wheel[0]}[$EXTRAS]" "numpy==${{ matrix.numpy }}"
 
       # The remaining steps run outside the repository so that the source tree
       # cannot shadow the installed package.
       - name: Check that the installed package is imported
         working-directory: ${{ runner.temp }}
+        env:
+          EXTRAS: ${{ matrix.extras }}
         run: |
           python - <<'EOF'
+          import importlib.util
+          import os
           import pathlib
           import sysconfig
 
@@ -83,6 +124,12 @@ jobs:
           platlib = pathlib.Path(sysconfig.get_paths()["platlib"]).resolve()
           print(f"werpy {werpy.__version__} from {package_dir}")
           print(f"numpy {numpy.__version__}")
+          extras = os.environ["EXTRAS"].split(",")
+          for name in ("pandas", "polars"):
+              found = importlib.util.find_spec(name) is not None
+              print(f"{name} {'installed' if found else 'not installed'}")
+              if found != (name in extras):
+                  raise SystemExit(f"{name} found: {found}, but the cell installs {os.environ['EXTRAS']}")
           if not package_dir.is_relative_to(platlib):
               raise SystemExit(f"werpy was imported from {package_dir}, not from {platlib}")
           EOF
@@ -124,8 +171,12 @@ jobs:
 
       # The Cython.Coverage plugin of Cython measures the .pyx files. The
       # version is the Cython build requirement in pyproject.toml.
-      - name: Install the wheel, pytest, pytest-cov, coverage and Cython
-        run: uv pip install dist/*.whl pytest pytest-cov coverage cython==3.3.0
+      # pandas and polars are installed so that the tests reach the DataFrame
+      # lines of summary() and summaryp(). Two tests import werpy._output
+      # again while pandas or polars cannot be imported, to reach the lines for
+      # an environment without it.
+      - name: Install the wheel, pandas, polars, pytest, pytest-cov, coverage and Cython
+        run: uv pip install dist/*.whl pandas polars pytest pytest-cov coverage cython==3.3.0
 
       # The plugin reads the C file that Cython generated for each module, as
       # <module>.c beside <module>.pyx: beside the installed modules while the

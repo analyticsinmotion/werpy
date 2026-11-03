@@ -12,6 +12,8 @@ summary() counts the insertions, deletions and substitutions on an alignment of 
 
    werpy compares words exactly as they are written. Words that differ in case, punctuation or the way a character is stored count as different words. To compare texts from different sources, pass both through normalize() first.
 
+The next two examples return a pandas DataFrame, the default form of the results, and need pandas, which the pandas extra of werpy installs: pip install \"werpy[pandas]\".
+
 Summary Analysis
 ----------------
 
@@ -58,6 +60,60 @@ Apply the following weights/penalties to the errors:
 .. image:: images/werpy-example-summaryp-results-word-error-rate-breakdown.png
    :alt: werpy example summary results word error rate breakdown
    :align: center
+
+
+Results as a polars DataFrame
+-----------------------------
+
+With output=\"polars\", summary() and summaryp() return a polars DataFrame with the same columns in the same order. Each substitution is a struct with the fields reference and hypothesis. The polars extra of werpy installs polars: pip install \"werpy[polars]\".
+
+*Python Code*
+
+.. code-block:: python
+
+   import werpy
+
+   ref = ['it was beautiful and sunny today', 'she cited multiple reasons why']
+   hyp = ['it was a beautiful and sunny day', 'she sighted multiple reasons why']
+   summary = werpy.summary(ref, hyp, output="polars")
+   print(summary.select("wer", "ld", "inserted_words", "substituted_words"))
+
+*Results Output*
+
+.. code-block:: text
+
+   shape: (2, 4)
+   ┌──────────┬─────┬────────────────┬───────────────────────┐
+   │ wer      ┆ ld  ┆ inserted_words ┆ substituted_words     │
+   │ ---      ┆ --- ┆ ---            ┆ ---                   │
+   │ f64      ┆ i64 ┆ list[str]      ┆ list[struct[2]]       │
+   ╞══════════╪═════╪════════════════╪═══════════════════════╡
+   │ 0.333333 ┆ 2   ┆ ["a"]          ┆ [{"today","day"}]     │
+   │ 0.2      ┆ 1   ┆ []             ┆ [{"cited","sighted"}] │
+   └──────────┴─────┴────────────────┴───────────────────────┘
+
+
+Results as a list of dictionaries
+---------------------------------
+
+With output=\"records\", summary() and summaryp() return a list with one dictionary for each pair of texts, whose keys are the columns in the same order. This form works with a plain install of werpy.
+
+*Python Code*
+
+.. code-block:: python
+
+   import werpy
+
+   ref = ['it was beautiful and sunny today']
+   hyp = ['it was a beautiful and sunny day']
+   records = werpy.summary(ref, hyp, output="records")
+   print(records)
+
+*Results Output*
+
+.. code-block:: python
+
+   [{'wer': 0.3333333333333333, 'ld': 2, 'm': 6, 'insertions': 1, 'deletions': 0, 'substitutions': 1, 'inserted_words': ['a'], 'deleted_words': [], 'substituted_words': [('today', 'day')]}]
 
 
 Long texts

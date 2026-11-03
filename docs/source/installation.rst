@@ -12,6 +12,15 @@ You can install werpy with Python's pip package manager:
 
 This will install the latest stable release of werpy.
 
+summary() and summaryp() return their results as a pandas DataFrame, a polars DataFrame or a list of dictionaries. To install pandas or polars with werpy, use its extra:
+
+.. code-block:: console
+
+   $ pip install "werpy[pandas]"
+   $ pip install "werpy[polars]"
+
+With a plain pip install werpy, output=\"records\" returns the results as a list of dictionaries.
+
 Verify installation
 ^^^^^^^^^^^^^^^^^^^
 

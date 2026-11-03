@@ -24,13 +24,20 @@ import tempfile
 import unittest
 import warnings
 import numpy as np
-import pandas as pd
 import werpy
 from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
+
+try:
+    import pandas as pd
+except ImportError:  # pandas is an optional dependency of werpy
+    pd = None
 
 
 SIX = (werpy.wer, werpy.wers, werpy.werp, werpy.werps, werpy.summary, werpy.summaryp)
 WEIGHTED = (werpy.werp, werpy.werps, werpy.summaryp)
+# The functions whose results the tests compare. The DataFrames of summary and summaryp need pandas.
+RESULTS = SIX if pd is not None else SIX[:4]
+WEIGHTED_RESULTS = WEIGHTED if pd is not None else WEIGHTED[:2]
 WEIGHT_NAMES = ("insertions_weight", "deletions_weight", "substitutions_weight")
 KIND_MESSAGE = "Reference and hypothesis must both be strings, or both be lists, tuples or numpy arrays."
 LENGTH_MESSAGE = "The Reference and Hypothesis input parameters must have the same number of elements."
@@ -112,6 +119,11 @@ def generator(texts):
     return (text for text in texts)
 
 
+def series(texts):
+    """Return a list that holds a pandas Series of the texts, or an empty list without pandas."""
+    return [pd.Series(texts)] if pd is not None else []
+
+
 def wrong_type_values():
     """Return new values of types that are neither a text nor a batch. A generator can be used only once."""
     return [
@@ -121,7 +133,7 @@ def wrong_type_values():
         b"a b",
         bytearray(b"a b"),
         memoryview(b"a b"),
-        pd.Series(["a b"]),
+        *series(["a b"]),
         {"a b"},
         generator(["a b"]),
         {"a b": 1},
@@ -151,7 +163,7 @@ class TestInputContract(unittest.TestCase):
         Assert that two results of a metric function are equal: data frames value by value, and other results with
         the same type and value.
         """
-        if isinstance(expected, pd.DataFrame):
+        if pd is not None and isinstance(expected, pd.DataFrame):
             pd.testing.assert_frame_equal(actual, expected)
         else:
             self.assertIs(type(actual), type(expected))
@@ -220,7 +232,7 @@ class TestInputContract(unittest.TestCase):
         """
         reference, hypothesis = ["a b c", "d e"], ["a x c", "d e f"]
         weights = (0.5, 0.5, 1)
-        expected = {function: call(function, reference, hypothesis, weights) for function in SIX}
+        expected = {function: call(function, reference, hypothesis, weights) for function in RESULTS}
         forms = [
             (tuple(reference), tuple(hypothesis)),
             (tuple(reference), hypothesis),
@@ -229,7 +241,7 @@ class TestInputContract(unittest.TestCase):
             (np.array(reference, dtype=object), tuple(hypothesis)),
         ]
         for ref, hyp in forms:
-            for function in SIX:
+            for function in RESULTS:
                 with self.subTest(function=function.__name__, forms=(type(ref).__name__, type(hyp).__name__)):
                     self._assert_same_result(call(function, ref, hyp, weights), expected[function])
 
@@ -273,7 +285,7 @@ class TestInputContract(unittest.TestCase):
         cases = [
             (["a b c"], [np.array(["a b c"])]),
             (["a b c"], [np.array("a b c")]),
-            (["a b c"], [pd.Series(["a b c"])]),
+            *((["a b c"], [value]) for value in series(["a b c"])),
             (object_array(["a b c"]), object_array([np.array(["a b c"])])),
         ]
         for reference, hypothesis in cases:
@@ -319,7 +331,7 @@ class TestInputContract(unittest.TestCase):
             for function in (werpy.wers, werpy.werps):
                 with self.subTest(function=function.__name__, form=form):
                     self.assertEqual(call(function, reference, hypothesis), [])
-            for function, columns in ((werpy.summary, 9), (werpy.summaryp, 10)):
+            for function, columns in ((werpy.summary, 9), (werpy.summaryp, 10)) if pd is not None else ():
                 with self.subTest(function=function.__name__, form=form):
                     frame = call(function, reference, hypothesis)
                     self.assertIsInstance(frame, pd.DataFrame)
@@ -352,8 +364,8 @@ class TestInputContract(unittest.TestCase):
         """
         reference, hypothesis = ["a b c", "d e"], ["a x c", "d e f"]
         weights = (0.5, 0.5, 1)
-        expected_text = {function: call(function, reference[0], hypothesis[0], weights) for function in SIX}
-        expected_batch = {function: call(function, reference, hypothesis, weights) for function in SIX}
+        expected_text = {function: call(function, reference[0], hypothesis[0], weights) for function in RESULTS}
+        expected_batch = {function: call(function, reference, hypothesis, weights) for function in RESULTS}
         text_forms = [(Text(reference[0]), Text(hypothesis[0])), (np.str_(reference[0]), np.str_(hypothesis[0]))]
         batch_forms = [
             ([np.str_(text) for text in reference], [np.str_(text) for text in hypothesis]),
@@ -363,14 +375,14 @@ class TestInputContract(unittest.TestCase):
         ]
         for forms, expected in ((text_forms, expected_text), (batch_forms, expected_batch)):
             for ref, hyp in forms:
-                for function in SIX:
+                for function in RESULTS:
                     with self.subTest(function=function.__name__, reference=repr(ref)):
                         self._assert_same_result(call(function, ref, hyp, weights), expected[function])
         with self.subTest(form="StringDType"):
             ref, hyp = string_dtype_array(reference), string_dtype_array(hypothesis)
             if ref is None:
                 self.skipTest("NumPy 1.x has no StringDType.")
-            for function in SIX:
+            for function in RESULTS:
                 self._assert_same_result(call(function, ref, hyp, weights), expected_batch[function])
 
     def test_weight_types(self):
@@ -420,7 +432,7 @@ class TestInputContract(unittest.TestCase):
         """
         for weight in (2, 0.5, np.int64(2), np.uint8(2), np.float32(0.5), fractions.Fraction(1, 2), 0, -0.0):
             number = float(weight)
-            for function in WEIGHTED:
+            for function in WEIGHTED_RESULTS:
                 for reference, hypothesis in (PAIR, BATCH):
                     with self.subTest(function=function.__name__, weight=repr(weight), reference=repr(reference)):
                         self._assert_same_result(
@@ -438,8 +450,9 @@ class TestInputContract(unittest.TestCase):
                 self.assertEqual(werpy.werp(*BATCH, zero, zero, zero), 0.0)
                 self.assertEqual(werpy.werps(*PAIR, zero, zero, zero), [0.0])
                 self.assertEqual(werpy.werps(*BATCH, zero, zero, zero), [0.0, 0.0])
-                self.assertEqual(werpy.summaryp(*PAIR, zero, zero, zero)["werp"].tolist(), [0.0])
-                self.assertEqual(werpy.summaryp(*BATCH, zero, zero, zero)["werp"].tolist(), [0.0, 0.0])
+                if pd is not None:
+                    self.assertEqual(werpy.summaryp(*PAIR, zero, zero, zero)["werp"].tolist(), [0.0])
+                    self.assertEqual(werpy.summaryp(*BATCH, zero, zero, zero)["werp"].tolist(), [0.0, 0.0])
 
     def test_weights_not_broadcast(self):
         """
@@ -468,7 +481,7 @@ class TestInputContract(unittest.TestCase):
         for form in (texts, tuple(texts), np.array(texts), np.array(texts, dtype=object)):
             with self.subTest(form=type(form).__name__):
                 self.assertEqual(werpy.normalize(form), expected)
-        for value in (pd.Series(texts), generator(texts), set(texts), {"a": texts[0]}.values(), {texts[0]: 1}.keys()):
+        for value in (*series(texts), generator(texts), set(texts), {"a": texts[0]}.values(), {texts[0]: 1}.keys()):
             with self.subTest(value=type(value).__name__):
                 error = self._assert_raises(WerpyTypeError, type_message("text", value), werpy.normalize, value)
                 self.assertIsInstance(error, TypeError)
@@ -501,7 +514,7 @@ class TestInputContract(unittest.TestCase):
             (["a b"], [np.array(["a b"])]),
             (["   "], ["a b"]),
             ("", "a b"),
-            (pd.Series(["a b"]), pd.Series(["a b"])),
+            *zip(series(["a b"]), series(["a b"])),
         ]
         for reference, hypothesis in pairs:
             for function in SIX:
@@ -517,7 +530,7 @@ class TestInputContract(unittest.TestCase):
                 with self.subTest(function=function.__name__, weight=repr(weight)[:20]):
                     with self.assertRaises(WerpyError):
                         function(*BATCH, weight)
-        for text in (None, 42, np.array("a b"), np.array([["a b"]]), [1], pd.Series(["a b"]), ["a b", None]):
+        for text in (None, 42, np.array("a b"), np.array([["a b"]]), [1], *series(["a b"]), ["a b", None]):
             with self.subTest(function="normalize", text=repr(text)):
                 with self.assertRaises(WerpyError):
                     werpy.normalize(text)
