@@ -25,9 +25,15 @@ to ensure that the required module is available for testing.
 import contextlib
 import io
 import unittest
-import numpy as np
 from werpy._wers import wers
 from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
+
+try:
+    import numpy as np
+except ImportError:  # NumPy is not a dependency of werpy
+    np = None
+
+NUMPY = unittest.skipIf(np is None, "NumPy is not installed")
 
 
 class TestWers(unittest.TestCase):
@@ -234,6 +240,7 @@ class TestWers(unittest.TestCase):
                 self.assertEqual(str(context.exception), message)
                 self.assertEqual(buffer.getvalue(), "")
 
+    @NUMPY
     def test_wers_numpy_string_array(self):
         """
         Test the wers function with reference and hypothesis given as numpy arrays of string dtype.
@@ -244,6 +251,7 @@ class TestWers(unittest.TestCase):
 
         self.assertEqual(wers(ref, hyp), expected_result)
 
+    @NUMPY
     def test_wers_numpy_object_array(self):
         """
         Test the wers function with reference and hypothesis given as numpy arrays of object dtype.

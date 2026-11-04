@@ -49,10 +49,7 @@ keywords = [
     "nlp",
     "accuracy metrics"
 ]
-dependencies = [
-  "numpy>=1.26.0; python_version<'3.12'",
-  "numpy>=2.2.0; python_version>='3.12'",
-]
+dependencies = []
 
 [project.urls]
 "Repository" = "https://github.com/analyticsinmotion/werpy"

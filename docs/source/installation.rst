@@ -12,6 +12,8 @@ You can install werpy with Python's pip package manager:
 
 This will install the latest stable release of werpy.
 
+werpy accepts NumPy arrays of strings as inputs wherever it accepts a list.
+
 summary() and summaryp() return their results as a pandas DataFrame, a polars DataFrame or a list of dictionaries. To install pandas or polars with werpy, use its extra:
 
 .. code-block:: console

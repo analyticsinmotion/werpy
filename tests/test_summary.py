@@ -25,7 +25,6 @@ to ensure that the required module is available for testing.
 import contextlib
 import io
 import unittest
-import numpy as np
 from werpy._summary import summary
 from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
 
@@ -35,6 +34,13 @@ except ImportError:  # pandas is an optional dependency of werpy
     pd = None
 
 PANDAS = unittest.skipIf(pd is None, "pandas is not installed")
+
+try:
+    import numpy as np
+except ImportError:  # NumPy is not a dependency of werpy
+    np = None
+
+NUMPY = unittest.skipIf(np is None, "NumPy is not installed")
 
 
 class TestSummary(unittest.TestCase):
@@ -195,6 +201,7 @@ class TestSummary(unittest.TestCase):
         pd.testing.assert_frame_equal(expected_result, actual_result)
 
     @PANDAS
+    @NUMPY
     def test_summary_numpy_string_array(self):
         """
         Test the summary function with reference and hypothesis given as numpy arrays of string dtype.
@@ -221,6 +228,7 @@ class TestSummary(unittest.TestCase):
         pd.testing.assert_frame_equal(expected_result, actual_result)
 
     @PANDAS
+    @NUMPY
     def test_summary_numpy_object_array(self):
         """
         Test the summary function with reference and hypothesis given as numpy arrays of object dtype.

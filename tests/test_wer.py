@@ -29,11 +29,17 @@ to ensure that the required module is available for testing.
 import contextlib
 import io
 import unittest
-import numpy as np
 import werpy
 from werpy._metrics import calculations_wer_only  # pylint: disable=no-name-in-module
 from werpy._wer import wer
 from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
+
+try:
+    import numpy as np
+except ImportError:  # NumPy is not a dependency of werpy
+    np = None
+
+NUMPY = unittest.skipIf(np is None, "NumPy is not installed")
 
 
 class TestWer(unittest.TestCase):
@@ -251,6 +257,7 @@ class TestWer(unittest.TestCase):
                 self.assertEqual(str(context.exception), message)
                 self.assertEqual(buffer.getvalue(), "")
 
+    @NUMPY
     def test_wer_numpy_string_array(self):
         """
         Test the wer function with reference and hypothesis given as numpy arrays of string dtype.
@@ -261,6 +268,7 @@ class TestWer(unittest.TestCase):
 
         self.assertEqual(wer(ref, hyp), expected_result)
 
+    @NUMPY
     def test_wer_numpy_object_array(self):
         """
         Test the wer function with reference and hypothesis given as numpy arrays of object dtype.
@@ -270,6 +278,16 @@ class TestWer(unittest.TestCase):
         expected_result = 0.2
 
         self.assertEqual(wer(ref, hyp), expected_result)
+
+    @NUMPY
+    def test_numpy_example(self):
+        """
+        Test the NumPy arrays example of the README (Example 11): the Word Error Rate that wer gives for two numpy
+        arrays of strings prints as the documented line.
+        """
+        ref = np.array(["i love cold pizza", "the sugar bear character was popular"])
+        hyp = np.array(["i love pizza", "the sugar bare character was popular"])
+        self.assertEqual(str(werpy.wer(ref, hyp)), "0.2")
 
     def test_wer_identical_pair(self):
         """
@@ -285,7 +303,7 @@ class TestWer(unittest.TestCase):
 
         self.assertEqual(wer(reference, hypothesis), 0.0)
         self.assertEqual(werpy.wers(reference, hypothesis), [0.0])
-        self.assertEqual(calculations_wer_only(reference, hypothesis).tolist(), [0.0, 0.0, 4.0])
+        self.assertEqual(calculations_wer_only(reference, hypothesis), (0.0, 0.0, 4.0))
 
     def test_werpy_public_surface(self):
         """

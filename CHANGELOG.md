@@ -43,7 +43,15 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `normalize()` applies a new rule by default. It puts each text into Unicode Normalization Form C (NFC), removes every character of the Unicode general category for punctuation as well as the ASCII punctuation characters, converts the text to lowercase and puts it into NFC again. Its result changes for texts that hold punctuation outside ASCII, and can change for texts that are not in NFC and for texts whose earlier result was not in NFC, and so can the Word Error Rate of texts normalized with it. The result of every other text, every ASCII text among them, does not change.
 
-- pandas is an optional dependency of werpy. `pip install werpy` installs werpy and NumPy, and `pip install "werpy[pandas]"` also installs pandas. `summary()` and `summaryp()` return a pandas DataFrame by default, as before. When pandas cannot be imported, they raise `ImportError` for the default output, and its message names the `pandas` extra and the other values of `output`. Code that uses pandas because werpy installed it must install pandas itself.
+- pandas is an optional dependency of werpy. `pip install werpy` installs werpy, and `pip install "werpy[pandas]"` also installs pandas. `summary()` and `summaryp()` return a pandas DataFrame by default, as before. When pandas cannot be imported, they raise `ImportError` for the default output, and its message names the `pandas` extra and the other values of `output`. Code that uses pandas because werpy installed it must install pandas itself.
+
+- `pip install werpy` installs werpy alone. werpy accepts one-dimensional numpy arrays of strings as before, from the NumPy that your project installs. Code that uses NumPy because werpy installed it must install NumPy itself.
+
+- `werp()` on a list, tuple or numpy array of texts applies the weights to the insertions, deletions and substitutions of all the pairs together, and divides the result by the number of words in all the references. For some weights, such as 0.1, the result can differ in the last digit from the result of earlier versions.
+
+- The `werp` column of `summaryp()` holds, for each pair, the result of `werp()` for that pair. `summaryp()` uses the float value of each weight, as `werp()` and `werps()` do. For very large int weights, the column can differ in the last digit from earlier versions.
+
+- When the weighted errors are too large for a float, `werp()`, `werps()` and `summaryp()` compute the rate exactly, return it rounded to the nearest float, and return `inf` only when the rate itself is too large for a float, with no warning. For such weights, earlier versions could return `inf` where the rate fits in a float, `werp()` and `werps()` issued the overflow `RuntimeWarning` of NumPy, and `summaryp()` raised `OverflowError` for some int weights.
 
 ### Bug Fixes
 
@@ -53,6 +61,8 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `normalize()` keeps a lone surrogate in a text instead of raising `UnicodeEncodeError`.
 
+- `typing.get_type_hints()` resolves the annotations of `normalize()`, `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` in every environment, with or without NumPy, pandas and polars. At run time, the hint for a numpy array is `typing.Any`, and so is the hint for the DataFrame of a library that werpy has not imported. Type checkers read the precise types. Before this change, `typing.get_type_hints()` raised `NameError` for `normalize()`.
+
 ### Enhancements
 
 - The `pandas` extra requires `pandas>=2.2.2`, and the `polars` extra requires `polars>=1.0.0`.
@@ -61,7 +71,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `pywer`, `evaluate`, `universal-edit-distance` and `torchmetrics` were removed from the `benchmarks` extra.
 
-- Building werpy no longer requires NumPy. `metrics.pyx` no longer uses the NumPy C API, and `numpy` was removed from the build requirements in `pyproject.toml` and from `meson.build`. NumPy remains a runtime dependency.
+- Building werpy no longer requires NumPy. `metrics.pyx` no longer uses the NumPy C API, and `numpy` was removed from the build requirements in `pyproject.toml` and from `meson.build`.
 
 - The dynamic programming loops of `calculations()`, `calculations_fast()`, `calculations_wer_only()` and `_calculations_wer_only_reuse_ptr()` in `_metrics.pyx` now keep the neighboring cell values in local variables. The results are unchanged.
 
@@ -84,6 +94,10 @@ It is organized by version and release date followed by a list of Enhancements, 
 - The `polars` extra installs polars, `pip install "werpy[polars]"`. When polars cannot be imported, `output="polars"` raises `ImportError`, and its message names the `polars` extra and `output="records"`.
 
 - The Tests workflow installs the wheel with its `pandas` and `polars` extras, and one cell runs the test suite without them. The coverage job installs pandas and polars, and the type check installs polars.
+
+- The compiled functions of `_metrics.pyx` and `_weighted.pyx` return a tuple for a pair of texts and a list of tuples for a list, tuple or numpy array of texts, instead of a numpy array. The values are unchanged.
+
+- `summaryp()` builds its pandas DataFrame from the rows of its ten columns. The DataFrame does not change.
 
 ## Version 3.5.0
 

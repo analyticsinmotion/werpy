@@ -11,11 +11,21 @@ By allowing users to assign weights to different types of errors, werpy enables 
 
 .. note::
 
+   werp(), werps() and summaryp() compute each weighted Word Error Rate in float arithmetic, with the float value of each weight. When the weighted errors are too large for a float, they compute the rate exactly and return it rounded to the nearest float, with no warning. The result is inf only when the rate itself is too large for a float.
+
+.. note::
+
+   The werp column of summaryp() holds, for each pair, the result of werp() for that pair with the same weights.
+
+.. note::
+
    werpy compares words exactly as they are written. Words that differ in case, punctuation or the way a character is stored count as different words. To compare texts from different sources, pass both through normalize() first.
 
 
 Cumulative Weighted Word Error Rate
 -----------------------------------
+
+For a list, tuple or numpy array of texts, werp() applies the weights to the insertions, deletions and substitutions of all the pairs together, and divides the result by the number of words in all the references.
 
 Apply the following weights/penalties to the errors:
 
@@ -43,6 +53,8 @@ Apply the following weights/penalties to the errors:
 *Result Interpretation*
 
 - The weighted WER of 0.125 represents the error rate across two sequences of text after applying the specified weights. This is a measure of the system's performance that accounts for the varying impact of insertions, deletions, and substitutions based on the assigned weights.
+
+- The two pairs hold one insertion, one substitution and 12 reference words in all. werp() applies the weights to these totals: (0.5 + 1) / 12 = 0.125.
 
 - Insertions and Deletions are considered to have half the penalty of substitutions, which have a weight of 1. This reflects a specific prioritization where substitutions are considered to be more impactful or significant errors.
 

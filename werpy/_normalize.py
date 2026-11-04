@@ -18,14 +18,10 @@ import string
 import struct
 import unicodedata
 from functools import cache
-from typing import TYPE_CHECKING, overload
+from typing import overload
 
-from ._errorhandler import check_text_input, element_error
+from ._errorhandler import TextBatch, TextInput, check_text_input, element_error
 from ._normalize_kernel import canonical_decompositions, normalize_text, normalize_texts, set_pairs, setup
-
-if TYPE_CHECKING:
-    import numpy as np
-    from numpy.typing import NDArray
 
 
 # The table that werpy._normalize_kernel reads holds one entry per code point: the lowercase, the flags, the
@@ -179,14 +175,10 @@ def normalize(text: str) -> str: ...
 
 
 @overload
-def normalize(
-    text: list[str] | tuple[str, ...] | NDArray[np.str_] | NDArray[np.object_],
-) -> list[str]: ...
+def normalize(text: TextBatch) -> list[str]: ...
 
 
-def normalize(
-    text: str | list[str] | tuple[str, ...] | NDArray[np.str_] | NDArray[np.object_],
-) -> str | list[str]:
+def normalize(text: TextInput) -> str | list[str]:
     """
     This function prepares texts for the Word Error Rate (WER) functions and for other natural language processing
     tasks. It applies the same rule to each text, in this order:

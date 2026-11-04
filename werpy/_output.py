@@ -18,7 +18,8 @@ This module defines the following functions:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypedDict
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, TypeAlias, TypedDict
 
 from .exceptions import WerpyTypeError, WerpyValueError
 
@@ -33,6 +34,42 @@ else:
 
 if TYPE_CHECKING:
     import polars as pl
+
+    # The DataFrame types of the results of summary() and summaryp().
+    PandasDataFrame: TypeAlias = pd.DataFrame
+    PolarsDataFrame: TypeAlias = pl.DataFrame
+else:
+    # At run time, the aliases name typing.Any for the DataFrame of a library that werpy has not imported, so that
+    # typing.get_type_hints() resolves the annotations of summary() and summaryp() in every environment.
+    PandasDataFrame: TypeAlias = Any if pd is None else pd.DataFrame
+    PolarsDataFrame: TypeAlias = Any
+
+
+# The columns of the results of summary() and summaryp(), in order. They are the keys of SummaryRecord and
+# SummarypRecord.
+SUMMARY_COLUMNS = [
+    "wer",
+    "ld",
+    "m",
+    "insertions",
+    "deletions",
+    "substitutions",
+    "inserted_words",
+    "deleted_words",
+    "substituted_words",
+]
+SUMMARYP_COLUMNS = [
+    "wer",
+    "werp",
+    "ld",
+    "m",
+    "insertions",
+    "deletions",
+    "substitutions",
+    "inserted_words",
+    "deleted_words",
+    "substituted_words",
+]
 
 
 class SummaryRecord(TypedDict):
@@ -104,7 +141,7 @@ def check_output(function: str, output: object) -> str:
     return output
 
 
-def dataframe(rows: list[list[object]], columns: list[str]) -> pd.DataFrame:
+def dataframe(rows: Sequence[Sequence[object]], columns: list[str]) -> pd.DataFrame:
     """
     Return the pandas DataFrame of the rows of summary() or summaryp(), with the given columns. check_output() is
     called first, so pandas can be imported.
@@ -112,7 +149,7 @@ def dataframe(rows: list[list[object]], columns: list[str]) -> pd.DataFrame:
     return pd.DataFrame(rows, columns=columns)
 
 
-def polars_dataframe(rows: list[list[Any]], columns: list[str]) -> pl.DataFrame:
+def polars_dataframe(rows: Sequence[Sequence[Any]], columns: list[str]) -> pl.DataFrame:
     """
     Return the polars DataFrame of the rows of summary() or summaryp(), with the given columns, of which the last is
     substituted_words. The rates are Float64, the counts are Int64, the inserted and deleted words are lists of String,

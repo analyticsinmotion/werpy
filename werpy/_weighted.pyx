@@ -16,20 +16,20 @@ Each cell of the dynamic programme holds one integer key: (min(m, n) + 1) times 
 edits, plus the number of substitutions for order 1 or minus it for order -1. The keys order the
 alignments by their edits first and by their substitutions second.
 
-- calculations_weighted(reference, hypothesis, order) -> np.ndarray: the full path. Returns the
-  nine-element object array of werpy._metrics.calculations for that alignment: the WER, LD,
-  number of words in the reference, counts of insertions, deletions and substitutions, and
-  lists of the inserted, deleted and substituted words.
-- metrics_weighted(reference, hypothesis, order) -> np.ndarray: routes to calculations_weighted
-  for a pair of strings and returns a (9,) object array, or processes a batch and returns an
-  (n, 9) object array with one row per pair.
-- calculations_fast_weighted(reference, hypothesis, order) -> np.ndarray: the counts-only path.
-  Returns the (6,) float64 array of werpy._metrics.calculations_fast for that alignment: the
+- calculations_weighted(reference, hypothesis, order) -> tuple: the full path. Returns the
+  tuple of nine items of werpy._metrics.calculations for that alignment: the WER, LD, number
+  of words in the reference, counts of insertions, deletions and substitutions, and lists of
+  the inserted, deleted and substituted words.
+- metrics_weighted(reference, hypothesis, order) -> tuple or list: routes to
+  calculations_weighted for a pair of strings, or processes a batch and returns a list with
+  one such tuple for each pair.
+- calculations_fast_weighted(reference, hypothesis, order) -> tuple: the counts-only path.
+  Returns the tuple of six floats of werpy._metrics.calculations_fast for that alignment: the
   WER, LD, number of words in the reference, and counts of insertions, deletions and
   substitutions. It keeps two rows of keys and has no backtrace.
-- metrics_fast_weighted(reference, hypothesis, order) -> np.ndarray: routes to
-  calculations_fast_weighted for a pair of strings, or returns an (n, 6) float64 array for a
-  batch.
+- metrics_fast_weighted(reference, hypothesis, order) -> tuple or list: routes to
+  calculations_fast_weighted for a pair of strings, or returns a list with one such tuple for
+  each pair of a batch.
 
 The memory of calculations_weighted grows with the number of words. For a short pair it keeps
 the whole key matrix and walks back through it. For a longer pair it keeps only the move that
@@ -44,8 +44,6 @@ Each function raises a ValueError when the order is not 1 or -1.
 Input validation is performed by werpy._errorhandler.error_handler before these functions
 are called by the public werpy functions.
 """
-
-import numpy as np
 
 cimport cython
 from cpython.ref cimport PyObject
@@ -507,8 +505,8 @@ cpdef object calculations_weighted(object reference, object hypothesis, int orde
     end and takes, at each cell, the first move that keeps the key optimal: a match or a
     substitution, then an insertion, then a deletion, as in werpy._metrics.calculations.
 
-    Returns (9,) object array: [wer, ld, m, insertions, deletions, substitutions,
-    inserted_words, deleted_words, substituted_words]
+    Returns a tuple of 9 items: (wer, ld, m, insertions, deletions, substitutions,
+    inserted_words, deleted_words, substituted_words)
     """
     _check_order(order)
 
@@ -521,7 +519,7 @@ cpdef object calculations_weighted(object reference, object hypothesis, int orde
     # An identical pair has no edits, so the token mapping and the dynamic
     # programme are skipped. Only the reference word count is needed.
     if reference == hypothesis:
-        return np.array([0.0, 0, m, 0, 0, 0, [], [], []], dtype=object)
+        return (0.0, 0, m, 0, 0, 0, [], [], [])
 
     hypothesis_word = hypothesis.split()
     n = len(hypothesis_word)
@@ -578,9 +576,7 @@ cpdef object calculations_weighted(object reference, object hypothesis, int orde
 
     inserted_words.reverse(), deleted_words.reverse(), substituted_words.reverse()
 
-    return np.array(
-        [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words],
-        dtype=object)
+    return (wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words)
 
 
 @cython.boundscheck(False)
@@ -589,8 +585,8 @@ cdef object _metrics_batch_weighted(list references, list hypotheses, int order)
     """
     Batch processing for calculations_weighted.
 
-    Returns (n, 9) object array where each row contains:
-    [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words]
+    Returns a list with one tuple for each pair:
+    (wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words)
     """
     # The loop below reads both lists at every index without bounds checks.
     _check_equal_lengths(references, hypotheses)
@@ -598,11 +594,11 @@ cdef object _metrics_batch_weighted(list references, list hypotheses, int order)
     cdef Py_ssize_t n = len(references)
     cdef Py_ssize_t idx
 
-    # Rows output, dtype=object because cols 6-8 are lists
-    cdef object out = np.empty((n, 9), dtype=object)
+    # One row for each pair
+    cdef list out = []
 
     for idx in range(n):
-        out[idx, :] = calculations_weighted(references[idx], hypotheses[idx], order)
+        out.append(calculations_weighted(references[idx], hypotheses[idx], order))
 
     return out
 
@@ -612,11 +608,11 @@ cpdef object metrics_weighted(object reference, object hypothesis, int order):
     Entry point of summaryp for weights that decide between the alignments with the fewest edits.
 
     Returns:
-    - strings: a single row (len 9)
-    - sequences: an (n, 9) object ndarray, one row per pair
+    - strings: a single row, a tuple of 9 items
+    - lists: a list with one row for each pair
     """
     _check_order(order)
-    if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
+    if isinstance(reference, list) and isinstance(hypothesis, list):
         return _metrics_batch_weighted(list(reference), list(hypothesis), order)
     return calculations_weighted(reference, hypothesis, order)
 
@@ -632,7 +628,7 @@ cpdef object calculations_fast_weighted(object reference, object hypothesis, int
     edits and the substitutions, and the insertions and deletions follow from them and from the
     two lengths, so two rows of keys are kept and no backtrace is needed.
 
-    Returns (6,) float64 array: [wer, ld, m, insertions, deletions, substitutions]
+    Returns a tuple of 6 floats: (wer, ld, m, insertions, deletions, substitutions)
     """
     _check_order(order)
 
@@ -646,7 +642,7 @@ cpdef object calculations_fast_weighted(object reference, object hypothesis, int
     # An identical pair has no edits, so the token mapping and the dynamic
     # programme are skipped. Only the reference word count is needed.
     if reference == hypothesis:
-        return np.array([0.0, 0.0, <double>m, 0.0, 0.0, 0.0], dtype=np.float64)
+        return (0.0, 0.0, <double>m, 0.0, 0.0, 0.0)
 
     hypothesis_word = hypothesis.split()
     n = len(hypothesis_word)
@@ -722,11 +718,8 @@ cpdef object calculations_fast_weighted(object reference, object hypothesis, int
     rest = ld - substitutions
     wer = (<double>ld) / m if m > 0 else 0.0
 
-    return np.array(
-        [wer, <double>ld, <double>m,
-         <double>((rest + n - m) // 2), <double>((rest - n + m) // 2), <double>substitutions],
-        dtype=np.float64
-    )
+    return (wer, <double>ld, <double>m,
+            <double>((rest + n - m) // 2), <double>((rest - n + m) // 2), <double>substitutions)
 
 
 @cython.boundscheck(False)
@@ -735,8 +728,8 @@ cdef object _metrics_batch_fast_weighted(list references, list hypotheses, int o
     """
     Batch processing for calculations_fast_weighted.
 
-    Returns (n, 6) float64 array where each row contains:
-    [wer, ld, m, insertions, deletions, substitutions]
+    Returns a list with one tuple of 6 floats for each pair:
+    (wer, ld, m, insertions, deletions, substitutions)
     """
     # The loop below reads both lists at every index without bounds checks.
     _check_equal_lengths(references, hypotheses)
@@ -744,10 +737,11 @@ cdef object _metrics_batch_fast_weighted(list references, list hypotheses, int o
     cdef Py_ssize_t n = len(references)
     cdef Py_ssize_t idx
 
-    cdef object out = np.empty((n, 6), dtype=np.float64)
+    # One row for each pair
+    cdef list out = []
 
     for idx in range(n):
-        out[idx, :] = calculations_fast_weighted(references[idx], hypotheses[idx], order)
+        out.append(calculations_fast_weighted(references[idx], hypotheses[idx], order))
 
     return out
 
@@ -757,10 +751,10 @@ cpdef object metrics_fast_weighted(object reference, object hypothesis, int orde
     Entry point of werp and werps for weights that decide between the alignments with the fewest edits.
 
     Returns:
-    - strings: (6,) float64 array [wer, ld, m, insertions, deletions, substitutions]
-    - sequences: (n, 6) float64 array, one row per pair
+    - strings: a tuple of 6 floats (wer, ld, m, insertions, deletions, substitutions)
+    - lists: a list with one such tuple for each pair
     """
     _check_order(order)
-    if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
+    if isinstance(reference, list) and isinstance(hypothesis, list):
         return _metrics_batch_fast_weighted(list(reference), list(hypothesis), order)
     return calculations_fast_weighted(reference, hypothesis, order)

@@ -32,10 +32,10 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install mypy, pandas-stubs and polars
+      - name: Install mypy, pandas-stubs, polars and NumPy
         run: |
           python -m pip install --upgrade pip
-          pip install mypy pandas-stubs polars
+          pip install mypy pandas-stubs polars numpy
 
       # The files to check and the strictness are set in [tool.mypy] in pyproject.toml
       - name: Run mypy

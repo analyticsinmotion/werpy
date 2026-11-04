@@ -1,4 +1,3 @@
-
 ![werpy-logo-word-error-rate](https://user-images.githubusercontent.com/52817125/235063664-2f21629c-0fad-46b6-a487-c2b5ef6f80e9.png)
 
 <h1 align="center">Word Error Rate for Python
@@ -49,6 +48,20 @@ Additionally, the summary function provides a comprehensive breakdown of the cal
 <br />
 -->
 
+## Installation
+You can install the latest **werpy** release from PyPI with pip or uv:
+
+```bash
+# Install werpy from PyPI
+pip install werpy
+
+# Or install with uv
+uv pip install werpy
+```
+
+werpy accepts NumPy arrays of strings as inputs wherever it accepts a list.
+
+
 ## Functions available in werpy
 The following table provides an overview of the functions that can be used in werpy.
 
@@ -61,27 +74,6 @@ The following table provides an overview of the functions that can be used in we
 | werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)  | Calculates a list of weighted Word Error Rates for each of the reference and hypothesis texts. |
 | summary(reference, hypothesis, *, output="pandas")  | Provides a comprehensive breakdown of the calculated results including the WER, Levenshtein Distance and all the insertion, deletion and substitution errors. Returns a pandas DataFrame, a polars DataFrame with output="polars", or a list of dictionaries with output="records". |
 | summaryp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1, *, output="pandas")  | Delivers an in-depth breakdown of the results, covering metrics like WER, Levenshtein Distance, and a detailed account of insertion, deletion, and substitution errors, inclusive of the weighted WER. Returns a pandas DataFrame, a polars DataFrame with output="polars", or a list of dictionaries with output="records". |
-
-
-## Installation
-You can install the latest **werpy** release with Python's pip package manager:
-
-```python
-# Install werpy from PyPi
-pip install werpy
-```
-
-summary() and summaryp() return their results as a pandas DataFrame, a polars DataFrame or a list of dictionaries. To install pandas or polars with werpy, use its extra:
-
-```python
-# Install werpy and pandas from PyPi
-pip install "werpy[pandas]"
-
-# Install werpy and polars from PyPi
-pip install "werpy[polars]"
-```
-
-With a plain pip install werpy, output="records" returns the results as a list of dictionaries.
 
 
 ## Usage
@@ -186,7 +178,33 @@ print(werps)
 ```
 <br />
 
-**Example 7 - Provide a complete breakdown of the Word Error Rate calculations for each of the reference and hypothesis texts**
+**Example 7 - Get the complete breakdown as a list of dictionaries**
+
+*Python Code:*
+```python
+ref = ['it was beautiful and sunny today']
+hyp = ['it was a beautiful and sunny day']
+records = werpy.summary(ref, hyp, output="records")
+print(records)
+```
+
+*Results Output:*
+```
+[{'wer': 0.3333333333333333, 'ld': 2, 'm': 6, 'insertions': 1, 'deletions': 0, 'substitutions': 1, 'inserted_words': ['a'], 'deleted_words': [], 'substituted_words': [('today', 'day')]}]
+```
+<br />
+
+Examples 8, 9 and 10 use pandas and polars. If your project already has them installed, these examples work as they are. If not, install them with:
+
+```bash
+# Install pandas
+uv pip install pandas
+
+# Install polars
+uv pip install polars
+```
+
+**Example 8 - Provide a complete breakdown of the Word Error Rate calculations for each of the reference and hypothesis texts**
 
 *Python Code:*
 ```python
@@ -205,7 +223,7 @@ print(summary)
 
 <br />
 
-**Example 8 - Provide a complete breakdown of the Weighted Word Error Rate for each of the input texts**
+**Example 9 - Provide a complete breakdown of the Weighted Word Error Rate for each of the input texts**
 
 *Python Code:*
 ```python
@@ -220,21 +238,6 @@ print(weighted_summary)
 ![werpy-example-summaryp-results-word-error-rate-breakdown](https://github.com/analyticsinmotion/werpy/assets/52817125/e6678997-d797-4767-bd8a-c141331b034b)
 
 <br />
-
-**Example 9 - Get the complete breakdown as a list of dictionaries**
-
-*Python Code:*
-```python
-ref = ['it was beautiful and sunny today']
-hyp = ['it was a beautiful and sunny day']
-records = werpy.summary(ref, hyp, output="records")
-print(records)
-```
-
-*Results Output:*
-```
-[{'wer': 0.3333333333333333, 'ld': 2, 'm': 6, 'insertions': 1, 'deletions': 0, 'substitutions': 1, 'inserted_words': ['a'], 'deleted_words': [], 'substituted_words': [('today', 'day')]}]
-```
 
 **Example 10 - Get the complete breakdown as a polars DataFrame**
 
@@ -259,10 +262,24 @@ shape: (2, 4)
 └──────────┴─────┴────────────────┴───────────────────────┘
 ```
 
-## Dependencies
-- <a href="https://www.numpy.org">NumPy</a> - Provides an assortment of routines for fast operations on arrays
+**Example 11 - Calculate the Word Error Rate on NumPy arrays**
+
+*Python Code:*
+```python
+import numpy as np
+ref = np.array(['i love cold pizza', 'the sugar bear character was popular'])
+hyp = np.array(['i love pizza', 'the sugar bare character was popular'])
+wer = werpy.wer(ref, hyp)
+print(wer)
+```
+
+*Results Output:*
+```
+0.2
+```
 
 ## Optional dependencies
+- <a href="https://www.numpy.org">NumPy</a> - werpy accepts one-dimensional NumPy arrays of strings as inputs, from the NumPy that your project installs.
 - <a href="https://pandas.pydata.org/">Pandas</a> - Powerful data structures for data analysis, time series, and statistics. The pandas extra installs it, pip install "werpy[pandas]", for the pandas DataFrame of summary() and summaryp().
 - <a href="https://pola.rs/">Polars</a> - A DataFrame library. The polars extra installs it, pip install "werpy[polars]", for the polars DataFrame of summary() and summaryp() with output="polars".
 
@@ -270,8 +287,7 @@ shape: (2, 4)
 
 ``werpy`` is released under the terms of the BSD 3-Clause License. Please refer to the <a href="https://github.com/analyticsinmotion/werpy/blob/main/LICENSE">LICENSE</a> file for full details.
 
-This project uses standard scientific Python libraries: NumPy, with pandas and polars as optional dependencies. For license details, please refer to their official repositories:
+This project uses pandas and polars as optional dependencies. For license details, please refer to their official repositories:
 
-- NumPy - <a href="https://github.com/numpy/numpy">https://github.com/numpy/numpy</a>
 - Pandas - <a href="https://github.com/pandas-dev/pandas">https://github.com/pandas-dev/pandas</a>
 - Polars - <a href="https://github.com/pola-rs/polars">https://github.com/pola-rs/polars</a>

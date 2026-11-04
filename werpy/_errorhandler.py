@@ -3,30 +3,57 @@
 
 """
 Input validation and consistent exceptions for werpy public functions.
+
+werpy accepts numpy arrays, and NumPy is not a dependency of werpy. werpy does not import NumPy. A numpy array or a
+NumPy number can exist only when NumPy has been imported, so werpy takes the NumPy types that it checks from the
+module that sys.modules holds.
 """
+
+from __future__ import annotations
 
 import math
 import numbers
 import sys
 from fractions import Fraction
-from typing import TypeAlias
-
-import numpy as np
-from numpy.typing import NDArray
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeGuard
 
 from .exceptions import WerpyTypeError, WerpyValueError
 
-# The sequence types accepted as a batch of texts, and the full set of accepted inputs.
-# These are the types checked by error_handler below.
-TextBatch: TypeAlias = list[str] | tuple[str, ...] | NDArray[np.str_] | NDArray[np.object_]
-TextInput: TypeAlias = str | TextBatch
+if TYPE_CHECKING:
+    import numpy as np
+    from numpy.typing import NDArray
 
-# The inputs that error_handler returns and that the compiled routers in _metrics accept: a tuple becomes a list.
-MetricsInput: TypeAlias = str | list[str] | NDArray[np.str_] | NDArray[np.object_]
+    # The sequence types accepted as a batch of texts, and the full set of accepted inputs. These are the types checked
+    # by error_handler below.
+    TextBatch: TypeAlias = list[str] | tuple[str, ...] | NDArray[np.str_] | NDArray[np.object_]
+    TextInput: TypeAlias = str | TextBatch
+else:
+    # At run time, the aliases name typing.Any for a numpy array, so that typing.get_type_hints() resolves the
+    # annotations of the public functions in every environment, with or without NumPy.
+    TextBatch: TypeAlias = list[str] | tuple[str, ...] | Any
+    TextInput: TypeAlias = str | TextBatch
+
+# The inputs that error_handler returns and that the compiled routers in _metrics and _weighted accept: a tuple or a
+# numpy array becomes a list.
+MetricsInput: TypeAlias = str | list[str]
 
 _STR_TYPE = frozenset((str,))
 _PLAIN_NUMBER_TYPES = frozenset((int, float))
 _FLOAT_MAX = sys.float_info.max
+
+
+def numpy_type(name: str) -> type | None:
+    """
+    Return the type of NumPy with the given name, or None when NumPy has not been imported. NumPy is not imported here.
+    """
+    found = getattr(sys.modules.get("numpy"), name, None)
+    return found if isinstance(found, type) else None
+
+
+def is_numpy_array(value: object) -> TypeGuard[NDArray[Any]]:
+    """Return True when the value is a numpy array. NumPy is not imported here."""
+    array_type = numpy_type("ndarray")
+    return array_type is not None and isinstance(value, array_type)
 
 
 def error_handler(
@@ -71,7 +98,8 @@ def error_handler(
     Returns
     -------
     tuple
-        The reference and the hypothesis. A tuple is returned as a list. Every other input is returned unchanged.
+        The reference and the hypothesis. A tuple or a numpy array is returned as a list of its elements. Every other
+        input is returned unchanged.
     """
     # Two strings: only the blank reference check applies.
     if isinstance(reference, str) and isinstance(hypothesis, str):
@@ -110,9 +138,9 @@ def error_handler(
                     f"Invalid input: reference must not be blank. A blank reference was found at index {index}."
                 )
 
-    if isinstance(reference, tuple):
+    if not isinstance(reference, list):
         reference = list(reference)
-    if isinstance(hypothesis, tuple):
+    if not isinstance(hypothesis, list):
         hypothesis = list(hypothesis)
     return reference, hypothesis
 
@@ -126,7 +154,7 @@ def check_text_input(name: str, value: object) -> TextInput:
     """
     if isinstance(value, (str, list, tuple)):
         return value
-    if isinstance(value, np.ndarray):
+    if is_numpy_array(value):
         if value.ndim != 1:
             raise WerpyTypeError(
                 f"{name} must be a one-dimensional numpy array, not an array with {value.ndim} dimensions."
@@ -145,7 +173,7 @@ def check_elements(name: str, batch: TextBatch) -> None:
     batch, the types of all elements are collected in one pass, and the index of the first element that is not a
     string is found only when that pass finds such an element.
     """
-    if isinstance(batch, np.ndarray) and batch.dtype.kind == "U":
+    if not isinstance(batch, (list, tuple)) and batch.dtype.kind == "U":
         return
     if set(map(type, batch)) <= _STR_TYPE:
         return
@@ -200,7 +228,8 @@ def check_weight(name: str, weight: object) -> float:
     WerpyTypeError is raised for any other value. WerpyValueError is raised for a weight that, as a float, is
     negative, NaN or infinite. The message names the weight.
     """
-    if isinstance(weight, (bool, np.bool_, np.timedelta64)) or not isinstance(weight, numbers.Real):
+    excluded = (bool, *(t for t in (numpy_type("bool_"), numpy_type("timedelta64")) if t is not None))
+    if isinstance(weight, excluded) or not isinstance(weight, numbers.Real):
         raise WerpyTypeError(f"{name} must be a real number, such as an int or a float, not {type(weight).__name__}.")
     try:
         number = float(weight)
@@ -239,3 +268,28 @@ def substitution_order(insertions_weight: float, deletions_weight: float, substi
     part = total - insertions
     error = (insertions - (total - part)) + (deletions - part)
     return (error < 0) - (error > 0)
+
+
+def exact_rate(
+    words: float, insertions: float, deletions: float, substitutions: float, weights: tuple[float, float, float]
+) -> float:
+    """
+    Return the weighted Word Error Rate of the counts, computed exactly and rounded once to the nearest float, or inf
+    when the rate is too large for a float.
+
+    werp, werps and summaryp compute each rate in float arithmetic, and call this function when that arithmetic gives
+    inf because a product or a sum is too large for a float. The number of words, at least 1, and the counts are the
+    whole numbers of that arithmetic, and each weight is taken as its float value. When the exact rate lies halfway
+    between two floats, the result is the one whose last binary digit is 0.
+    """
+    insertions_weight, deletions_weight, substitutions_weight = weights
+    rate = (
+        Fraction(insertions) * Fraction(float(insertions_weight))
+        + Fraction(deletions) * Fraction(float(deletions_weight))
+        + Fraction(substitutions) * Fraction(float(substitutions_weight))
+    ) / Fraction(words)
+    try:
+        # The true division of two ints is correctly rounded.
+        return rate.numerator / rate.denominator
+    except OverflowError:
+        return math.inf

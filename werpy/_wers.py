@@ -9,9 +9,8 @@ This module defines the following function:
     - wers(reference, hypothesis)
 """
 
-from typing import cast
+from __future__ import annotations
 
-import numpy as np
 from ._errorhandler import TextInput, error_handler
 from ._metrics import metrics_wer_only
 
@@ -61,9 +60,9 @@ def wers(reference: TextInput, hypothesis: TextInput) -> list[float]:
     reference, hypothesis = error_handler(reference, hypothesis)
     result = metrics_wer_only(reference, hypothesis)
 
-    # Batch: (n, 3) float64, columns [wer, ld, m]
-    if isinstance(result, np.ndarray) and result.ndim == 2:
-        return cast(list[float], result[:, 0].tolist())  # Return wer column
+    # Batch: a list with one (wer, ld, m) tuple of floats for each pair
+    if isinstance(result, list):
+        return [row[0] for row in result]
 
-    # Single: (3,) float64, WER is at index 0
-    return [float(result[0])]
+    # Single: one (wer, ld, m) tuple of floats
+    return [result[0]]

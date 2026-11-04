@@ -21,7 +21,6 @@ import sys
 import unittest
 from unittest import mock
 
-import numpy as np
 import werpy
 from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
 
@@ -34,6 +33,11 @@ try:
     import polars as pl
 except ImportError:  # polars is an optional dependency of werpy
     pl = None
+
+try:
+    import numpy as np
+except ImportError:  # NumPy is not a dependency of werpy
+    np = None
 
 OUTPUT = importlib.import_module("werpy._output")
 PANDAS = unittest.skipIf(pd is None, "pandas is not installed")
@@ -88,14 +92,19 @@ def as_polars_rows(records):
 
 
 def batch_forms():
-    """Return the batch forms of REF and HYP: lists, tuples, numpy arrays of dtype U and object, and empty lists."""
-    return [
-        (REF, HYP),
-        (tuple(REF), tuple(HYP)),
-        (np.array(REF), np.array(HYP)),
-        (np.array(REF, dtype=object), np.array(HYP, dtype=object)),
-        ([], []),
-    ]
+    """
+    Return the batch forms of REF and HYP: lists, tuples, numpy arrays of dtype U and object when NumPy can be
+    imported, and empty lists.
+    """
+    arrays = []
+    if np is not None:
+        arrays = [(np.array(REF), np.array(HYP)), (np.array(REF, dtype=object), np.array(HYP, dtype=object))]
+    return [(REF, HYP), (tuple(REF), tuple(HYP)), *arrays, ([], [])]
+
+
+def empty_arrays():
+    """Return two empty numpy arrays of dtype U as a pair, when NumPy can be imported."""
+    return [] if np is None else [(np.array([], dtype=str), np.array([], dtype=str))]
 
 
 class TestSummaryOutput(unittest.TestCase):
@@ -142,7 +151,7 @@ class TestSummaryOutput(unittest.TestCase):
         """
         Test that two empty lists, tuples or numpy arrays give an empty list with output="records".
         """
-        for reference, hypothesis in (([], []), ((), ()), (np.array([], dtype=str), np.array([], dtype=str))):
+        for reference, hypothesis in (([], []), ((), ()), *empty_arrays()):
             with self.subTest(form=type(reference).__name__):
                 self.assertEqual(werpy.summary(reference, hypothesis, output="records"), [])
                 self.assertEqual(werpy.summaryp(reference, hypothesis, output="records"), [])
@@ -225,7 +234,7 @@ class TestSummaryOutput(unittest.TestCase):
         Test that two empty lists, tuples or numpy arrays give a polars DataFrame with no rows and the columns and
         types of a batch with output="polars".
         """
-        for reference, hypothesis in (([], []), ((), ()), (np.array([], dtype=str), np.array([], dtype=str))):
+        for reference, hypothesis in (([], []), ((), ()), *empty_arrays()):
             with self.subTest(form=type(reference).__name__):
                 frame = werpy.summary(reference, hypothesis, output="polars")
                 self.assertEqual(frame.shape, (0, 9))
@@ -431,9 +440,24 @@ class TestSummaryOutput(unittest.TestCase):
         self.assertEqual(result.stdout.split("\n")[:2],
                          ["ImportError pandas ModuleNotFoundError", "ImportError polars ModuleNotFoundError"])
 
+    def test_columns_are_the_record_keys(self):
+        """
+        Test that the column lists of werpy._output are the keys of the records of summary and summaryp, in order, and
+        that the pandas frame of an empty batch keeps its types: every column is object, but for the werp column of
+        summaryp, which is float64.
+        """
+        self.assertEqual(OUTPUT.SUMMARY_COLUMNS, SUMMARY_COLUMNS)
+        self.assertEqual(OUTPUT.SUMMARYP_COLUMNS, SUMMARYP_COLUMNS)
+        self.assertEqual(list(OUTPUT.SummaryRecord.__annotations__), SUMMARY_COLUMNS)
+        self.assertEqual(list(OUTPUT.SummarypRecord.__annotations__), SUMMARYP_COLUMNS)
+        if pd is not None:
+            self.assertEqual([str(dtype) for dtype in werpy.summary([], []).dtypes], ["object"] * 9)
+            self.assertEqual([str(dtype) for dtype in werpy.summaryp([], []).dtypes],
+                             ["object", "float64", *["object"] * 8])
+
     def test_records_example(self):
         """
-        Test the list of dictionaries example of the README (Example 9) and of the summarization page: the records
+        Test the list of dictionaries example of the README (Example 7) and of the summarization page: the records
         that summary gives with output="records" print as the documented line.
         """
         ref = ["it was beautiful and sunny today"]

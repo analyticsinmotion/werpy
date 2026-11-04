@@ -13,9 +13,10 @@ when a substitution weighs more than the mean of an insertion and a deletion, an
 when it weighs less. When a substitution weighs exactly that mean, they use the alignment of 'summary'.
 
 The tests compare the three functions with the exhaustive search of 'alignment_reference.py' over every alignment of
-short texts. They also check the documented examples, the batches, the exact comparison of the weights in
-'substitution_order', the compiled kernels of 'werpy._weighted', and that its copies of the token mapping and the
-length check of 'werpy._metrics' give the same results.
+short texts. They also check the documented examples, the batches, the rates of weights so large that the float
+arithmetic overflows, the exact comparison of the weights in 'substitution_order', the compiled kernels of
+'werpy._weighted', and that its copies of the token mapping and the length check of 'werpy._metrics' give the same
+results.
 
 To run the tests, execute this module as the main program.
 """
@@ -25,11 +26,23 @@ import importlib.util
 import itertools
 import random
 import sys
+import math
 import unittest
-import numpy as np
+import warnings
+from fractions import Fraction
 import alignment_reference as oracle
 import werpy
 from werpy._errorhandler import substitution_order
+
+try:
+    import numpy as np
+except ImportError:  # NumPy is not a dependency of werpy
+    np = None
+
+try:
+    import polars as pl
+except ImportError:  # polars is an optional dependency of werpy
+    pl = None
 
 
 KERNELS = importlib.import_module("werpy._weighted")
@@ -128,6 +141,34 @@ def outcome(function, *args):
     except ValueError as exc:
         return type(exc), str(exc)
     return None
+
+
+def werp_columns(reference, hypothesis, weights):
+    """
+    Return the werp column of summaryp in each form that the environment can build: the records, and the pandas and
+    polars DataFrames when pandas and polars can be imported.
+    """
+    records = werpy.summaryp(reference, hypothesis, *weights, output="records")
+    columns = {"records": [record["werp"] for record in records]}
+    if importlib.util.find_spec("pandas") is not None:
+        columns["pandas"] = werpy.summaryp(reference, hypothesis, *weights)["werp"].tolist()
+    if pl is not None:
+        columns["polars"] = werpy.summaryp(reference, hypothesis, *weights, output="polars")["werp"].to_list()
+    return columns
+
+
+def nearest(result, exact):
+    """
+    Return True when a finite float result is the float nearest to an exact Fraction of at least the smallest normal
+    float: no float is nearer, and of two floats that are equally near, the result is the one whose last binary digit
+    is 0. Above the largest float, 2**1024 stands for the next float.
+    """
+    above = math.nextafter(result, math.inf)
+    neighbours = (Fraction(math.nextafter(result, 0.0)), Fraction(2) ** 1024 if above == math.inf else Fraction(above))
+    distance = abs(Fraction(result) - exact)
+    odd = int(math.frexp(result)[0] * 2**53) % 2 == 1
+    return all(abs(neighbour - exact) > distance or (abs(neighbour - exact) == distance and not odd)
+               for neighbour in neighbours)
 
 
 def expected_row(ref_text, hyp_text, weights, paths=None):
@@ -262,16 +303,16 @@ class TestWeightedAlignment(unittest.TestCase):
     @PANDAS
     def test_batches_equal_pairs(self):
         """
-        Test that the rows of werps and summaryp on a batch equal their results on each pair, for lists and numpy
-        arrays, and that werp on a batch is the sum of the weighted counts divided by the sum of the reference words.
+        Test that the rows of werps and summaryp on a batch equal their results on each pair, for lists, tuples and
+        numpy arrays, and that werp on a batch is the rate of the sums of the counts and of the reference words of its
+        pairs.
         """
         pairs = list(TIE_PAIRS) + sample_pairs(40, 7)
         refs, hyps = [pair[0] for pair in pairs], [pair[1] for pair in pairs]
-        forms = {
-            "list": (refs, hyps),
-            "numpy str": (np.array(refs, dtype=str), np.array(hyps, dtype=str)),
-            "numpy object": (np.array(refs, dtype=object), np.array(hyps, dtype=object)),
-        }
+        forms = {"list": (refs, hyps), "tuple": (tuple(refs), tuple(hyps))}
+        if np is not None:
+            forms["numpy str"] = (np.array(refs, dtype=str), np.array(hyps, dtype=str))
+            forms["numpy object"] = (np.array(refs, dtype=object), np.array(hyps, dtype=object))
         paths = [list(oracle.alignments(ref.split(), hyp.split())) for ref, hyp in pairs]
         for weights in (*DIRECTION_WEIGHTS.values(), (0.1, 0.3, 0.7)):
             rows = []
@@ -355,22 +396,19 @@ class TestWeightedAlignment(unittest.TestCase):
                 m, ld = len(ref.split()), oracle.edits(path)
                 full = [float(ld / m), ld, m, *oracle.counts(path), *oracle.words_of(ref.split(), hyp.split(), path)]
                 with self.subTest(order=order, words=m):
-                    self.assertEqual(KERNELS.calculations_weighted(ref, hyp, order).tolist(), full)
-                    self.assertEqual(KERNELS.metrics_weighted(ref, hyp, order).tolist(), full)
-                    self.assertEqual(KERNELS.calculations_fast_weighted(ref, hyp, order).tolist(),
-                                     [float(value) for value in full[:6]])
-                    self.assertEqual(KERNELS.metrics_fast_weighted(ref, hyp, order).tolist(),
-                                     [float(value) for value in full[:6]])
+                    self.assertEqual(KERNELS.calculations_weighted(ref, hyp, order), tuple(full))
+                    self.assertEqual(KERNELS.metrics_weighted(ref, hyp, order), tuple(full))
+                    self.assertEqual(KERNELS.calculations_fast_weighted(ref, hyp, order),
+                                     tuple(float(value) for value in full[:6]))
+                    self.assertEqual(KERNELS.metrics_fast_weighted(ref, hyp, order),
+                                     tuple(float(value) for value in full[:6]))
             batch = KERNELS.metrics_weighted(refs, hyps, order)
-            batch_fast = KERNELS.metrics_fast_weighted(
-                np.array(refs, dtype=object), np.array(hyps, dtype=object), order
-            )
-            self.assertEqual(batch.shape, (3, 9))
-            self.assertEqual(batch_fast.shape, (3, 6))
+            batch_fast = KERNELS.metrics_fast_weighted(refs, hyps, order)
+            self.assertEqual([len(row) for row in batch], [9] * 3)
+            self.assertEqual([len(row) for row in batch_fast], [6] * 3)
             for index, (ref, hyp) in enumerate(cases):
-                self.assertEqual(batch[index].tolist(), KERNELS.calculations_weighted(ref, hyp, order).tolist())
-                self.assertEqual(batch_fast[index].tolist(),
-                                 KERNELS.calculations_fast_weighted(ref, hyp, order).tolist())
+                self.assertEqual(batch[index], KERNELS.calculations_weighted(ref, hyp, order))
+                self.assertEqual(batch_fast[index], KERNELS.calculations_fast_weighted(ref, hyp, order))
         for function in (KERNELS.calculations_weighted, KERNELS.metrics_weighted, KERNELS.calculations_fast_weighted,
                          KERNELS.metrics_fast_weighted):
             for order in (0, 2, -2):
@@ -411,7 +449,7 @@ class TestWeightedAlignment(unittest.TestCase):
                 )
         batches = [(["a b"], ["a b", "b a"]), (["a b", "b a"], ["a b"]), ([], ["a"]), (["a"], []), ([], []),
                    (["a b"], ["b a"])]
-        for refs, hyps in batches + [(np.array(r, dtype=object), np.array(h, dtype=object)) for r, h in batches]:
+        for refs, hyps in batches:
             outcomes = [outcome(router, refs, hyps) for router in (METRICS.metrics, METRICS.metrics_fast,
                                                                     METRICS.metrics_wer_only)]
             outcomes += [outcome(router, refs, hyps, order) for router in (KERNELS.metrics_weighted,
@@ -495,6 +533,182 @@ class TestWeightedAlignment(unittest.TestCase):
                                  oracle.pair_rate(oracle.counts(path), m, (big + 2, big, big + 1)))
                 self.assertEqual(werpy.werps(ref, hyp, big + 2, big, big + 1),
                                  [oracle.pair_rate(oracle.counts(path), m, (big + 2, big, big + 1))])
+
+    def test_summaryp_werp_column_equals_werp(self):
+        """
+        Test that the werp column of summaryp holds, for each pair, the result of werp and of werps for that pair, bit
+        for bit, also for int weights above 2**53, whose products and sums are not exact in float arithmetic. Each
+        weight is used as its float value, as the oracle uses it. For some pairs, the exact rate of the int weights
+        differs from that result.
+        """
+        big = 2**53
+        pairs = list(TIE_PAIRS) + sample_pairs(40, 11)
+        refs, hyps = [pair[0] for pair in pairs], [pair[1] for pair in pairs]
+        exact_differs = 0
+        for weights in ((big, big, big + 1), (big + 2, big, big + 1), (3, 7, 2**60 + 1), (0.1, 0.3, 0.7)):
+            records = werpy.summaryp(refs, hyps, *weights, output="records")
+            column = [record["werp"] for record in records]
+            with self.subTest(weights=weights):
+                self.assertEqual(column, werpy.werps(refs, hyps, *weights))
+                self.assertEqual(column, [werpy.werp(ref, hyp, *weights) for ref, hyp in pairs])
+                self.assertEqual(column, [werpy.summaryp(ref, hyp, *weights, output="records")[0]["werp"]
+                                          for ref, hyp in pairs])
+                self.assertEqual(column, [oracle.pair_rate(counts_of(record)[:3], record["m"], weights)
+                                          for record in records])
+            if all(isinstance(weight, int) for weight in weights):
+                exact_differs += sum(
+                    sum(count * weight for count, weight in zip(counts_of(record)[:3], weights)) / record["m"]
+                    != record["werp"]
+                    for record in records
+                )
+        self.assertGreater(exact_differs, 0)
+
+    def test_werp_batch_rate_of_the_sums(self):
+        """
+        Test that werp on a batch applies the weights to the sums of the insertions, deletions and substitutions of its
+        pairs and divides by the sum of their reference words, in float arithmetic, as the oracle does, for a list, a
+        tuple and numpy arrays, and that a batch of one pair gives the result of that pair.
+        """
+        pairs = list(TIE_PAIRS) + sample_pairs(60, 13)
+        refs, hyps = [pair[0] for pair in pairs], [pair[1] for pair in pairs]
+        forms = [(refs, hyps), (tuple(refs), tuple(hyps))]
+        if np is not None:
+            forms += [(np.array(refs, dtype=str), np.array(hyps, dtype=str)),
+                      (np.array(refs, dtype=object), np.array(hyps, dtype=object))]
+        for weights in ((0.1, 0.3, 0.7), (2.5, 0.75, 1.3), (1, 1, 1), (2**53, 2**53, 2**53 + 1),
+                        (1 + 2**-52, 2**-53, 0.5 + 2**-52)):
+            records = werpy.summaryp(refs, hyps, *weights, output="records")
+            rows = [(*counts_of(record)[:3], record["m"]) for record in records]
+            for ref, hyp in forms:
+                with self.subTest(weights=weights, form=type(ref).__name__):
+                    self.assertEqual(werpy.werp(ref, hyp, *weights), oracle.batch_rate(rows, weights))
+            for ref, hyp in pairs[:7]:
+                with self.subTest(weights=weights, pair=(ref, hyp)):
+                    self.assertEqual(werpy.werp([ref], [hyp], *weights), werpy.werp(ref, hyp, *weights))
+
+    def test_very_large_weights(self):
+        """
+        Test that weights near the largest float give, in werp, werps and summaryp, the rate of the float arithmetic
+        where that arithmetic gives a finite rate. Where a product or a sum of it is too large for a float, they give
+        the exact rate rounded to the nearest float, or inf when the exact rate is too large for a float. No warning is
+        issued.
+        """
+        weights = (1.5e308, 1.5e308, 1.5e308)
+        # One edit gives the weight divided by the words. Two substitutions over two words overflow in float arithmetic,
+        # and their exact rate is the weight. Three edits over one word give a rate too large for a float.
+        pairs = [("a b c d", "a x c d"), ("a b", "x y"), ("a", "x y z"), ("a b c d e f", "a b c d e x")]
+        expected = [1.5e308 / 4, 1.5e308, math.inf, 1.5e308 / 6]
+        refs, hyps = [pair[0] for pair in pairs], [pair[1] for pair in pairs]
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            self.assertEqual(werpy.werps(refs, hyps, *weights), expected)
+            self.assertEqual([werpy.werp(ref, hyp, *weights) for ref, hyp in pairs], expected)
+            self.assertEqual([record["werp"] for record in werpy.summaryp(refs, hyps, *weights, output="records")],
+                             expected)
+            # The batch holds 7 edits and 13 words. The sum of its float arithmetic is too large for a float, and its
+            # exact rate is finite.
+            self.assertEqual(werpy.werp(refs, hyps, *weights), oracle.nearest_float(7 * Fraction(1.5e308) / 13))
+            self.assertEqual(werpy.werp(refs[:1], hyps[:1], *weights), 1.5e308 / 4)
+
+    def test_overflow_cases(self):
+        """
+        Test each kind of input whose float arithmetic of the weighted errors overflows, with werp, werps, and summaryp
+        in each form that the environment can build. Where a product or a sum is too large for a float, the result is
+        the exact rate rounded to the nearest float, or inf when the exact rate is too large for a float. No warning is
+        issued.
+        """
+        fmax, big = sys.float_info.max, 1.5e308
+        # (reference, hypothesis, weights, the rate of each pair, the rate of werp)
+        cases = [
+            # A product overflows, and the exact rate is the weight.
+            ("a b", "x y", (big, big, big), [big], big),
+            # A product overflows, and the exact rate is too large for a float.
+            ("a", "a x y", (big, big, big), [math.inf], math.inf),
+            # The sum of one insertion and one substitution overflows, and the exact rate is too large for a float.
+            ("a", "x y", (big, big, big), [math.inf], math.inf),
+            # A product overflows, and the exact rate is the largest float.
+            ("a b", "x y", (fmax, fmax, fmax), [fmax], fmax),
+            # The sum of one substitution and one deletion overflows, and the exact rate is finite.
+            ("a b c d", "a x c", (big, big, big), [big / 2], big / 2),
+            # Nothing overflows.
+            ("a b c d", "a x c d", (big, big, big), [big / 4], big / 4),
+            # Int weights: a product overflows, and the exact rate is too large for a float.
+            ("a", "x y z", (10**308, 10**308, 10**308), [math.inf], math.inf),
+            # Int weights: a product overflows, and the exact rate is the float value of the weight.
+            ("a b", "x y", (10**308, 10**308, 10**308), [1e308], 1e308),
+            # Int weights equal to the largest float: nothing overflows.
+            ("a", "x", (int(fmax), int(fmax), int(fmax)), [fmax], fmax),
+            # Two pairs of one substitution over one word: the sum of the batch overflows in werp.
+            (["a", "b"], ["x", "y"], (big, big, big), [big, big], big),
+            # Two pairs of one substitution over four words: the sum of the batch overflows in werp, and the rate is
+            # finite.
+            (["a b c d", "a b c d"], ["a x c d", "a b x d"], (big, big, big), [big / 4, big / 4], big / 4),
+        ]
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            for ref, hyp, weights, rates, rate in cases:
+                with self.subTest(reference=ref, hypothesis=hyp, weights=weights):
+                    self.assertEqual(werpy.werp(ref, hyp, *weights), rate)
+                    self.assertEqual(werpy.werps(ref, hyp, *weights), rates)
+                    columns = werp_columns(ref, hyp, weights)
+                    self.assertEqual(columns, {form: rates for form in columns})
+
+    def test_overflow_rounding(self):
+        """
+        Test that the exact rate is rounded once to the nearest float, also halfway between two floats, where the
+        result is the float whose last binary digit is 0, and that it is inf exactly when it is at least the largest
+        float plus half the distance from it to the next power of two. For random pairs and weights near the largest
+        float, werp, werps and summaryp equal the oracle, which rounds with ints only, and each result of the exact
+        computation is the nearest float to the exact rate.
+        """
+        fmax = sys.float_info.max
+        # (reference, hypothesis, weights, the rate)
+        edges = [
+            # One insertion and one substitution over one word: the largest float plus 2**970 lies halfway between the
+            # largest float and 2**1024, so the rate is too large for a float.
+            ("a", "x y", (2.0**970, 1, fmax), math.inf),
+            # One insertion and two substitutions over two words: the largest float plus 2**969 rounds to the largest
+            # float.
+            ("a b", "x y z", (2.0**970, 1, fmax), fmax),
+            # One deletion and one insertion over two words: the rate lies halfway between 2**1023 - 2**970 and
+            # 2**1023, and rounds to 2**1023.
+            ("a b", "b x", (fmax, 2.0**970, fmax), 2.0**1023),
+        ]
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            for ref, hyp, weights, rate in edges:
+                with self.subTest(reference=ref, hypothesis=hyp, weights=weights):
+                    self.assertEqual(werpy.werp(ref, hyp, *weights), rate)
+                    self.assertEqual(werpy.werps(ref, hyp, *weights), [rate])
+                    self.assertEqual(werp_columns(ref, hyp, weights)["records"], [rate])
+            rng = random.Random(17)
+            pairs = list(TIE_PAIRS) + sample_pairs(60, 19)
+            refs, hyps = [pair[0] for pair in pairs], [pair[1] for pair in pairs]
+            exact_results = 0
+            for _ in range(12):
+                weights = tuple(rng.choice((fmax, 1.5e308, 1e308, 10**308, rng.uniform(1e307, fmax), rng.random()))
+                                for _ in range(3))
+                records = werpy.summaryp(refs, hyps, *weights, output="records")
+                rows = [(*counts_of(record)[:3], record["m"]) for record in records]
+                expected = [oracle.pair_rate(row[:3], row[3], weights) for row in rows]
+                with self.subTest(weights=weights):
+                    self.assertEqual(werpy.werps(refs, hyps, *weights), expected)
+                    self.assertEqual([record["werp"] for record in records], expected)
+                    self.assertEqual([werpy.werp(ref, hyp, *weights) for ref, hyp in pairs], expected)
+                    self.assertEqual(werpy.werp(refs, hyps, *weights), oracle.batch_rate(rows, weights))
+                for (ins, dels, subs, m), result in zip(rows, expected):
+                    float_rate = (ins * float(weights[0]) + dels * float(weights[1]) + subs * float(weights[2])) / m
+                    if float_rate != math.inf:
+                        continue
+                    exact_results += 1
+                    exact = (ins * Fraction(float(weights[0])) + dels * Fraction(float(weights[1]))
+                             + subs * Fraction(float(weights[2]))) / m
+                    with self.subTest(weights=weights, row=(ins, dels, subs, m)):
+                        if result == math.inf:
+                            self.assertGreaterEqual(exact, Fraction(fmax) + Fraction(2) ** 970)
+                        else:
+                            self.assertTrue(nearest(result, exact))
+            self.assertGreater(exact_results, 0)
 
 
 if __name__ == "__main__":
