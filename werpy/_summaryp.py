@@ -13,17 +13,21 @@ This module defines the following function:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, cast, overload
+import math
+from typing import Literal, cast, overload
 
-import numpy as np
-from ._errorhandler import TextInput, check_weights, error_handler, substitution_order
+from ._errorhandler import TextInput, check_weights, error_handler, exact_rate, substitution_order
 from ._metrics import metrics
-from ._output import SummarypRecord, check_output, dataframe, polars_dataframe
+from ._output import (
+    SUMMARYP_COLUMNS,
+    PandasDataFrame,
+    PolarsDataFrame,
+    SummarypRecord,
+    check_output,
+    dataframe,
+    polars_dataframe,
+)
 from ._weighted import metrics_weighted
-
-if TYPE_CHECKING:
-    import pandas as pd
-    import polars as pl
 
 
 @overload
@@ -35,7 +39,7 @@ def summaryp(  # pylint: disable=too-many-arguments
     substitutions_weight: float = 1,
     *,
     output: Literal["pandas"] = ...,
-) -> pd.DataFrame: ...
+) -> PandasDataFrame: ...
 
 
 @overload
@@ -47,7 +51,7 @@ def summaryp(  # pylint: disable=too-many-arguments
     substitutions_weight: float = 1,
     *,
     output: Literal["polars"],
-) -> pl.DataFrame: ...
+) -> PolarsDataFrame: ...
 
 
 @overload
@@ -70,7 +74,7 @@ def summaryp(  # pylint: disable=too-many-arguments
     substitutions_weight: float = 1,
     *,
     output: Literal["pandas", "polars", "records"] = "pandas",
-) -> pd.DataFrame | pl.DataFrame | list[SummarypRecord]:
+) -> PandasDataFrame | PolarsDataFrame | list[SummarypRecord]:
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, weighted
     WER, Levenshtein Distance and all the insertion, deletion and substitution errors.
@@ -82,6 +86,8 @@ def summaryp(  # pylint: disable=too-many-arguments
     weighs exactly that mean, for example when the three weights are equal, summaryp() uses the alignment of summary()
     and gives the same counts and word lists. For other weights, its counts and word lists can differ from those of
     summary().
+
+    The werp column holds, for each pair, the result of werp() for that pair with the same weights.
 
     The memory that summaryp() uses grows with the number of words in the reference and the hypothesis, so it can
     compare long transcripts. The time grows with the product of the two numbers of words.
@@ -160,58 +166,30 @@ def summaryp(  # pylint: disable=too-many-arguments
     else:
         result = metrics(reference, hypothesis)
 
-    # Batch rows (n, 9)
-    if isinstance(result, np.ndarray) and result.ndim == 2:
-        word_error_rate_breakdown = result.tolist()
-        weighted_insertions = result[:, 3] * insertions_weight
-        weighted_deletions = result[:, 4] * deletions_weight
-        weighted_substitutions = result[:, 5] * substitutions_weight
-        m = result[:, 2]
-        weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-        out = np.zeros_like(weighted_errors, dtype=np.float64)
-        mask = m != 0
-        out[mask] = weighted_errors[mask] / m[mask]
-        werps_result = out.tolist()
-    else:
-        # Single row - wrap in list for DataFrame
-        word_error_rate_breakdown = [result.tolist() if hasattr(result, 'tolist') else list(result)]
-        weighted_insertions = result[3] * insertions_weight
-        weighted_deletions = result[4] * deletions_weight
-        weighted_substitutions = result[5] * substitutions_weight
-        m = result[2]
-        weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-        werps_result = float(weighted_errors / m) if m else 0.0
-
-    columns = [
-        "wer",
-        "ld",
-        "m",
-        "insertions",
-        "deletions",
-        "substitutions",
-        "inserted_words",
-        "deleted_words",
-        "substituted_words",
+    # The werp column holds the result of werp() for each pair, computed in the same way: with the float value of each
+    # weight, in float arithmetic, and exactly where that arithmetic gives inf.
+    weights = (float(insertions_weight), float(deletions_weight), float(substitutions_weight))
+    insertions_weight, deletions_weight, substitutions_weight = weights
+    # A batch gives a list with one row for each pair, and a pair of strings gives one row
+    results = result if isinstance(result, list) else [result]
+    rows = [
+        [
+            row[0],
+            (row[3] * insertions_weight + row[4] * deletions_weight + row[5] * substitutions_weight) / row[2]
+            if row[2]
+            else 0.0,
+            *row[1:],
+        ]
+        for row in results
     ]
-    ordered_columns = [
-        "wer",
-        "werp",
-        "ld",
-        "m",
-        "insertions",
-        "deletions",
-        "substitutions",
-        "inserted_words",
-        "deleted_words",
-        "substituted_words",
-    ]
-    if form != "pandas":
-        werps_rows = werps_result if isinstance(werps_result, list) else [werps_result]
-        rows = [[row[0], werp, *row[1:]] for row, werp in zip(word_error_rate_breakdown, werps_rows)]
-        if form == "polars":
-            return polars_dataframe(rows, ordered_columns)
-        return cast(list[SummarypRecord], [dict(zip(ordered_columns, row)) for row in rows])
-    df = dataframe(word_error_rate_breakdown, columns)
-    df["werp"] = werps_result
-    df = df[ordered_columns]
-    return df
+    for row, counts in zip(rows, results):
+        if row[1] == math.inf:
+            # A product or the sum is too large for a float, so the rate is computed again exactly.
+            row[1] = exact_rate(*counts[2:6], weights)
+    if form == "pandas":
+        df = dataframe(rows, SUMMARYP_COLUMNS)
+        # The frame of an empty batch has no rows. Its werp column is float64, and its other columns are object.
+        return df if rows else df.astype({"werp": "float64"})
+    if form == "polars":
+        return polars_dataframe(rows, SUMMARYP_COLUMNS)
+    return cast(list[SummarypRecord], [dict(zip(SUMMARYP_COLUMNS, row)) for row in rows])

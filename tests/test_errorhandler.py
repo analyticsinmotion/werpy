@@ -21,8 +21,14 @@ documentation.
 """
 
 import unittest
-import numpy as np
 from werpy._errorhandler import error_handler
+
+try:
+    import numpy as np
+except ImportError:  # NumPy is not a dependency of werpy
+    np = None
+
+NUMPY = unittest.skipIf(np is None, "NumPy is not installed")
 
 
 KIND_MESSAGE = "Reference and hypothesis must both be strings, or both be lists, tuples or numpy arrays."
@@ -64,16 +70,22 @@ class TestErrorHandler(unittest.TestCase):
 
     def test_error_handler_valid_sequences(self):
         """
-        Test that a pair of lists and a pair of numpy arrays of equal length pass validation and are returned
-        unchanged, as the same objects.
+        Test that a pair of lists of equal length passes validation and is returned unchanged, as the same objects, and
+        that a pair of tuples and pairs of numpy arrays of equal length are returned as lists of their elements.
         """
-        for reference, hypothesis in (
-            (["a b", "c d"], ["a b", "c e"]),
-            (np.array(["a b", "c d"]), np.array(["a b", "c e"])),
-        ):
-            returned_reference, returned_hypothesis = error_handler(reference, hypothesis)
-            self.assertIs(returned_reference, reference)
-            self.assertIs(returned_hypothesis, hypothesis)
+        reference, hypothesis = ["a b", "c d"], ["a b", "c e"]
+        returned_reference, returned_hypothesis = error_handler(reference, hypothesis)
+        self.assertIs(returned_reference, reference)
+        self.assertIs(returned_hypothesis, hypothesis)
+        forms = [(tuple(reference), tuple(hypothesis))]
+        if np is not None:
+            forms += [(np.array(reference), np.array(hypothesis)),
+                      (np.array(reference, dtype=object), np.array(hypothesis, dtype=object))]
+        for ref, hyp in forms:
+            with self.subTest(form=type(ref).__name__, dtype=str(getattr(ref, "dtype", ""))):
+                returned = error_handler(ref, hyp)
+                self.assertEqual([type(value) for value in returned], [list, list])
+                self.assertEqual(returned, (reference, hypothesis))
 
     def test_error_handler_blank_hypothesis_is_valid(self):
         """
@@ -188,6 +200,7 @@ class TestErrorHandler(unittest.TestCase):
             error_handler(["a b", "   "], ["a b", "c d"])
         self.assertEqual(str(context.exception), blank_sequence_message(1))
 
+    @NUMPY
     def test_error_handler_blank_reference_in_array(self):
         """
         Test that a blank reference inside a numpy array raises a ZeroDivisionError naming its index.

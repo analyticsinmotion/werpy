@@ -6,7 +6,8 @@ alignment_reference.py
 
 This module is a pure-Python reference for the word alignments of the 'werpy' package. The tests in
 'test_weighted_alignment.py' compare 'werp', 'werps' and 'summaryp' with it. It imports nothing from 'werpy'. The rates
-use numpy as werpy does, so that they can be compared bit for bit.
+use float arithmetic as werpy does, so that they can be compared bit for bit, and the exact rate rounded to the nearest
+float where that arithmetic gives inf.
 
 Every function takes the reference and the hypothesis as lists of words, as str.split() gives them. An alignment is a
 path through the (m + 1) x (n + 1) grid from (m, n) back to (0, 0), where m and n are the numbers of reference and
@@ -25,9 +26,8 @@ weighted cost wi * I + wd * D + ws * S; among those, the first in the backtrace 
 exactly, as fractions of the weights given.
 """
 
+import math
 from fractions import Fraction
-
-import numpy as np
 
 M, S, I, D = "M", "S", "I", "D"
 ORDER = {M: 0, S: 1, I: 2, D: 3}
@@ -164,20 +164,53 @@ def words_of(ref, hyp, path):
     return inserted, deleted, substituted
 
 
+def nearest_float(value):
+    """
+    Return the float nearest to a Fraction of at least the smallest normal float, as IEEE 754 rounds it, with ints only:
+    of two floats that are equally near, the one whose last binary digit is 0, and inf when the Fraction is at least the
+    largest float plus half the distance from it to the next power of two.
+    """
+    # The exponent e for which 2**52 <= value / 2**e < 2**53, so that the integer part of value / 2**e is a significand.
+    # value / 2**e is the Fraction scaled_num / scaled_den.
+    e = value.numerator.bit_length() - value.denominator.bit_length() - 52
+    while True:
+        scaled_num, scaled_den = value.numerator << max(-e, 0), value.denominator << max(e, 0)
+        if scaled_num < scaled_den << 52:
+            e -= 1
+        elif scaled_num >= scaled_den << 53:
+            e += 1
+        else:
+            break
+    significand, remainder = divmod(scaled_num, scaled_den)
+    if 2 * remainder > scaled_den or (2 * remainder == scaled_den and significand % 2 == 1):
+        significand += 1
+    if significand == 2**53:
+        significand, e = 2**52, e + 1
+    if e + 53 > 1024:
+        return math.inf
+    return math.ldexp(significand, e)
+
+
 def pair_rate(cnt, m, weights):
     """
-    Return the weighted rate of one pair with the arithmetic of 'werp' on a pair of strings: float64 products of the
-    insertions, deletions and substitutions, summed in that order, then divided by m; 0.0 when m is 0.
+    Return the weighted rate of one pair with the arithmetic of 'werp' on a pair of strings: float products of the
+    insertions, deletions and substitutions with the float value of each weight, summed in that order, then divided by
+    m; 0.0 when m is 0. When that arithmetic gives inf, the rate is the exact rate of the counts and of the float values
+    of the weights, rounded to the nearest float, or inf when the exact rate is too large for a float.
     """
     (ins, dels, subs), (wi, wd, ws) = cnt, weights
-    err = np.float64(ins) * wi + np.float64(dels) * wd + np.float64(subs) * ws
-    return float(err / np.float64(m)) if m else 0.0
+    err = float(ins) * float(wi) + float(dels) * float(wd) + float(subs) * float(ws)
+    rate = err / float(m) if m else 0.0
+    if rate == math.inf:
+        exact = (ins * Fraction(float(wi)) + dels * Fraction(float(wd)) + subs * Fraction(float(ws))) / m
+        return nearest_float(exact)
+    return rate
 
 
 def batch_rate(rows, weights):
-    """Return the rate of 'werp' on a batch of rows (insertions, deletions, substitutions, m), with its arithmetic."""
-    wi, wd, ws = weights
-    table = np.array(rows, dtype=np.float64).reshape(-1, 4)
-    err = table[:, 0] * wi + table[:, 1] * wd + table[:, 2] * ws
-    den = np.sum(table[:, 3])
-    return float(np.sum(err) / den) if den else 0.0
+    """
+    Return the rate of 'werp' on a batch of rows (insertions, deletions, substitutions, m), with its arithmetic: the
+    rate of one pair whose counts and number of reference words are the sums of those of the rows.
+    """
+    ins, dels, subs, m = (sum(column) for column in zip(*rows)) if rows else (0, 0, 0, 0)
+    return pair_rate((ins, dels, subs), m, weights)

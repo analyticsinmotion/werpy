@@ -34,10 +34,14 @@ import subprocess  # nosec B404
 import sys
 import unicodedata
 import unittest
-import numpy as np
 import normalize_reference as reference
 import werpy
 from werpy.exceptions import WerpyTypeError, WerpyValueError
+
+try:
+    import numpy as np
+except ImportError:  # NumPy is not a dependency of werpy
+    np = None
 
 
 NORMALIZE = importlib.import_module("werpy._normalize")
@@ -55,6 +59,11 @@ EMOJI = chr(0x1F600)
 def chars(*parts):
     """Return the text of the parts: a str part as it is, an int part as the character of that code point."""
     return "".join(chr(part) if isinstance(part, int) else part for part in parts)
+
+
+def numpy_forms(texts):
+    """Return the texts as numpy arrays of dtype U and object, or no form when NumPy cannot be imported."""
+    return [] if np is None else [np.array(texts, dtype=str), np.array(texts, dtype=object)]
 
 
 class Text(str):
@@ -648,7 +657,7 @@ class TestNormalizeRules(unittest.TestCase):
         expected = [reference.n1(text) for text in texts]
         self.assertEqual(werpy.normalize(texts[0]), texts[0])
         self.assertEqual(werpy.normalize(texts[2]), texts[2])
-        for form in (texts, tuple(texts), np.array(texts, dtype=str), np.array(texts, dtype=object)):
+        for form in (texts, tuple(texts), *numpy_forms(texts)):
             with self.subTest(form=type(form).__name__):
                 self.assertEqual(werpy.normalize(form), expected)
         self.assertEqual([werpy.normalize(text) for text in texts], expected)
@@ -662,7 +671,7 @@ class TestNormalizeRules(unittest.TestCase):
         texts = ["", " It's A test. ", chars("cafe", ACUTE, " ", 0x2014), chars(SIGMA_WORD, ", x"),
                  chars("a =", 0x338, " b"), chars("a", 0xD800), chars(0xB95, 0xBBE), "\t\n"]
         expected = [reference.n1(text) for text in texts]
-        for form in (texts, tuple(texts), np.array(texts, dtype=str), np.array(texts, dtype=object)):
+        for form in (texts, tuple(texts), *numpy_forms(texts)):
             with self.subTest(form=type(form).__name__, dtype=str(getattr(form, "dtype", ""))):
                 result = werpy.normalize(form)
                 self.assertIs(type(result), list)
@@ -670,11 +679,12 @@ class TestNormalizeRules(unittest.TestCase):
                 self.assertEqual({type(text) for text in result}, {str})
         singles = [werpy.normalize(text) for text in texts]
         self.assertEqual(singles, expected)
-        for text in (Text(chars("Caf", 0xC9, ",")), np.str_(chars("Caf", 0xC9, ",")), Text("A, b")):
+        numpy_texts = [] if np is None else [np.str_(chars("Caf", 0xC9, ","))]
+        for text in (Text(chars("Caf", 0xC9, ",")), *numpy_texts, Text("A, b")):
             with self.subTest(text_type=type(text).__name__):
                 self.assertIs(type(werpy.normalize(text)), str)
                 self.assertEqual(werpy.normalize(text), reference.n1(str(text)))
-        for empty in ([], (), np.array([], dtype=str), np.array([], dtype=object)):
+        for empty in ([], (), *numpy_forms([])):
             with self.subTest(empty=type(empty).__name__):
                 self.assertEqual(werpy.normalize(empty), [])
 
@@ -687,7 +697,7 @@ class TestNormalizeRules(unittest.TestCase):
             (["a", 1], 1),
             ([chars("caf", 0xE9), SIGMA_WORD, chars("a =", 0x338), None], 3),
             ((chars(0xB95, 0xBBE), b"x"), 1),
-            (np.array([chars("x", 0x2014), 2.5], dtype=object), 1),
+            *([] if np is None else [(np.array([chars("x", 0x2014), 2.5], dtype=object), 1)]),
         ]
         for batch, index in cases:
             with self.subTest(batch=ascii(list(batch))):

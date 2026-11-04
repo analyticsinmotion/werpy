@@ -9,10 +9,11 @@ This module defines the following function:
     - werps(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
 """
 
-from typing import cast
+from __future__ import annotations
 
-import numpy as np
-from ._errorhandler import TextInput, check_weights, error_handler, substitution_order
+import math
+
+from ._errorhandler import TextInput, check_weights, error_handler, exact_rate, substitution_order
 from ._metrics import metrics_fast
 from ._weighted import metrics_fast_weighted
 
@@ -99,22 +100,31 @@ def werps(
     else:
         result = metrics_fast(reference, hypothesis)
 
-    # Batch: (n, 6) float64
-    if isinstance(result, np.ndarray) and result.ndim == 2:
-        weighted_insertions = result[:, 3] * insertions_weight
-        weighted_deletions = result[:, 4] * deletions_weight
-        weighted_substitutions = result[:, 5] * substitutions_weight
-        m = result[:, 2]
-        weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-        out = np.zeros_like(weighted_errors, dtype=np.float64)
-        mask = m != 0
-        out[mask] = weighted_errors[mask] / m[mask]
-        return cast(list[float], out.tolist())
+    # Batch: a list with one (wer, ld, m, insertions, deletions, substitutions) tuple of floats for each pair
+    if isinstance(result, list):
+        rates = [
+            (insertions * insertions_weight + deletions * deletions_weight + substitutions * substitutions_weight) / m
+            if m
+            else 0.0
+            for _, _, m, insertions, deletions, substitutions in result
+        ]
+        if math.inf in rates:
+            # A product or a sum is too large for a float, so each such rate is computed again exactly.
+            weights = (insertions_weight, deletions_weight, substitutions_weight)
+            rates = [
+                exact_rate(m, insertions, deletions, substitutions, weights) if rate == math.inf else rate
+                for rate, (_, _, m, insertions, deletions, substitutions) in zip(rates, result)
+            ]
+        return rates
 
-    # Single: (6,) float64
-    weighted_insertions = result[3] * insertions_weight
-    weighted_deletions = result[4] * deletions_weight
-    weighted_substitutions = result[5] * substitutions_weight
-    m = result[2]
-    weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-    return [float(weighted_errors / m) if m else 0.0]
+    # Single: one (wer, ld, m, insertions, deletions, substitutions) tuple of floats
+    _, _, m, insertions, deletions, substitutions = result
+    weighted_errors = (
+        insertions * insertions_weight + deletions * deletions_weight + substitutions * substitutions_weight
+    )
+    rate = weighted_errors / m if m else 0.0
+    if rate == math.inf:
+        # A product or the sum is too large for a float, so the rate is computed again exactly.
+        weights = (insertions_weight, deletions_weight, substitutions_weight)
+        rate = exact_rate(m, insertions, deletions, substitutions, weights)
+    return [rate]

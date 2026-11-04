@@ -11,24 +11,27 @@ This module defines the following function:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, cast, overload
+from typing import Literal, cast, overload
 
-import numpy as np
 from ._errorhandler import TextInput, error_handler
 from ._metrics import metrics
-from ._output import SummaryRecord, check_output, dataframe, polars_dataframe
-
-if TYPE_CHECKING:
-    import pandas as pd
-    import polars as pl
+from ._output import (
+    SUMMARY_COLUMNS,
+    PandasDataFrame,
+    PolarsDataFrame,
+    SummaryRecord,
+    check_output,
+    dataframe,
+    polars_dataframe,
+)
 
 
 @overload
-def summary(reference: TextInput, hypothesis: TextInput, *, output: Literal["pandas"] = ...) -> pd.DataFrame: ...
+def summary(reference: TextInput, hypothesis: TextInput, *, output: Literal["pandas"] = ...) -> PandasDataFrame: ...
 
 
 @overload
-def summary(reference: TextInput, hypothesis: TextInput, *, output: Literal["polars"]) -> pl.DataFrame: ...
+def summary(reference: TextInput, hypothesis: TextInput, *, output: Literal["polars"]) -> PolarsDataFrame: ...
 
 
 @overload
@@ -37,7 +40,7 @@ def summary(reference: TextInput, hypothesis: TextInput, *, output: Literal["rec
 
 def summary(
     reference: TextInput, hypothesis: TextInput, *, output: Literal["pandas", "polars", "records"] = "pandas"
-) -> pd.DataFrame | pl.DataFrame | list[SummaryRecord]:
+) -> PandasDataFrame | PolarsDataFrame | list[SummaryRecord]:
     """
     This function provides a comprehensive breakdown of the calculated results including the WER, Levenshtein
     Distance and all the insertion, deletion and substitution errors.
@@ -108,27 +111,10 @@ def summary(
     form = check_output("summary", output)
     result = metrics(reference, hypothesis)
 
-    # Batch rows (n, 9)
-    if isinstance(result, np.ndarray) and result.ndim == 2:
-        word_error_rate_breakdown = result.tolist()
-    else:
-        # Single row - wrap in list for DataFrame
-        word_error_rate_breakdown = [result.tolist() if hasattr(result, 'tolist') else list(result)]
-
-    columns = [
-        "wer",
-        "ld",
-        "m",
-        "insertions",
-        "deletions",
-        "substitutions",
-        "inserted_words",
-        "deleted_words",
-        "substituted_words",
-    ]
-    if form == "records":
-        return cast(list[SummaryRecord], [dict(zip(columns, row)) for row in word_error_rate_breakdown])
+    # A batch gives a list with one row for each pair, and a pair of strings gives one row
+    word_error_rate_breakdown = result if isinstance(result, list) else [result]
+    if form == "pandas":
+        return dataframe(word_error_rate_breakdown, SUMMARY_COLUMNS)
     if form == "polars":
-        return polars_dataframe(word_error_rate_breakdown, columns)
-    df = dataframe(word_error_rate_breakdown, columns)
-    return df
+        return polars_dataframe(word_error_rate_breakdown, SUMMARY_COLUMNS)
+    return cast(list[SummaryRecord], [dict(zip(SUMMARY_COLUMNS, row)) for row in word_error_rate_breakdown])

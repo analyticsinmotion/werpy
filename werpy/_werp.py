@@ -9,8 +9,11 @@ This module defines the following function:
     - werp(reference, hypothesis, insertions_weight=1, deletions_weight=1, substitutions_weight=1)
 """
 
-import numpy as np
-from ._errorhandler import TextInput, check_weights, error_handler, substitution_order
+from __future__ import annotations
+
+import math
+
+from ._errorhandler import TextInput, check_weights, error_handler, exact_rate, substitution_order
 from ._metrics import metrics_fast
 from ._weighted import metrics_fast_weighted
 
@@ -32,6 +35,9 @@ def werp(
     alignment with the most substitutions when it weighs less. When a substitution weighs exactly that mean, for example
     when the three weights are equal, all these alignments have the same weighted cost, and the alignment of summary()
     is used.
+
+    For a list, tuple or numpy array of texts, the weights are applied to the insertions, deletions and substitutions
+    of all the pairs together, and the result is divided by the number of words in all the references.
 
     The memory that werp() uses grows with the number of words in the reference and the hypothesis, so it can compare
     long transcripts. The time grows with the product of the two numbers of words.
@@ -100,20 +106,19 @@ def werp(
     else:
         result = metrics_fast(reference, hypothesis)
 
-    # Batch: (n, 6) float64
-    if isinstance(result, np.ndarray) and result.ndim == 2:
-        weighted_insertions = result[:, 3] * insertions_weight
-        weighted_deletions = result[:, 4] * deletions_weight
-        weighted_substitutions = result[:, 5] * substitutions_weight
-        m = result[:, 2]
-        weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-        den = np.sum(m)
-        return float(np.sum(weighted_errors) / den) if den else 0.0
-
-    # Single: (6,) float64
-    weighted_insertions = result[3] * insertions_weight
-    weighted_deletions = result[4] * deletions_weight
-    weighted_substitutions = result[5] * substitutions_weight
-    m = result[2]
-    weighted_errors = weighted_insertions + weighted_deletions + weighted_substitutions
-    return float(weighted_errors / m) if m else 0.0
+    # Batch: a list with one (wer, ld, m, insertions, deletions, substitutions) tuple of floats for each pair. The
+    # weights are applied to the counts of all the pairs together.
+    if isinstance(result, list):
+        m, insertions, deletions, substitutions = (sum(column, 0.0) for column in list(zip(*result))[2:])
+    # Single: one (wer, ld, m, insertions, deletions, substitutions) tuple of floats
+    else:
+        _, _, m, insertions, deletions, substitutions = result
+    weighted_errors = (
+        insertions * insertions_weight + deletions * deletions_weight + substitutions * substitutions_weight
+    )
+    rate = weighted_errors / m if m else 0.0
+    if rate == math.inf:
+        # A product or the sum is too large for a float, so the rate is computed again exactly.
+        weights = (insertions_weight, deletions_weight, substitutions_weight)
+        rate = exact_rate(m, insertions, deletions, substitutions, weights)
+    return rate

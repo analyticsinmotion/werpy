@@ -12,18 +12,25 @@ A text is a string. A batch is a list, a tuple or a one-dimensional numpy array 
 metric functions take a reference and a hypothesis of the same kind, and two batches must have the same number of
 elements. A reference must not be blank. The weights of 'werp', 'werps' and 'summaryp' are real numbers that are
 finite and at least 0. An input that breaks one of these rules raises 'werpy.exceptions.WerpyTypeError' or
-'werpy.exceptions.WerpyValueError'.
+'werpy.exceptions.WerpyValueError'. The tests also check that typing.get_type_hints() resolves the annotations of the
+seven functions.
 
 To run the tests, execute this module as the main program.
 """
 
 import decimal
 import fractions
+import importlib
+import inspect
 import os
+import subprocess  # nosec B404 - the test starts the interpreter that runs it, with fixed arguments
+import sys
 import tempfile
+import typing
 import unittest
 import warnings
-import numpy as np
+from unittest import mock
+
 import werpy
 from werpy.exceptions import WerpyError, WerpyTypeError, WerpyValueError
 
@@ -31,6 +38,13 @@ try:
     import pandas as pd
 except ImportError:  # pandas is an optional dependency of werpy
     pd = None
+
+try:
+    import numpy as np
+except ImportError:  # NumPy is not a dependency of werpy
+    np = None
+
+NUMPY = unittest.skipIf(np is None, "NumPy is not installed")
 
 
 SIX = (werpy.wer, werpy.wers, werpy.werp, werpy.werps, werpy.summary, werpy.summaryp)
@@ -114,6 +128,11 @@ def string_dtype_array(texts):
     return None if string_dtype is None else np.array(texts, dtype=string_dtype())
 
 
+def with_numpy(build):
+    """Return the list that build() returns when NumPy can be imported, and an empty list otherwise."""
+    return build() if np is not None else []
+
+
 def generator(texts):
     """Return a generator of the texts."""
     return (text for text in texts)
@@ -183,6 +202,7 @@ class TestInputContract(unittest.TestCase):
             with self.subTest(function="normalize", type=type(value).__name__):
                 self._assert_raises(WerpyTypeError, type_message("text", value), werpy.normalize, value)
 
+    @NUMPY
     def test_dimensions(self):
         """
         Test that a numpy array with no dimensions, with two dimensions or with three dimensions, and a numpy matrix,
@@ -214,10 +234,8 @@ class TestInputContract(unittest.TestCase):
         batches = [
             ["a b c"],
             ("a b c",),
-            np.array(["a b c"]),
-            np.array(["a b c"], dtype=object),
-            np.array(["a x c"]),
-            np.array([], dtype=str),
+            *with_numpy(lambda: [np.array(["a b c"]), np.array(["a b c"], dtype=object), np.array(["a x c"]),
+                                 np.array([], dtype=str)]),
         ]
         for batch in batches:
             for function in SIX:
@@ -237,8 +255,8 @@ class TestInputContract(unittest.TestCase):
             (tuple(reference), tuple(hypothesis)),
             (tuple(reference), hypothesis),
             (reference, tuple(hypothesis)),
-            (tuple(reference), np.array(hypothesis)),
-            (np.array(reference, dtype=object), tuple(hypothesis)),
+            *with_numpy(lambda: [(tuple(reference), np.array(hypothesis)),
+                                 (np.array(reference, dtype=object), tuple(hypothesis))]),
         ]
         for ref, hyp in forms:
             for function in RESULTS:
@@ -251,7 +269,8 @@ class TestInputContract(unittest.TestCase):
         the type of the element and its index, for each argument of the six metric functions and for the text of
         normalize.
         """
-        elements = [None, 1, 1.5, True, b"a b", ["a b"], ("a b",), np.int64(1), np.bytes_(b"a b")]
+        numpy_elements = with_numpy(lambda: [np.int64(1), np.bytes_(b"a b")])
+        elements = [None, 1, 1.5, True, b"a b", ["a b"], ("a b",), *numpy_elements]
         for element in elements:
             for function in SIX:
                 with self.subTest(function=function.__name__, element=type(element).__name__):
@@ -283,10 +302,9 @@ class TestInputContract(unittest.TestCase):
         array of dtype object.
         """
         cases = [
-            (["a b c"], [np.array(["a b c"])]),
-            (["a b c"], [np.array("a b c")]),
+            *with_numpy(lambda: [(["a b c"], [np.array(["a b c"])]), (["a b c"], [np.array("a b c")])]),
             *((["a b c"], [value]) for value in series(["a b c"])),
-            (object_array(["a b c"]), object_array([np.array(["a b c"])])),
+            *with_numpy(lambda: [(object_array(["a b c"]), object_array([np.array(["a b c"])]))]),
         ]
         for reference, hypothesis in cases:
             for function in SIX:
@@ -320,8 +338,7 @@ class TestInputContract(unittest.TestCase):
         forms = [
             ([], []),
             ((), ()),
-            (np.array([], dtype=str), np.array([], dtype=str)),
-            (np.array([]), np.array([])),
+            *with_numpy(lambda: [(np.array([], dtype=str), np.array([], dtype=str)), (np.array([]), np.array([]))]),
         ]
         for reference, hypothesis in forms:
             form = f"{type(reference).__name__} {getattr(reference, 'dtype', '')}".strip()
@@ -345,7 +362,9 @@ class TestInputContract(unittest.TestCase):
         """
         cases = [
             (werpy.wer, (None, 5), WerpyTypeError, type_message("reference", None)),
-            (werpy.wer, (np.array("a"), None), WerpyTypeError, dimensions_message("reference", 0)),
+            *with_numpy(lambda: [
+                (werpy.wer, (np.array("a"), None), WerpyTypeError, dimensions_message("reference", 0)),
+            ]),
             (werpy.wer, (["a", None], ["a"]), WerpyValueError, LENGTH_MESSAGE),
             (werpy.wer, ([""], [None]), WerpyTypeError, element_message("hypothesis", None, 0)),
             (werpy.werp, (None, "a", -1), WerpyTypeError, type_message("reference", None)),
@@ -366,12 +385,16 @@ class TestInputContract(unittest.TestCase):
         weights = (0.5, 0.5, 1)
         expected_text = {function: call(function, reference[0], hypothesis[0], weights) for function in RESULTS}
         expected_batch = {function: call(function, reference, hypothesis, weights) for function in RESULTS}
-        text_forms = [(Text(reference[0]), Text(hypothesis[0])), (np.str_(reference[0]), np.str_(hypothesis[0]))]
+        text_forms = [(Text(reference[0]), Text(hypothesis[0])),
+                      *with_numpy(lambda: [(np.str_(reference[0]), np.str_(hypothesis[0]))])]
         batch_forms = [
-            ([np.str_(text) for text in reference], [np.str_(text) for text in hypothesis]),
-            (np.array(reference, dtype=object), np.array(hypothesis, dtype=object)),
-            (reference, np.array(hypothesis)),
-            (np.array(reference), hypothesis),
+            ([Text(text) for text in reference], [Text(text) for text in hypothesis]),
+            *with_numpy(lambda: [
+                ([np.str_(text) for text in reference], [np.str_(text) for text in hypothesis]),
+                (np.array(reference, dtype=object), np.array(hypothesis, dtype=object)),
+                (reference, np.array(hypothesis)),
+                (np.array(reference), hypothesis),
+            ]),
         ]
         for forms, expected in ((text_forms, expected_text), (batch_forms, expected_batch)):
             for ref, hyp in forms:
@@ -381,7 +404,7 @@ class TestInputContract(unittest.TestCase):
         with self.subTest(form="StringDType"):
             ref, hyp = string_dtype_array(reference), string_dtype_array(hypothesis)
             if ref is None:
-                self.skipTest("NumPy 1.x has no StringDType.")
+                self.skipTest("NumPy is not installed, or it is NumPy 1.x, which has no StringDType.")
             for function in RESULTS:
                 self._assert_same_result(call(function, ref, hyp, weights), expected_batch[function])
 
@@ -392,16 +415,13 @@ class TestInputContract(unittest.TestCase):
         """
         weights = [
             True,
-            np.bool_(True),
             "0.5",
             None,
             [1, 2],
             (1, 2),
-            np.array([1, 2]),
-            np.array(0.5),
             decimal.Decimal("0.5"),
             complex(1, 0),
-            np.timedelta64(1, "s"),
+            *with_numpy(lambda: [np.bool_(True), np.array([1, 2]), np.array(0.5), np.timedelta64(1, "s")]),
         ]
         for weight in weights:
             for position, name in enumerate(WEIGHT_NAMES):
@@ -430,7 +450,8 @@ class TestInputContract(unittest.TestCase):
         the result of the same weights given as floats, and that the weights 0 and -0.0 are valid, in werp, werps and
         summaryp, for a pair of strings and for a batch.
         """
-        for weight in (2, 0.5, np.int64(2), np.uint8(2), np.float32(0.5), fractions.Fraction(1, 2), 0, -0.0):
+        numbers = with_numpy(lambda: [np.int64(2), np.uint8(2), np.float32(0.5)])
+        for weight in (2, 0.5, *numbers, fractions.Fraction(1, 2), 0, -0.0):
             number = float(weight)
             for function in WEIGHTED_RESULTS:
                 for reference, hypothesis in (PAIR, BATCH):
@@ -460,7 +481,7 @@ class TestInputContract(unittest.TestCase):
         WerpyTypeError with the weight type message in werp, werps and summaryp, so that no weight is applied pair by
         pair.
         """
-        for weights in ([1, 2], (1, 2), np.array([1, 2])):
+        for weights in ([1, 2], (1, 2), *with_numpy(lambda: [np.array([1, 2])])):
             for function in WEIGHTED:
                 with self.subTest(function=function.__name__, weights=repr(weights)):
                     self._assert_raises(
@@ -478,15 +499,17 @@ class TestInputContract(unittest.TestCase):
         texts = ["It's very popular in Antarctica.", "  The Sugar Bear character  "]
         expected = ["its very popular in antarctica", "the sugar bear character"]
         self.assertEqual(werpy.normalize(texts[0]), expected[0])
-        for form in (texts, tuple(texts), np.array(texts), np.array(texts, dtype=object)):
+        for form in (texts, tuple(texts), *with_numpy(lambda: [np.array(texts), np.array(texts, dtype=object)])):
             with self.subTest(form=type(form).__name__):
                 self.assertEqual(werpy.normalize(form), expected)
         for value in (*series(texts), generator(texts), set(texts), {"a": texts[0]}.values(), {texts[0]: 1}.keys()):
             with self.subTest(value=type(value).__name__):
                 error = self._assert_raises(WerpyTypeError, type_message("text", value), werpy.normalize, value)
                 self.assertIsInstance(error, TypeError)
-        error = self._assert_raises(WerpyTypeError, dimensions_message("text", 2), werpy.normalize, np.array([texts]))
-        self.assertIsInstance(error, TypeError)
+        if np is not None:
+            array = np.array([texts])
+            error = self._assert_raises(WerpyTypeError, dimensions_message("text", 2), werpy.normalize, array)
+            self.assertIsInstance(error, TypeError)
         error = self._assert_raises(WerpyTypeError, element_message("text", 1, 1), werpy.normalize, [texts[0], 1])
         self.assertIsInstance(error, TypeError)
         with tempfile.TemporaryDirectory() as folder:
@@ -504,14 +527,13 @@ class TestInputContract(unittest.TestCase):
         pairs = [
             (None, "a b"),
             ("a b", 5),
-            (np.array("a b"), np.array("a x")),
-            (np.array([["a b"]]), np.array([["a b"]])),
+            *with_numpy(lambda: [(np.array("a b"), np.array("a x")), (np.array([["a b"]]), np.array([["a b"]]))]),
             ("a b", ["a b"]),
             (["a b", "c d"], ["a b"]),
             (("a b", "c d"), ("a b",)),
             ([1], [1]),
             ([b"a b"], [b"a b"]),
-            (["a b"], [np.array(["a b"])]),
+            *with_numpy(lambda: [(["a b"], [np.array(["a b"])])]),
             (["   "], ["a b"]),
             ("", "a b"),
             *zip(series(["a b"]), series(["a b"])),
@@ -530,7 +552,8 @@ class TestInputContract(unittest.TestCase):
                 with self.subTest(function=function.__name__, weight=repr(weight)[:20]):
                     with self.assertRaises(WerpyError):
                         function(*BATCH, weight)
-        for text in (None, 42, np.array("a b"), np.array([["a b"]]), [1], *series(["a b"]), ["a b", None]):
+        arrays = with_numpy(lambda: [np.array("a b"), np.array([["a b"]])])
+        for text in (None, 42, *arrays, [1], *series(["a b"]), ["a b", None]):
             with self.subTest(function="normalize", text=repr(text)):
                 with self.assertRaises(WerpyError):
                     werpy.normalize(text)
@@ -543,8 +566,10 @@ class TestInputContract(unittest.TestCase):
         different lengths raise a WerpyTypeError, which is not a ValueError.
         """
         cases = [
-            (werpy.wer, (np.array([["a b"], ["c d"]]), np.array([["a b"], ["c x"]])), AttributeError),
-            (werpy.wer, (np.array("a b c"), np.array("a x c")), TypeError),
+            *with_numpy(lambda: [
+                (werpy.wer, (np.array([["a b"], ["c d"]]), np.array([["a b"], ["c x"]])), AttributeError),
+                (werpy.wer, (np.array("a b c"), np.array("a x c")), TypeError),
+            ]),
             (werpy.wer, ([None], ["a b"]), AttributeError),
             (werpy.wer, ([1, 2], [1, 2]), AttributeError),
             (werpy.wer, ([["a b"]], [["a b"]]), AttributeError),
@@ -561,6 +586,8 @@ class TestInputContract(unittest.TestCase):
             with self.subTest(function=function.__name__, change="tuples of different lengths"):
                 error = self._assert_raises(WerpyValueError, LENGTH_MESSAGE, call, function, ("a b", "c d"), ("a b",))
                 self.assertNotIsInstance(error, TypeError)
+            if np is None:
+                continue
             with self.subTest(function=function.__name__, change="two-dimensional arrays of different lengths"):
                 error = self._assert_raises(
                     WerpyTypeError,
@@ -571,6 +598,148 @@ class TestInputContract(unittest.TestCase):
                     np.array([["a b"]]),
                 )
                 self.assertNotIsInstance(error, ValueError)
+
+
+class TestWithoutNumpy(unittest.TestCase):
+    """
+    This class contains unit tests for werpy without NumPy, which is not a dependency of werpy.
+    """
+
+    def test_new_process_without_numpy(self):
+        """
+        Test, in a new process in which NumPy cannot be imported, that werpy imports and that the seven public functions
+        give their results for strings, lists and tuples, with records from summary and summaryp. NumPy is not a
+        dependency of werpy, and pandas, which needs it, cannot be imported there either.
+        """
+        code = (
+            "import sys\n"
+            "sys.modules['numpy'] = None\n"
+            "import werpy\n"
+            "assert werpy.wer('a b', 'a c') == 0.5 and werpy.wer(('a b', 'c'), ['a c', 'c']) == 1 / 3\n"
+            "assert werpy.wers(['a b'], ['a c']) == [0.5] and werpy.werp('a b', 'a c', 2, 1, 1) == 0.5\n"
+            "assert werpy.werps(('a b c', 'd'), ('a x c', 'e'), 1, 1, 2) == [2 / 3, 2.0]\n"
+            "assert werpy.normalize(('A b.', 'C')) == ['a b', 'c']\n"
+            "assert werpy.summary('a b', 'a c', output='records')[0]['ld'] == 1\n"
+            "assert werpy.summaryp(['a b'], ['a c'], output='records')[0]['werp'] == 0.5\n"
+            "print(sys.modules['numpy'])\n"
+        )
+        result = subprocess.run(  # nosec B603 - the interpreter that runs this test, with fixed arguments
+            [sys.executable, "-c", code], capture_output=True, text=True, check=False
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.split(), ["None"])
+
+    def test_numpy_not_imported(self):
+        """
+        Test, in a new process in which pandas cannot be imported, that werpy does not import NumPy: import werpy and
+        the calls of the seven public functions, a weight that is checked one by one and an input that is not valid
+        leave NumPy out of sys.modules.
+        """
+        code = (
+            "import fractions\n"
+            "import sys\n"
+            "sys.modules['pandas'] = None\n"
+            "import werpy\n"
+            "werpy.wer(['a b'], ['a c']), werpy.wers('a b', 'a c'), werpy.werp(['a b'], ['a c'], 1, 2, 3)\n"
+            "werpy.werps('a b', 'a c', fractions.Fraction(1, 2), 1, 1), werpy.normalize(['A b.'])\n"
+            "werpy.summary(['a b'], ['a c'], output='records')\n"
+            "werpy.summaryp('a b', 'a c', 2, 1, 1, output='records')\n"
+            "try:\n"
+            "    werpy.wer(None, 'a b')\n"
+            "except werpy.exceptions.WerpyTypeError:\n"
+            "    pass\n"
+            "print('numpy' in sys.modules)\n"
+        )
+        result = subprocess.run(  # nosec B603 - the interpreter that runs this test, with fixed arguments
+            [sys.executable, "-c", code], capture_output=True, text=True, check=False
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout.split(), ["False"])
+
+    def test_numpy_types_without_numpy(self):
+        """
+        Test that werpy takes the types of NumPy from sys.modules: while sys.modules holds no NumPy, there is no NumPy
+        type, a bool weight raises the WerpyTypeError and the other inputs are checked as before. With NumPy, the types
+        are those of NumPy, and a name of NumPy that is not a type gives none.
+        """
+        errorhandler = importlib.import_module("werpy._errorhandler")
+        with mock.patch.dict(sys.modules, {"numpy": None}):
+            self.assertIsNone(errorhandler.numpy_type("ndarray"))
+            self.assertFalse(errorhandler.is_numpy_array([]))
+            with self.assertRaises(WerpyTypeError) as context:
+                werpy.werp(*PAIR, True, 1, 1)
+            self.assertEqual(str(context.exception), weight_type_message("insertions_weight", True))
+            self.assertEqual(werpy.werp(*PAIR, fractions.Fraction(1, 2), 1, 1), werpy.werp(*PAIR, 0.5, 1, 1))
+            with self.assertRaises(WerpyTypeError) as context:
+                werpy.wer(None, "a b")
+            self.assertEqual(str(context.exception), type_message("reference", None))
+        if np is not None:
+            self.assertIs(errorhandler.numpy_type("ndarray"), np.ndarray)
+            self.assertIs(errorhandler.numpy_type("timedelta64"), np.timedelta64)
+            self.assertIsNone(errorhandler.numpy_type("pi"))
+        self.assertIsNone(errorhandler.numpy_type("not_a_name_of_numpy"))
+
+
+class TestTypeHints(unittest.TestCase):
+    """
+    This class contains unit tests for the annotations of the seven public functions at run time.
+    """
+
+    def test_type_hints(self):
+        """
+        Test that typing.get_type_hints() resolves the annotations of the seven public functions in this environment:
+        each function has a hint for each parameter and for its result. A text input is a str, a list or a tuple of
+        str, or typing.Any for a numpy array. The results of normalize and of the four rate functions have their
+        documented types. The results of summary and summaryp include the list of records and, when pandas can be
+        imported, the pandas DataFrame.
+        """
+        output = importlib.import_module("werpy._output")
+        returns = {
+            werpy.normalize: str | list[str],
+            werpy.wer: float,
+            werpy.wers: list[float],
+            werpy.werp: float,
+            werpy.werps: list[float],
+        }
+        for function in (werpy.normalize, *SIX):
+            with self.subTest(function=function.__name__):
+                hints = typing.get_type_hints(function)
+                self.assertEqual(list(hints), [*inspect.signature(function).parameters, "return"])
+                first = "text" if function is werpy.normalize else "reference"
+                self.assertEqual(set(typing.get_args(hints[first])), {str, list[str], tuple[str, ...], typing.Any})
+                if function in returns:
+                    self.assertEqual(hints["return"], returns[function])
+        for function, record in ((werpy.summary, output.SummaryRecord), (werpy.summaryp, output.SummarypRecord)):
+            with self.subTest(function=function.__name__):
+                results = typing.get_args(typing.get_type_hints(function)["return"])
+                self.assertIn(list[record], results)
+                if pd is not None:
+                    self.assertIn(pd.DataFrame, results)
+
+    def test_type_hints_in_new_process(self):
+        """
+        Test, in new processes, that typing.get_type_hints() resolves the annotations of the seven public functions
+        when NumPy, pandas and polars cannot be imported, when pandas cannot be imported, and with every library that
+        the environment holds. The hints leave polars out of sys.modules, and NumPy too unless pandas imports it.
+        """
+        code = (
+            "import sys\n"
+            "import typing\n"
+            "for name in sys.argv[1:]:\n"
+            "    sys.modules[name] = None\n"
+            "import werpy\n"
+            "for name in werpy.__all__:\n"
+            "    typing.get_type_hints(getattr(werpy, name))\n"
+            "print(sys.modules.get('numpy') is not None, sys.modules.get('polars') is not None)\n"
+        )
+        cases = ((["numpy", "pandas", "polars"], False), (["pandas"], False), ([], pd is not None))
+        for blocked, numpy_loaded in cases:
+            with self.subTest(blocked=blocked):
+                result = subprocess.run(  # nosec B603 - the interpreter that runs this test, with fixed arguments
+                    [sys.executable, "-c", code, *blocked], capture_output=True, text=True, check=False
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.split(), [str(numpy_loaded), "False"])
 
 
 if __name__ == "__main__":  # pragma: no cover

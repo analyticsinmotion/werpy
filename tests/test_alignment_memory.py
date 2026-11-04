@@ -109,10 +109,10 @@ def budget(table, codes):
 def kernel_rows(ref, hyp):
     """Return the rows of calculations, calculations_fast and calculations_weighted with the orders 1 and -1."""
     return [
-        METRICS.calculations(ref, hyp).tolist(),
-        METRICS.calculations_fast(ref, hyp).tolist(),
-        KERNELS.calculations_weighted(ref, hyp, 1).tolist(),
-        KERNELS.calculations_weighted(ref, hyp, -1).tolist(),
+        plain(METRICS.calculations(ref, hyp)),
+        plain(METRICS.calculations_fast(ref, hyp)),
+        plain(KERNELS.calculations_weighted(ref, hyp, 1)),
+        plain(KERNELS.calculations_weighted(ref, hyp, -1)),
     ]
 
 
@@ -125,10 +125,10 @@ def batch_results(pairs):
     nonblank = [pair for pair in pairs if pair[0]]
     rated_refs, rated_hyps = [pair[0] for pair in nonblank], [pair[1] for pair in nonblank]
     return [
-        METRICS.metrics(refs, hyps).tolist(),
-        METRICS.metrics_fast(refs, hyps).tolist(),
-        KERNELS.metrics_weighted(refs, hyps, 1).tolist(),
-        KERNELS.metrics_weighted(refs, hyps, -1).tolist(),
+        plain(METRICS.metrics(refs, hyps)),
+        plain(METRICS.metrics_fast(refs, hyps)),
+        plain(KERNELS.metrics_weighted(refs, hyps, 1)),
+        plain(KERNELS.metrics_weighted(refs, hyps, -1)),
         werpy.werp(rated_refs, rated_hyps),
         werpy.werps(rated_refs, rated_hyps),
     ]
@@ -165,8 +165,12 @@ def frame_rows(frame, columns):
 
 
 def plain(value):
-    """Return a numpy array as a list, and any other value unchanged."""
-    return value.tolist() if hasattr(value, "tolist") else value
+    """Return a row of a kernel as a list, a list of rows as a list of lists, and any other value unchanged."""
+    if isinstance(value, tuple):
+        return list(value)
+    if isinstance(value, list):
+        return [plain(item) for item in value]
+    return value
 
 
 def traced_peak(call, *args):
@@ -236,7 +240,7 @@ class TestAlignmentMemory(unittest.TestCase):
                     werpy.werps(refs, hyps),
                     werpy.werps(refs, hyps, *DIRECTION_WEIGHTS[0]),
                     [werpy.werp(ref, hyp) for ref, hyp in pairs],
-                    [METRICS.calculations_fast(ref, hyp).tolist() for ref, hyp in pairs],
+                    [plain(METRICS.calculations_fast(ref, hyp)) for ref, hyp in pairs],
                 ]
             failures = [(pair, list(got), want) for pair, got, want in zip(pairs, zip(*columns), wants)
                         if list(got) != want]
@@ -297,9 +301,9 @@ class TestAlignmentMemory(unittest.TestCase):
             with budget(table, codes):
                 failures = [
                     (ref, hyp) for ref, hyp in pairs
-                    if not (METRICS.calculations(ref, hyp).tolist()
-                            == KERNELS.calculations_weighted(ref, hyp, 1).tolist()
-                            == KERNELS.calculations_weighted(ref, hyp, -1).tolist())
+                    if not (METRICS.calculations(ref, hyp)
+                            == KERNELS.calculations_weighted(ref, hyp, 1)
+                            == KERNELS.calculations_weighted(ref, hyp, -1))
                 ]
             with self.subTest(table=table, codes=codes):
                 self.assertEqual(failures, [])

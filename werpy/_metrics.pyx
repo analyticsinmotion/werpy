@@ -7,26 +7,25 @@ reference and hypothesis strings. Word error rate (WER) and Levenshtein distance
 computed with C data types, and batches are processed in a C-level loop.
 
 Three calculation paths are available, each with a single-pair function and a router that
-accepts either a pair of strings or a pair of equal-length lists or numpy arrays:
+accepts either a pair of strings or a pair of equal-length lists. A pair of strings gives one
+row, a tuple, and a batch gives a list with one row for each pair:
 
-- calculations(reference, hypothesis) -> np.ndarray: the full path. Returns a nine-element
-  object array containing the WER, LD, number of words in the reference, counts of
-  insertions, deletions and substitutions, and lists of the inserted, deleted and
-  substituted words.
-- metrics(reference, hypothesis) -> np.ndarray: routes to calculations for a pair of strings
-  and returns a (9,) object array, or processes a batch and returns an (n, 9) object array
-  with one row per pair.
-- calculations_fast(reference, hypothesis) -> np.ndarray: the counts-only path. Returns a
-  (6,) float64 array containing the WER, LD, number of words in the reference, and counts of
-  insertions, deletions and substitutions. No word lists are built.
-- metrics_fast(reference, hypothesis) -> np.ndarray: routes to calculations_fast for a pair
-  of strings, or returns an (n, 6) float64 array for a batch.
-- calculations_wer_only(reference, hypothesis) -> np.ndarray: the WER-only path. Returns a
-  (3,) float64 array containing the WER, LD and number of words in the reference, computed
-  with a two-row dynamic programming buffer.
-- metrics_wer_only(reference, hypothesis) -> np.ndarray: routes to calculations_wer_only for
-  a pair of strings, or returns an (n, 3) float64 array for a batch, reusing one pair of
-  row buffers and one token buffer across the whole batch.
+- calculations(reference, hypothesis) -> tuple: the full path. Returns a tuple of nine items:
+  the WER, LD, number of words in the reference, counts of insertions, deletions and
+  substitutions, and lists of the inserted, deleted and substituted words.
+- metrics(reference, hypothesis) -> tuple or list: routes to calculations for a pair of
+  strings, or processes a batch and returns a list with one such tuple for each pair.
+- calculations_fast(reference, hypothesis) -> tuple: the counts-only path. Returns a tuple of
+  six floats: the WER, LD, number of words in the reference, and counts of insertions,
+  deletions and substitutions. No word lists are built.
+- metrics_fast(reference, hypothesis) -> tuple or list: routes to calculations_fast for a pair
+  of strings, or returns a list with one such tuple for each pair of a batch.
+- calculations_wer_only(reference, hypothesis) -> tuple: the WER-only path. Returns a tuple of
+  three floats: the WER, LD and number of words in the reference, computed with a two-row
+  dynamic programming buffer.
+- metrics_wer_only(reference, hypothesis) -> tuple or list: routes to calculations_wer_only for
+  a pair of strings, or returns a list with one such tuple for each pair of a batch, reusing
+  one pair of row buffers and one token buffer across the whole batch.
 
 Before the edit distance is computed, every token of a pair is mapped to one canonical
 object per distinct word, so that the dynamic programming loops compare words by pointer
@@ -43,8 +42,6 @@ sizes, so that the tests can reach the moves and the parts with short texts.
 Input validation is performed by werpy._errorhandler.error_handler before these functions
 are called by the public werpy functions.
 """
-
-import numpy as np
 
 cimport cython
 from cpython.ref cimport PyObject
@@ -555,7 +552,7 @@ cpdef object calculations(object reference, object hypothesis):
     # An identical pair has no edits, so the token mapping and the dynamic
     # programme are skipped. Only the reference word count is needed.
     if reference == hypothesis:
-        return np.array([0.0, 0, m, 0, 0, 0, [], [], []], dtype=object)
+        return (0.0, 0, m, 0, 0, 0, [], [], [])
 
     hypothesis_word = hypothesis.split()
 
@@ -574,9 +571,7 @@ cpdef object calculations(object reference, object hypothesis):
 
     inserted_words.reverse(), deleted_words.reverse(), substituted_words.reverse()
 
-    return np.array(
-        [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words],
-        dtype=object)
+    return (wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words)
 
 
 cdef inline int _check_equal_lengths(list references, list hypotheses) except -1:
@@ -593,10 +588,10 @@ cdef inline int _check_equal_lengths(list references, list hypotheses) except -1
 cdef object _metrics_batch(list references, list hypotheses):
     """
     Private batch processing function. Processes multiple reference-hypothesis
-    pairs at C speed, eliminating np.vectorize overhead.
+    pairs at C speed.
 
-    Returns (n, 9) object array where each row contains:
-    [wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words]
+    Returns a list with one tuple for each pair:
+    (wer, ld, m, insertions, deletions, substitutions, inserted_words, deleted_words, substituted_words)
     """
     # The loop below reads both lists at every index without bounds checks.
     _check_equal_lengths(references, hypotheses)
@@ -604,13 +599,11 @@ cdef object _metrics_batch(list references, list hypotheses):
     cdef Py_ssize_t n = len(references)
     cdef Py_ssize_t idx
 
-    # Rows output, dtype=object because cols 6-8 are lists
-    cdef object out = np.empty((n, 9), dtype=object)
+    # One row for each pair
+    cdef list out = []
 
-    cdef object r
     for idx in range(n):
-        r = calculations(references[idx], hypotheses[idx])
-        out[idx, :] = r
+        out.append(calculations(references[idx], hypotheses[idx]))
 
     return out
 
@@ -620,10 +613,10 @@ cpdef object metrics(object reference, object hypothesis):
     Unified fast metrics entry point (Option A, rows contract).
 
     Returns:
-    - strings: a single row (len 9)
-    - sequences: an (n, 9) object ndarray, one row per pair
+    - strings: a single row, a tuple of 9 items
+    - lists: a list with one row for each pair
     """
-    if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
+    if isinstance(reference, list) and isinstance(hypothesis, list):
         return _metrics_batch(list(reference), list(hypothesis))
     return calculations(reference, hypothesis)
 
@@ -638,7 +631,7 @@ cpdef object calculations_fast(object reference, object hypothesis):
     This function is optimized for use cases that only need counts and metrics,
     not the actual lists of inserted/deleted/substituted words.
 
-    Returns (6,) float64 array: [wer, ld, m, insertions, deletions, substitutions]
+    Returns a tuple of 6 floats: (wer, ld, m, insertions, deletions, substitutions)
     """
     cdef list reference_word = reference.split()
     cdef list hypothesis_word
@@ -648,7 +641,7 @@ cpdef object calculations_fast(object reference, object hypothesis):
     # An identical pair has no edits, so the token mapping and the dynamic
     # programme are skipped. Only the reference word count is needed.
     if reference == hypothesis:
-        return np.array([0.0, 0.0, <double>m, 0.0, 0.0, 0.0], dtype=np.float64)
+        return (0.0, 0.0, <double>m, 0.0, 0.0, 0.0)
 
     hypothesis_word = hypothesis.split()
 
@@ -663,11 +656,7 @@ cpdef object calculations_fast(object reference, object hypothesis):
     ld = insertions + deletions + substitutions
     wer = (<double>ld) / m if m > 0 else 0.0
 
-    return np.array(
-        [wer, <double>ld, <double>m,
-         <double>insertions, <double>deletions, <double>substitutions],
-        dtype=np.float64
-    )
+    return (wer, <double>ld, <double>m, <double>insertions, <double>deletions, <double>substitutions)
 
 
 @cython.boundscheck(False)
@@ -676,8 +665,8 @@ cdef object _metrics_batch_fast(list references, list hypotheses):
     """
     Fast batch processing without word tracking.
 
-    Returns (n, 6) float64 array where each row contains:
-    [wer, ld, m, insertions, deletions, substitutions]
+    Returns a list with one tuple of 6 floats for each pair:
+    (wer, ld, m, insertions, deletions, substitutions)
     """
     # The loop below reads both lists at every index without bounds checks.
     _check_equal_lengths(references, hypotheses)
@@ -685,12 +674,11 @@ cdef object _metrics_batch_fast(list references, list hypotheses):
     cdef Py_ssize_t n = len(references)
     cdef Py_ssize_t idx
 
-    cdef object out = np.empty((n, 6), dtype=np.float64)
+    # One row for each pair
+    cdef list out = []
 
-    cdef object r
     for idx in range(n):
-        r = calculations_fast(references[idx], hypotheses[idx])
-        out[idx, :] = r
+        out.append(calculations_fast(references[idx], hypotheses[idx]))
 
     return out
 
@@ -700,10 +688,10 @@ cpdef object metrics_fast(object reference, object hypothesis):
     Fast metrics entry point without word tracking.
 
     Returns:
-    - strings: (6,) float64 array [wer, ld, m, insertions, deletions, substitutions]
-    - sequences: (n, 6) float64 array, one row per pair
+    - strings: a tuple of 6 floats (wer, ld, m, insertions, deletions, substitutions)
+    - lists: a list with one such tuple for each pair
     """
-    if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
+    if isinstance(reference, list) and isinstance(hypothesis, list):
         return _metrics_batch_fast(list(reference), list(hypothesis))
     return calculations_fast(reference, hypothesis)
 
@@ -718,7 +706,7 @@ cpdef object calculations_wer_only(object reference, object hypothesis):
     This is the fastest path for pure WER calculation, using space-optimized
     Wagner-Fischer algorithm with rolling 2-row buffer instead of full matrix.
 
-    Returns (3,) float64 array: [wer, ld, m]
+    Returns a tuple of 3 floats: (wer, ld, m)
     """
     cdef list reference_word = reference.split()
     cdef list hypothesis_word
@@ -735,31 +723,33 @@ cpdef object calculations_wer_only(object reference, object hypothesis):
     cdef PyObject** ref_tok
     cdef PyObject** hyp_tok
 
-    cdef object prev_arr
-    cdef object curr_arr
-    cdef int32_t[:] prev
-    cdef int32_t[:] curr
+    # Two rows of the dynamic programme in one buffer, swapped by pointer after each row
+    cdef int32_t* rows
+    cdef int32_t* prev
+    cdef int32_t* curr
+    cdef int32_t* tmp
 
     # An identical pair has no edits, so the token mapping and the dynamic
     # programme are skipped. Only the reference word count is needed.
     if reference == hypothesis:
-        return np.array([0.0, 0.0, <double>m], dtype=np.float64)
+        return (0.0, 0.0, <double>m)
 
     hypothesis_word = hypothesis.split()
     n = len(hypothesis_word)
 
-    prev_arr = np.empty(n + 1, dtype=np.int32)
-    curr_arr = np.empty(n + 1, dtype=np.int32)
-    prev = prev_arr
-    curr = curr_arr
+    rows = <int32_t*>PyMem_Malloc(2 * (n + 1) * sizeof(int32_t))
+    if rows == NULL:
+        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
+    ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
+    if ref_tok == NULL:
+        PyMem_Free(rows)  # pragma: no cover - only an allocator failure reaches this line
+        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
+    hyp_tok = ref_tok + m
+    prev = rows
+    curr = rows + n + 1
 
     for j in range(n + 1):
         prev[j] = <int32_t>j
-
-    ref_tok = <PyObject**>PyMem_Malloc((m + n) * sizeof(PyObject*))
-    if ref_tok == NULL:
-        raise MemoryError()  # pragma: no cover - only an allocator failure reaches this line
-    hyp_tok = ref_tok + m
 
     try:
         _canonical_tokens(reference_word, hypothesis_word, ref_tok, hyp_tok)
@@ -786,14 +776,18 @@ cpdef object calculations_wer_only(object reference, object hypothesis):
                 left = best
                 diag = up
 
-            prev, curr = curr, prev
+            tmp = prev
+            prev = curr
+            curr = tmp
+
+        ld = prev[n]
     finally:
         PyMem_Free(ref_tok)
+        PyMem_Free(rows)
 
-    ld = prev[n]
     wer = (<double>ld) / m if m > 0 else 0.0
 
-    return np.array([wer, <double>ld, <double>m], dtype=np.float64)
+    return (wer, <double>ld, <double>m)
 
 
 cdef struct _BatchBuffers:
@@ -945,8 +939,8 @@ cdef object _metrics_batch_wer_only(list references, list hypotheses):
     so the hypotheses are split only inside the loop. Uses true pointer swapping instead
     of value copying for optimal performance.
 
-    Returns (n, 3) float64 array where each row contains:
-    [wer, ld, m]
+    Returns a list with one tuple of 3 floats for each pair:
+    (wer, ld, m)
     """
     # The loop below reads both lists at every index without bounds checks.
     _check_equal_lengths(references, hypotheses)
@@ -954,16 +948,9 @@ cdef object _metrics_batch_wer_only(list references, list hypotheses):
     cdef Py_ssize_t n_pairs = len(references)
     cdef Py_ssize_t idx
 
-    cdef object out = np.empty((n_pairs, 3), dtype=np.float64)
-    cdef double[:, ::1] out_view
-    cdef double* out_data
-
-    # An empty batch returns the empty output array without taking a view of it.
-    if n_pairs == 0:
-        return out
-
-    out_view = out
-    out_data = &out_view[0, 0]
+    # One row for each pair, written by the dynamic programme into row
+    cdef list out = []
+    cdef double row[3]
 
     cdef _BatchBuffers buf
     buf.prev = NULL
@@ -972,10 +959,11 @@ cdef object _metrics_batch_wer_only(list references, list hypotheses):
     buf.tok = NULL
     buf.tok_capacity = 0
 
-    # Process each pair using the shared buffers, writing directly to output rows
+    # Process each pair using the shared buffers
     try:
         for idx in range(n_pairs):
-            _calculations_wer_only_reuse_ptr(references[idx], hypotheses[idx], &buf, out_data + idx * 3)
+            _calculations_wer_only_reuse_ptr(references[idx], hypotheses[idx], &buf, row)
+            out.append((row[0], row[1], row[2]))
     finally:
         PyMem_Free(buf.prev)
         PyMem_Free(buf.tok)
@@ -988,9 +976,9 @@ cpdef object metrics_wer_only(object reference, object hypothesis):
     WER-only metrics entry point (fastest path).
 
     Returns:
-    - strings: (3,) float64 array [wer, ld, m]
-    - sequences: (n, 3) float64 array, one row per pair
+    - strings: a tuple of 3 floats (wer, ld, m)
+    - lists: a list with one such tuple for each pair
     """
-    if isinstance(reference, (list, np.ndarray)) and isinstance(hypothesis, (list, np.ndarray)):
+    if isinstance(reference, list) and isinstance(hypothesis, list):
         return _metrics_batch_wer_only(list(reference), list(hypothesis))
     return calculations_wer_only(reference, hypothesis)

@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   test:
-    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}${{ matrix.numpy != 'default' && format(' / NumPy {0}', matrix.numpy) || '' }}${{ matrix.extras == 'none' && ' / without pandas and polars' || '' }}${{ matrix.libraries == 'lowest' && ' / lowest pandas and polars' || '' }}
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}${{ matrix.numpy != 'default' && format(' / NumPy {0}', matrix.numpy) || '' }}${{ matrix.extras == 'none' && ' / without NumPy, pandas and polars' || '' }}${{ matrix.libraries == 'lowest' && ' / lowest pandas and polars' || '' }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -32,22 +32,23 @@ jobs:
         # "default" keeps the version selected by the resolver.
         numpy: ["default"]
         # "pandas,polars" installs the wheel with its pandas and polars extras. "none"
-        # runs the wheel without pandas and polars, the optional dependencies of
-        # summary() and summaryp().
+        # runs the wheel on the Python standard library alone, without NumPy and
+        # without pandas and polars, the optional dependencies of summary() and
+        # summaryp().
         extras: ["pandas,polars"]
         # "latest" lets the resolver select the versions of pandas and polars.
         # "lowest" installs pandas 2.2.2 and polars 1.0.0, the lowest versions that
         # the pandas and polars extras allow.
         libraries: ["latest"]
         include:
-          # This cell runs the wheel with NumPy 1.26, the lowest NumPy minor version
-          # that the runtime requirements allow on Python 3.11.
+          # This cell runs the tests with NumPy 1.26.4, so that werpy takes numpy
+          # arrays of NumPy 1.x as inputs.
           - os: ubuntu-latest
             python-version: "3.11"
             numpy: "1.26.4"
             extras: "pandas,polars"
-          # This cell runs the wheel without pandas and polars. The tests that need them
-          # are skipped.
+          # This cell runs the wheel without NumPy, pandas and polars. The tests that
+          # need them are skipped.
           - os: ubuntu-latest
             python-version: "3.14"
             numpy: "default"
@@ -112,18 +113,24 @@ jobs:
           EXTRAS: ${{ matrix.extras }}
         run: |
           python - <<'EOF'
+          import importlib.metadata
           import importlib.util
           import os
           import pathlib
           import sysconfig
 
-          import numpy
           import werpy
 
           package_dir = pathlib.Path(werpy.__file__).resolve().parent
           platlib = pathlib.Path(sysconfig.get_paths()["platlib"]).resolve()
           print(f"werpy {werpy.__version__} from {package_dir}")
-          print(f"numpy {numpy.__version__}")
+          # The version of NumPy is read from the metadata of the installed
+          # distribution. The cell without pandas and polars must run on the
+          # Python standard library alone.
+          numpy_found = importlib.util.find_spec("numpy") is not None
+          print(f"numpy {importlib.metadata.version('numpy') if numpy_found else 'not installed'}")
+          if numpy_found and os.environ["EXTRAS"] == "none":
+              raise SystemExit("numpy found, but the cell runs without NumPy")
           extras = os.environ["EXTRAS"].split(",")
           for name in ("pandas", "polars"):
               found = importlib.util.find_spec(name) is not None

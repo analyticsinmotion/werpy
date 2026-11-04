@@ -10,7 +10,8 @@ This module defines the following function:
     - wer(reference, hypothesis): Calculate the WER between a reference text and a hypothesis text.
 """
 
-import numpy as np
+from __future__ import annotations
+
 from ._errorhandler import TextInput, error_handler
 from ._metrics import metrics_wer_only
 
@@ -62,10 +63,11 @@ def wer(reference: TextInput, hypothesis: TextInput) -> float:
     reference, hypothesis = error_handler(reference, hypothesis, allow_empty=False)
     result = metrics_wer_only(reference, hypothesis)
 
-    # Batch: (n, 3) float64, columns [wer, ld, m]
-    if isinstance(result, np.ndarray) and result.ndim == 2:
-        den = np.sum(result[:, 2])  # m column
-        return float(np.sum(result[:, 1]) / den) if den else 0.0  # ld column
+    # Batch: a list with one (wer, ld, m) tuple of floats for each pair
+    if isinstance(result, list):
+        _, ld, m = zip(*result)
+        den = sum(m)
+        return sum(ld) / den if den else 0.0
 
-    # Single: (3,) float64, WER is at index 0
-    return float(result[0])
+    # Single: one (wer, ld, m) tuple of floats
+    return result[0]
