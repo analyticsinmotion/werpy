@@ -94,7 +94,7 @@ The reference below is typed with a curly apostrophe, curly quotation marks and 
 Advantages of Normalizing text
 """"""""""""""""""""""""""""""
 
-There are are many benefits to normalizing reference and hypothesis texts when calculating the Word Error Rate:
+There are many benefits to normalizing reference and hypothesis texts when calculating the Word Error Rate:
 
 - Consistency in Evaluation:
    Normalizing helps in maintaining consistency during the evaluation process.

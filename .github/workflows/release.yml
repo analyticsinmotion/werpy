@@ -39,12 +39,25 @@ jobs:
           echo "Release tag: $GITHUB_REF_NAME"
 
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.os }} for ${{ matrix.arch }}
     needs: [check_ref]
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Each job builds the wheels of one architecture and tests them on its
+        # runner. The Linux and Windows wheels for Arm are built and tested on
+        # Arm runners.
+        include:
+          - os: ubuntu-latest
+            arch: x86_64
+          - os: ubuntu-24.04-arm
+            arch: aarch64
+          - os: windows-latest
+            arch: AMD64
+          - os: windows-11-arm
+            arch: ARM64
+          - os: macos-latest
+            arch: arm64
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -52,9 +65,13 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@b9e566a2b284570af229f6c2a33673410d0389a3 # v4.3.4
         env:
-          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-*"
-          CIBW_ARCHS: auto64
+          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-* cp315-*"
+          CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_SKIP: "*-win32 *-manylinux_i686"
+          # Build the Windows wheels with the MSVC compilers. Meson activates the
+          # Visual Studio environment only when it finds no other C compiler, and
+          # the Windows runners have GCC on the PATH.
+          CIBW_CONFIG_SETTINGS_WINDOWS: "setup-args=--vsenv"
           # Install every built wheel into a clean environment and run the test suite against it
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_EXTRAS: pandas,polars

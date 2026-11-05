@@ -55,9 +55,9 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 ### Bug Fixes
 
-- `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy.metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
+- `metrics()` and the `metrics_fast()` and `metrics_wer_only()` functions of the compiled `werpy._metrics` module now raise a `ValueError` when the reference and hypothesis sequences have different numbers of elements. The message is the one that `error_handler()` raises for the same input.
 
-- The `linetrace` Meson build option compiles `_metrics.pyx` and `_weighted.pyx` with Cython line tracing when the build also sets `-Dpython.allow_limited_api=false`, for example `uv build --wheel -Csetup-args=-Dlinetrace=true -Csetup-args=-Dpython.allow_limited_api=false`. This wheel is built for the ABI of the build interpreter and is not an `abi3` wheel. When the limited API is allowed, `meson setup` stops with an error message that names `-Dpython.allow_limited_api=false`, because Cython does not support line tracing in the Python limited API. Before this change, a build with `-Dlinetrace=true` did not compile. The default build does not change.
+- The `linetrace` Meson build option compiles `_metrics.pyx`, `_weighted.pyx` and `_normalize_kernel.pyx` with Cython line tracing when the build also sets `-Dpython.allow_limited_api=false`, for example `uv build --wheel -Csetup-args=-Dlinetrace=true -Csetup-args=-Dpython.allow_limited_api=false`. This wheel is built for the ABI of the build interpreter and is not an `abi3` wheel. When the limited API is allowed, `meson setup` stops with an error message that names `-Dpython.allow_limited_api=false`, because Cython does not support line tracing in the Python limited API. Before this change, a build with `-Dlinetrace=true` did not compile. The default build does not change.
 
 - `normalize()` keeps a lone surrogate in a text instead of raising `UnicodeEncodeError`.
 
@@ -71,7 +71,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - `pywer`, `evaluate`, `universal-edit-distance` and `torchmetrics` were removed from the `benchmarks` extra.
 
-- Building werpy no longer requires NumPy. `metrics.pyx` no longer uses the NumPy C API, and `numpy` was removed from the build requirements in `pyproject.toml` and from `meson.build`.
+- Building werpy no longer requires NumPy. `_metrics.pyx` no longer uses the NumPy C API, and `numpy` was removed from the build requirements in `pyproject.toml` and from `meson.build`.
 
 - The dynamic programming loops of `calculations()`, `calculations_fast()`, `calculations_wer_only()` and `_calculations_wer_only_reuse_ptr()` in `_metrics.pyx` now keep the neighboring cell values in local variables. The results are unchanged.
 
@@ -81,7 +81,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - The docstrings of `summary()`, `summaryp()`, `werp()` and `werps()`, the weighted Word Error Rate page and the summarization page state which alignment the counts come from.
 
-- The batch path of `metrics()` in `_metrics.pyx` no longer checks whether a row is a zero-dimensional array. `calculations()` always returns a one-dimensional array of nine elements, so the check was never true. The results are unchanged.
+- The batch path of `metrics()` in `_metrics.pyx` no longer checks whether a row is a zero-dimensional array. `calculations()` always returns nine values, so the check was never true. The results are unchanged.
 
 - `summary()` and `summaryp()` align a reference and a hypothesis in memory that grows with the number of words in the two texts, so long transcripts can be compared. So do `werp()` and `werps()` with equal weights, and with any weights where a substitution weighs exactly the mean of an insertion and a deletion. The counts, the word lists and their order do not change.
 
@@ -93,11 +93,23 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - The `polars` extra installs polars, `pip install "werpy[polars]"`. When polars cannot be imported, `output="polars"` raises `ImportError`, and its message names the `polars` extra and `output="records"`.
 
-- The Tests workflow installs the wheel with its `pandas` and `polars` extras, and one cell runs the test suite without them. The coverage job installs pandas and polars, and the type check installs polars.
+- The Tests workflow installs the wheel with its `pandas` and `polars` extras, and one cell runs the test suite without NumPy, pandas and polars. The coverage job installs pandas and polars, and the type check installs polars.
 
 - The compiled functions of `_metrics.pyx` and `_weighted.pyx` return a tuple for a pair of texts and a list of tuples for a list, tuple or numpy array of texts, instead of a numpy array. The values are unchanged.
 
 - `summaryp()` builds its pandas DataFrame from the rows of its ten columns. The DataFrame does not change.
+
+- Added support for Python 3.15. The `cp311-abi3` wheel of each platform is installed and tested on CPython 3.15, the Tests workflow runs the test suite on CPython 3.15 on Linux, macOS and Windows, and the `Programming Language :: Python :: 3.15` classifier was added to `pyproject.toml`.
+
+- Wheels are also built for Linux on 64-bit Arm processors with glibc (`manylinux_aarch64`) and with musl (`musllinux_aarch64`), and for Windows on Arm (`win_arm64`). These wheels are built and tested on Arm runners. As for the other platforms, one `cp311-abi3` wheel is built for each platform, and it is tested on CPython 3.11 to 3.15.
+
+- The Windows wheels are built with the MSVC compilers.
+
+- The `test` extra installs the packages that the test suite uses: `pytest>=9.0.3`, `numpy>=1.26.4`, `pandas>=2.2.2` and `polars>=1.0.0`. With these packages, no test of the suite is skipped. The extra no longer installs `pytest-cov`.
+
+- Added the `Typing :: Typed` classifier to `pyproject.toml`. The package includes the `py.typed` marker and stub files for its compiled modules.
+
+- Added a `Changelog` link to the project URLs in `pyproject.toml`. It points to `CHANGELOG.md` in the repository.
 
 ## Version 3.5.0
 

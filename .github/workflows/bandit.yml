@@ -49,6 +49,60 @@ jobs:
         # Bandit's default exclude list, and the benchmarks directory
         run: bandit -x ".svn,CVS,.bzr,.hg,.git,__pycache__,.tox,.eggs,*.egg,./benchmarks" -r . -f sarif -o results.sarif || true
 
+      # Bandit applies its checks to every file of the run. The test suite uses
+      # the random module for seeded test data, so this step removes from the
+      # report the results with the rule id B311 whose file is under tests/,
+      # and keeps every other result. The step stops the job when the report
+      # does not have the shape that it reads, so that a change in the output of
+      # Bandit cannot remove any other result.
+      - name: Remove the B311 results of the tests from the report
+        run: |
+          python - <<'EOF'
+          import json
+          import sys
+
+          REPORT = "results.sarif"
+
+
+          def stop(message):
+              sys.exit(f"{REPORT}: {message}. No result was removed.")
+
+
+          with open(REPORT, encoding="utf-8") as f:
+              report = json.load(f)
+
+          runs = report.get("runs") if isinstance(report, dict) else None
+          if not isinstance(runs, list) or not runs:
+              stop("the report has no runs")
+
+          removed = 0
+          for run in runs:
+              results = run.get("results") if isinstance(run, dict) else None
+              if not isinstance(results, list):
+                  stop("a run has no results list")
+              kept = []
+              for result in results:
+                  rule_id = result.get("ruleId") if isinstance(result, dict) else None
+                  if not isinstance(rule_id, str) or not rule_id:
+                      stop("a result has no rule id")
+                  try:
+                      path = result["locations"][0]["physicalLocation"]["artifactLocation"]["uri"]
+                  except (KeyError, IndexError, TypeError):
+                      stop(f"a {rule_id} result has no location")
+                  if not isinstance(path, str) or not path:
+                      stop(f"a {rule_id} result has no file path")
+                  if rule_id == "B311" and path.startswith("tests/"):
+                      removed += 1
+                  else:
+                      kept.append(result)
+              run["results"] = kept
+
+          with open(REPORT, "w", encoding="utf-8") as f:
+              json.dump(report, f, indent=2)
+
+          print(f"Removed {removed} B311 results of the files under tests/ from {REPORT}")
+          EOF
+
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:

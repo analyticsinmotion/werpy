@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
         # The NumPy version installed after the package has been built and installed.
         # "default" keeps the version selected by the resolver.
         numpy: ["default"]
@@ -50,7 +50,7 @@ jobs:
           # This cell runs the wheel without NumPy, pandas and polars. The tests that
           # need them are skipped.
           - os: ubuntu-latest
-            python-version: "3.14"
+            python-version: "3.15"
             numpy: "default"
             extras: "none"
           # This cell runs the wheel with the lowest versions of pandas and polars that
