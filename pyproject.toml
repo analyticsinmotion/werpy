@@ -8,11 +8,12 @@ requires = [
 
 [project]
 name = 'werpy'
-version = '3.5.0'
+version = '4.0.0'
 description = 'A powerful yet lightweight Python package to calculate and analyze the Word Error Rate (WER).'
 readme = 'README.md'
 requires-python = '>=3.11'
-license = {file = 'LICENSE'}
+license = 'BSD-3-Clause'
+license-files = ['LICENSE']
 authors = [
   {name = 'Ross Armstrong', email = 'ross.armstrong@analyticsinmotion.com'},
 ]
@@ -25,7 +26,6 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Implementation :: CPython",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: MacOS",
     "Operating System :: POSIX :: Linux",

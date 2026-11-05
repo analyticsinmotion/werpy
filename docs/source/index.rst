@@ -55,4 +55,5 @@ Start with these documents to get you up and running with werpy:
    modules
    exceptions
    usage/index
+   migrating
    
