@@ -4,7 +4,9 @@
 This changelog file outlines a chronologically ordered list of the changes made on this project.
 It is organized by version and release date followed by a list of Enhancements, New Features, Bug Fixes, and/or Breaking Changes.
 
-## Unreleased
+## Version 4.0.0
+
+**Released:** November 6, 2026
 
 ### Breaking Changes
 
@@ -83,7 +85,7 @@ It is organized by version and release date followed by a list of Enhancements, 
 
 - The batch path of `metrics()` in `_metrics.pyx` no longer checks whether a row is a zero-dimensional array. `calculations()` always returns nine values, so the check was never true. The results are unchanged.
 
-- `summary()` and `summaryp()` align a reference and a hypothesis in memory that grows with the number of words in the two texts, so long transcripts can be compared. So do `werp()` and `werps()` with equal weights, and with any weights where a substitution weighs exactly the mean of an insertion and a deletion. The counts, the word lists and their order do not change.
+- `summary()`, `summaryp()`, `werp()` and `werps()` align a reference and a hypothesis in memory that grows with the number of words in the two texts, so long transcripts can be compared. This memory change does not change any result.
 
 - The docstring of `normalize()` and the normalization page state the rule of `normalize()`, with a table of what happens to each kind of character, and say that the rule uses the Unicode database of the running Python. The normalization page no longer says that `normalize()` handles word contractions. The docstrings of `wer()`, `wers()`, `werp()`, `werps()`, `summary()` and `summaryp()` and the pages of these functions say that werpy compares words exactly as they are written, and that texts from different sources can be passed through `normalize()` first.
 
