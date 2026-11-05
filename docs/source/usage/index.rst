@@ -16,7 +16,7 @@ The "Word Error Rate Modules" and "Weighted Word Error Rate Modules" pages equip
 
 The inclusion of the "Summarization Modules" page introduces users to a sophisticated feature allowing for a detailed breakdown of evaluation results, fostering a nuanced understanding of system performance.
 
-Overall, Each page within the "Usage" section not only provides valuable examples and code snippets but also offers insights into why these modules are indispensable in the realm of ASR evaluations, enhancing the overall usability and effectiveness of the werpy package.
+Overall, each page within the "Usage" section not only provides valuable examples and code snippets but also offers insights into why these modules are indispensable in the realm of ASR evaluations, enhancing the overall usability and effectiveness of the werpy package.
 
 Please find the links to each section below:
 
